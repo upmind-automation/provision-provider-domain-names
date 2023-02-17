@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Upmind\ProvisionProviders\DomainNames;
+
+use Upmind\ProvisionBase\Laravel\ProvisionServiceProvider;
+use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
+use Upmind\ProvisionProviders\DomainNames\Nominet\Provider as Nominet;
+use Upmind\ProvisionProviders\DomainNames\Hexonet\Provider as Hexonet;
+use Upmind\ProvisionProviders\DomainNames\Enom\Provider as Enom;
+use Upmind\ProvisionProviders\DomainNames\OpenSRS\Provider as OpenSRS;
+use Upmind\ProvisionProviders\DomainNames\ConnectReseller\Provider as ConnectReseller;
+use Upmind\ProvisionProviders\DomainNames\LogicBoxes\Provider as LogicBoxes;
+use Upmind\ProvisionProviders\DomainNames\ResellerClub\Provider as ResellerClub;
+use Upmind\ProvisionProviders\DomainNames\NetEarthOne\Provider as NetEarthOne;
+use Upmind\ProvisionProviders\DomainNames\NameSilo\Provider as NameSilo;
+use Upmind\ProvisionProviders\DomainNames\OpenProvider\Provider as OpenProvider;
+use Upmind\ProvisionProviders\DomainNames\ResellBiz\Provider as ResellBiz;
+use Upmind\ProvisionProviders\DomainNames\CoccaEpp\Provider as CoccaEpp;
+use Upmind\ProvisionProviders\DomainNames\Nira\Provider as Nira;
+use Upmind\ProvisionProviders\DomainNames\Ricta\Provider as Ricta;
+use Upmind\ProvisionProviders\DomainNames\UGRegistry\Provider as UGRegistry;
+use Upmind\ProvisionProviders\DomainNames\DomainNameApi\Provider as DomainNameApi;
+
+class LaravelServiceProvider extends ProvisionServiceProvider
+{
+    public function boot()
+    {
+        $this->bindCategory('domain-names', DomainNames::class);
+
+        $this->bindProvider('domain-names', 'nominet', Nominet::class);
+        $this->bindProvider('domain-names', 'hexonet', Hexonet::class);
+        $this->bindProvider('domain-names', 'enom', Enom::class);
+        $this->bindProvider('domain-names', 'opensrs', OpenSRS::class);
+        $this->bindProvider('domain-names', 'connect-reseller', ConnectReseller::class);
+        $this->bindProvider('domain-names', 'logic-boxes', LogicBoxes::class);
+        $this->bindProvider('domain-names', 'resellerclub', ResellerClub::class);
+        $this->bindProvider('domain-names', 'netearthone', NetEarthOne::class);
+        $this->bindProvider('domain-names', 'namesilo', NameSilo::class);
+        $this->bindProvider('domain-names', 'openprovider', OpenProvider::class);
+        $this->bindProvider('domain-names', 'resell-biz', ResellBiz::class);
+        $this->bindProvider('domain-names', 'cocca', CoccaEpp::class);
+        $this->bindProvider('domain-names', 'nira', Nira::class);
+        $this->bindProvider('domain-names', 'ricta', Ricta::class);
+        $this->bindProvider('domain-names', 'ug-registry', UGRegistry::class);
+        $this->bindProvider('domain-names', 'domain-name-api', DomainNameApi::class);
+    }
+}

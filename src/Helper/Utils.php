@@ -1,0 +1,274 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Upmind\ProvisionProviders\DomainNames\Helper;
+
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Throwable;
+use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+
+class Utils
+{
+    /**
+     * Formats a date
+     *
+     * @param string|null $date
+     * @param string|null $format
+     * @return string|null Formatted date, or null
+     */
+    public static function formatDate(?string $date, ?string $format = null): ?string
+    {
+        if (empty($date)) {
+            return null;
+        }
+
+        $dateObject = Carbon::parse($date);
+
+        if (!is_null($format)) {
+            return $dateObject->format($format);
+        }
+
+        return $dateObject->toDateTimeString();
+    }
+
+    /**
+     * Returns SLD and TLD from a domain, represented as a string.
+     *
+     * @param string $domain
+     * @return array
+     */
+    public static function getSldTld(string $domain): array
+    {
+        $parts = explode('.', $domain, 2);
+
+        return [
+            'sld' => array_shift($parts),
+            'tld' => implode('.', $parts),
+        ];
+    }
+
+    /**
+     * Get the tld of the given domain name.
+     */
+    public static function getTld(string $domain): string
+    {
+        return explode('.', $domain, 2)[1];
+    }
+
+    /**
+     * Get a fully formed domain name from its constituent raw second- and top-level parts.
+     *
+     * @param string $sld Second-level domain e.g., upmind
+     * @param string $tld Top-level domain e.g., .com
+     *
+     * @return string Domain name e.g., upmind.com
+     */
+    public static function getDomain(string $sld, string $tld): string
+    {
+        return implode('.', [self::normalizeSld($sld), self::normalizeTld($tld)]);
+    }
+
+    /**
+     * Normalize a second-level domain by stripping extra periods (.).
+     */
+    public static function normalizeSld(string $sld): string
+    {
+        return trim(strtolower($sld), '.');
+    }
+
+    /**
+     * Normalize a top-level domain by trimming periods (.) and shifting
+     * to lowercase.
+     */
+    public static function normalizeTld(string $tld): string
+    {
+        return trim(strtolower($tld), '.');
+    }
+
+    /**
+     * Returns the normalized root top-level domain for the given tld, for example
+     * given ".co.uk" returns "uk".
+     */
+    public static function getRootTld(string $tld): string
+    {
+        $parts = explode('.', self::normalizeTld($tld));
+
+        return array_pop($parts);
+    }
+
+    /**
+     * Use system DNS resolver to look up a domain's NS records.
+     *
+     * @param string $domain
+     * @param bool $orFail When lookup fails: if true throw an error, otherwise return null
+     *
+     * @return string[]|null Array of nameserver hostnames
+     *
+     * @throws ProvisionFunctionError
+     */
+    public static function lookupNameservers(string $domain, bool $orFail = true): ?array
+    {
+        try {
+            return array_column(dns_get_record($domain, DNS_NS), 'target');
+        } catch (Throwable $e) {
+            if ($orFail) {
+                throw new ProvisionFunctionError(sprintf('Nameserver lookup for %s failed', $domain), 0, $e);
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Determine whether the registry of the given TLD supports explicit renewal.
+     */
+    public static function tldSupportsExplicitRenewal(string $tld): bool
+    {
+        $unsupported = [
+            'abogado',
+            'at',
+            'be',
+            'ch',
+            'de',
+            'fr',
+            'gs',
+            'it',
+            'jobs',
+            'li',
+            'ltd',
+            'nl',
+            'pl',
+            'pw',
+            'tk',
+        ];
+
+        return !in_array(static::getRootTld($tld), $unsupported);
+    }
+
+    /**
+     * Determine whether the registry of the given TLD supports WHOIS privacy.
+     */
+    public static function tldSupportsWhoisPrivacy(string $tld): bool
+    {
+        $unsupported = [
+            'mx',
+            'es',
+        ];
+
+        return !in_array(static::getRootTld($tld), $unsupported);
+    }
+
+    /**
+     * Convert a phone from "international format" (beginning with `+` and intl
+     * dialling code) to "EPP format" described in RFC5733. To validate a phone
+     * number is in valid international format, you can use the provided
+     * `international_phone` rule.
+     *
+     * @link https://tools.ietf.org/html/rfc5733#section-2.5
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid international phone number
+     *
+     * @param string $number Phone number in "international format" E.g., +447515878251
+     *
+     * @return string Phone number in "EPP format" E.g., +44.7515878251
+     */
+    public static function internationalPhoneToEpp(?string $number): ?string
+    {
+        if (empty($number)) {
+            return null;
+        }
+
+        $phone = phone($number);
+        $diallingCode = $phone->getPhoneNumberInstance()->getCountryCode();
+
+        $prefix = sprintf('+%d', $diallingCode);
+        $suffix = Str::replaceFirst($prefix, '', (string)$phone);
+
+        return sprintf('%s.%s', $prefix, $suffix);
+    }
+
+    /**
+     * Convert a phone number from "EPP format" described in RFC5733 to "international
+     * format".
+     *
+     * @link https://tools.ietf.org/html/rfc5733#section-2.5
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid EPP format phone number
+     *
+     * @param string $eppNumber Phone number in "EPP format" E.g., +44.7515878251
+     *
+     * @return string $number Phone number in "international format" E.g., +447515878251
+     */
+    public static function eppPhoneToInternational(string $eppNumber): string
+    {
+        return (string)phone($eppNumber);
+    }
+
+    /**
+     * Normalize a phont number from local to international format.
+     *
+     * @param string $number Local format phone number
+     * @param string|null $countryCode Country code, if known
+     *
+     * @return string International format phone number, if possible
+     */
+    public static function localPhoneToInternational(string $number, ?string $countryCode, bool $orFail = true): string
+    {
+        if (Str::startsWith($number, '+')) {
+            // our work here is done
+            return $number;
+        }
+
+        try {
+            return (string)phone($number, $countryCode ?: []);
+        } catch (Throwable $e) {
+            if ($orFail) {
+                throw $e;
+            }
+
+            // just return the input number
+            return $number;
+        }
+    }
+
+    public static function codeToCountry(?string $countryCode): ?string
+    {
+        return Countries::codeToName($countryCode);
+    }
+    /**
+     * @param string|null $country
+     * @return string|null
+     */
+    public static function countryToCode(?string $country): ?string
+    {
+        return Countries::nameToCode($country);
+    }
+
+    /**
+     * Normalizes a given iso alpha-2 country code.
+     */
+    public static function normalizeCountryCode(?string $countryCode): ?string
+    {
+        return Countries::normalizeCode($countryCode);
+    }
+
+    public static function stateNameToCode(?string $countryCode, ?string $stateName): ?string
+    {
+        if (!$countryCode || !$stateName) {
+            return $stateName;
+        }
+
+        return Countries::stateNameToCode($countryCode, $stateName) ?? $stateName;
+    }
+
+    public static function stateCodeToName(?string $countryCode, ?string $stateCode): ?string
+    {
+        if (!$countryCode || !$stateCode) {
+            return $stateCode;
+        }
+
+        return Countries::stateCodeToName($countryCode, $stateCode) ?? $stateCode;
+    }
+}
