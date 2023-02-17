@@ -44,6 +44,7 @@ class Provider extends CoccaEppProvider
     {
         return AboutData::create()
             ->setName('RICTA')
-            ->setDescription('Register, transfer, renew and manage RICTA .rw domains');
+            ->setDescription('Register, transfer, renew and manage RICTA .rw domains')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/ricta-logo.png');
     }
 }

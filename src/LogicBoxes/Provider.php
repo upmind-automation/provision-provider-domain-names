@@ -70,7 +70,8 @@ class Provider extends DomainNames implements ProviderInterface
             ->setName('LogicBoxes')
             ->setDescription(
                 'LogicBoxes offers 800+ gTLDs, ccTLDs and new domains at a highly competitive price point'
-            );
+            )
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/logicboxes-logo.png');
     }
 
     public function domainAvailabilityCheck(DacParams $params): DacResult

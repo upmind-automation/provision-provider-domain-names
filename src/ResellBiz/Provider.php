@@ -16,6 +16,7 @@ class Provider extends LogicBoxesProvider
             ->setDescription(
                 'Resell.biz provides low-cost domain registration, '
                     . 'domain management, and hosting services for thousands of resellers worldwide'
-            );
+            )
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/resell-biz-logo.jpeg');
     }
 }

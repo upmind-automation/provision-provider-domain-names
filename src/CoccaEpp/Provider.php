@@ -69,7 +69,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('CoCCA EPP')
-            ->setDescription('Register, transfer, renew and manage CoCCA registry domains such as .ng and .co.ke');
+            ->setDescription('Register, transfer, renew and manage CoCCA registry domains such as .ng and .co.ke')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/cocca-logo.jpeg');
     }
 
     protected function makeClient(): Client

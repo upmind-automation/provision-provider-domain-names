@@ -75,7 +75,8 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
     {
         return AboutData::create()
             ->setName('UG Registry')
-            ->setDescription('Register, transfer, renew and manage .ug domains with the Ugandan domain registry');
+            ->setDescription('Register, transfer, renew and manage .ug domains with the Ugandan domain registry')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/ugregistry-logo.webp');
     }
 
     public function poll(PollParams $params): PollResult

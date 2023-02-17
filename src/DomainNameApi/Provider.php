@@ -95,7 +95,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('Domain Name Api')
-            ->setDescription('Register, transfer, renew and manage domains, with over 700+ TLDs available');
+            ->setDescription('Register, transfer, renew and manage domains, with over 700+ TLDs available')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/domainnameapi-logo.png');
     }
 
     public function domainAvailabilityCheck(DacParams $params): DacResult

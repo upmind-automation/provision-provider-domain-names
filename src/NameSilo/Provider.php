@@ -77,7 +77,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('NameSilo')
-            ->setDescription('Register, transfer, renew and manage domains with NameSilo');
+            ->setDescription('Register, transfer, renew and manage domains with NameSilo')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/namesilo-logo.png');
     }
 
     public function domainAvailabilityCheck(DacParams $params): DacResult

@@ -44,6 +44,7 @@ class Provider extends CoccaEppProvider
     {
         return AboutData::create()
             ->setName('NIRA')
-            ->setDescription('Register, transfer, renew and manage NIRA domains');
+            ->setDescription('Register, transfer, renew and manage NIRA domains')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/nira-logo.webp');
     }
 }
