@@ -2,6 +2,7 @@
     "name": "upmind/provision-provider-domain-names",
     "description": "This provision category contains common functions used in domain name provisioning flows with various registries and registrar/reseller platforms.",
     "type": "library",
+    "license": "GPL-3.0-only",
     "authors": [
         {
             "name": "Nayden Panchev",
