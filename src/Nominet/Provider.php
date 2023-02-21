@@ -812,10 +812,10 @@ class Provider extends DomainNames implements ProviderInterface
                     $errorMessage = 'Authentication error; check credentials and whitelisted IPs';
                     break;
                 default:
-                    $errorMessage = 'Unexpected provider connection error';
+                    $errorMessage = 'Connection error; check whitelisted IPs';
             }
 
-            throw $this->errorResult(sprintf('%s %s', $e->getCode(), $errorMessage), [], [], $e);
+            throw $this->errorResult(trim(sprintf('%s %s', $e->getCode() ?: null, $errorMessage)), [], [], $e);
         } catch (ErrorException $e) {
             if (Str::containsAll($e->getMessage(), ['stream_socket_client()', 'SSL'])) {
                 // this usually means they've not whitelisted our IPs
