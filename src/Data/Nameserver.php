@@ -22,4 +22,26 @@ class Nameserver extends DataSet
             'ip' => ['nullable', 'ip'],
         ]);
     }
+
+    /**
+     * @param string $host
+     *
+     * @return static $this
+     */
+    public function setHost(string $host)
+    {
+        $this->setValue('host', $host);
+        return $this;
+    }
+
+    /**
+     * @param string|null $ip
+     *
+     * @return static $this
+     */
+    public function setIp(?string $ip)
+    {
+        $this->setValue('ip', $ip);
+        return $this;
+    }
 }

@@ -28,4 +28,59 @@ class NameserversParams extends DataSet
             'ns5' => [Nameserver::class],
         ]);
     }
+
+    /**
+     * @param Nameserver|array|null $ns1
+     *
+     * @return static $this
+     */
+    public function setNs1($ns1)
+    {
+        $this->setValue('ns1', $ns1);
+        return $this;
+    }
+
+    /**
+     * @param Nameserver|array|null $ns2
+     *
+     * @return static $this
+     */
+    public function setNs2($ns2)
+    {
+        $this->setValue('ns2', $ns2);
+        return $this;
+    }
+
+    /**
+     * @param Nameserver|array|null $ns3
+     *
+     * @return static $this
+     */
+    public function setNs3($ns3)
+    {
+        $this->setValue('ns3', $ns3);
+        return $this;
+    }
+
+    /**
+     * @param Nameserver|array|null $ns4
+     *
+     * @return static $this
+     */
+    public function setNs4($ns4)
+    {
+        $this->setValue('ns4', $ns4);
+        return $this;
+    }
+
+    /**
+     * @param Nameserver|array|null $ns5
+     *
+     * @return static $this
+     */
+    public function setNs5($ns5)
+    {
+        $this->setValue('ns5', $ns5);
+        return $this;
+    }
 }
