@@ -6,6 +6,7 @@ namespace Upmind\ProvisionProviders\DomainNames;
 
 use Upmind\ProvisionBase\Laravel\ProvisionServiceProvider;
 use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
+use Upmind\ProvisionProviders\DomainNames\Example\Provider as ExampleProvider;
 use Upmind\ProvisionProviders\DomainNames\Nominet\Provider as Nominet;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\Provider as Hexonet;
 use Upmind\ProvisionProviders\DomainNames\Enom\Provider as Enom;
@@ -28,6 +29,8 @@ class LaravelServiceProvider extends ProvisionServiceProvider
     public function boot()
     {
         $this->bindCategory('domain-names', DomainNames::class);
+
+        // $this->bindProvider('domain-names', 'example', ExampleProvider::class);
 
         $this->bindProvider('domain-names', 'nominet', Nominet::class);
         $this->bindProvider('domain-names', 'hexonet', Hexonet::class);
