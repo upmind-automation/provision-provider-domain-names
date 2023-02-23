@@ -48,24 +48,122 @@ class DomainResult extends ResultData
     }
 
     /**
-     * Set the expires_at value.
-     *
      * @return static $this
      */
-    public function setExpiresAt(DateTimeInterface $expiresAt)
+    public function setId($id)
     {
-        $this->setValue('expires_at', $expiresAt->format('Y-m-d H:i:s'));
+        $this->setValue('id', $id);
         return $this;
     }
 
     /**
-     * Set the domain lock status.
+     * @return static $this
+     */
+    public function setDomain(string $domain)
+    {
+        $this->setValue('domain', $domain);
+        return $this;
+    }
+
+    /**
+     * @param string[] $statuses
      *
+     * @return static $this
+     */
+    public function setStatuses(array $statuses)
+    {
+        $this->setValue('statuses', $statuses);
+        return $this;
+    }
+
+    /**
      * @return static $this
      */
     public function setLocked(?bool $locked)
     {
         $this->setValue('locked', $locked);
+        return $this;
+    }
+
+    /**
+     * @param array|ContactData|null $registrant
+     *
+     * @return static $this
+     */
+    public function setRegistrant($registrant)
+    {
+        $this->setValue('registrant', $registrant);
+        return $this;
+    }
+
+    /**
+     * @param array|ContactData|null $billing
+     *
+     * @return static $this
+     */
+    public function setBilling($billing)
+    {
+        $this->setValue('billing', $billing);
+        return $this;
+    }
+
+    /**
+     * @param array|ContactData|null $tech
+     *
+     * @return static $this
+     */
+    public function setTech($tech)
+    {
+        $this->setValue('tech', $tech);
+        return $this;
+    }
+
+    /**
+     * @param array|ContactData|null $admin
+     *
+     * @return static $this
+     */
+    public function setAdmin($admin)
+    {
+        $this->setValue('admin', $admin);
+        return $this;
+    }
+
+    /**
+     * @param array|NameserversParams $ns
+     *
+     * @return static $this
+     */
+    public function setNs($ns)
+    {
+        $this->setValue('ns', $ns);
+        return $this;
+    }
+
+    /**
+     * @return static $this
+     */
+    public function setCreatedAt(?DateTimeInterface $createdAt)
+    {
+        $this->setValue('created_at', $createdAt ? $createdAt->format('Y-m-d H:i:s') : null);
+        return $this;
+    }
+
+    /**
+     * @return static $this
+     */
+    public function setUpdatedAt(?DateTimeInterface $updatedAt)
+    {
+        $this->setValue('updated_at', $updatedAt ? $updatedAt->format('Y-m-d H:i:s') : null);
+        return $this;
+    }
+
+    /**
+     * @return static $this
+     */
+    public function setExpiresAt(?DateTimeInterface $expiresAt)
+    {
+        $this->setValue('expires_at', $expiresAt ? $expiresAt->format('Y-m-d H:i:s') : null);
         return $this;
     }
 }
