@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Example;
 
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -24,10 +25,13 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
+use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
 use Upmind\ProvisionProviders\DomainNames\Example\Data\Configuration;
+use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 
 /**
  * Example provider.
@@ -97,7 +101,32 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $domain = Utils::getDomain($params->sld, $params->tld);
+
+        // $domainInfo = $this->client()->get(sprintf('domains/%s', $domain));
+
+        // Example data:
+        return DomainResult::create()
+            ->setDomain($domain)
+            ->setStatuses(['Expired'])
+            ->setLocked(false)
+            ->setNs([
+                'ns1' => Nameserver::create()->setHost('ns1.foo.com'),
+                'ns2' => Nameserver::create()->setHost('ns2.foo.com')
+            ])
+            ->setRegistrant(
+                ContactData::create()
+                    ->setName('John Doe')
+                    ->setEmail('john@doe.com')
+                    ->setPhone(Utils::eppPhoneToInternational('+1.2125551212'))
+                    ->setAddress1('123 Main St')
+                    ->setCity('New York')
+                    ->setState('NY')
+                    ->setPostcode('10001')
+                    ->setCountryCode('US')
+            )
+            ->setCreatedAt(Carbon::now()->subDays(365))
+            ->setExpiresAt(Carbon::now()->addDays(100));
     }
 
     /**
@@ -154,7 +183,11 @@ class Provider extends DomainNames implements ProviderInterface
     protected function client(): Client
     {
         return $this->client ??= new Client([
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug))
+            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'base_uri' => 'https://api.example.com/v1/',
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->configuration->api_token,
+            ],
         ]);
     }
 }
