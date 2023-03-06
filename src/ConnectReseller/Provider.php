@@ -580,7 +580,7 @@ class Provider extends DomainNames implements ProviderInterface
             'EmailAddress' => $this->_normalizeEmail($contact->email),
             'Password' => $this->_generateRandomPassword(),
             'Name' => $contact->name ?? $contact->organisation,
-            'CompanyName' => $contact->organisation,
+            'CompanyName' => $contact->organisation ?? $contact->name,
             'Address' => $contact->address1,
             'City' => $contact->city,
             'StateName' => $contact->state ?? $contact->city,
