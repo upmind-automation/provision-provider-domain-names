@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames;
 use Upmind\ProvisionBase\Laravel\ProvisionServiceProvider;
 use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
 use Upmind\ProvisionProviders\DomainNames\Example\Provider as ExampleProvider;
+use Upmind\ProvisionProviders\DomainNames\Namecheap\Provider as Namecheap;
 use Upmind\ProvisionProviders\DomainNames\Nominet\Provider as Nominet;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\Provider as Hexonet;
 use Upmind\ProvisionProviders\DomainNames\Enom\Provider as Enom;
@@ -48,5 +49,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'ricta', Ricta::class);
         $this->bindProvider('domain-names', 'ug-registry', UGRegistry::class);
         $this->bindProvider('domain-names', 'domain-name-api', DomainNameApi::class);
+        $this->bindProvider('domain-names', 'namecheap', Namecheap::class);
     }
 }
