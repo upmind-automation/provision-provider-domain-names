@@ -21,7 +21,7 @@ class RenewParams extends DataSet
         return new Rules([
             'sld' => ['required', 'alpha-dash'],
             'tld' => ['required', 'alpha-dash-dot'],
-            'renew_years' => ['required', 'integer', 'max:10'],
+            'renew_years' => ['required', 'integer', 'min:1', 'max:10'],
         ]);
     }
 }
