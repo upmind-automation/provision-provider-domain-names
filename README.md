@@ -50,6 +50,7 @@ The following providers are currently implemented:
   - [NIRA](https://nira.ng/become-a-registrar)
   - [Ricta](https://www.ricta.org.rw/become-a-registrar/)
   - [UGRegistry](https://registry.co.ug/docs/v2/)
+  - [Namecheap](https://www.namecheap.com/support/api/methods/)
 
 ## Functions
 
