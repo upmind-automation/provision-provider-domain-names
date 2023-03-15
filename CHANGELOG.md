@@ -2,6 +2,12 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.1.0 2023-03-15
+
+- Add Example provider as a basic template for creating new providers
+- Add more builder methods to result data classes
+- Add stateless Demo provider which returns fake data
+
 ## v2.0.2 - 2023-03-06
 
 - Update ConnectReseller _createContact() always pass a CompanyName in
