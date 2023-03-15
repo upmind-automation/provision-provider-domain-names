@@ -20,4 +20,13 @@ class EppCodeResult extends ResultData
             'epp_code' => ['required', 'string'],
         ]);
     }
+
+    /**
+     * @return static $this
+     */
+    public function setEppCode(string $eppCode): self
+    {
+        $this->setValue('epp_code', $eppCode);
+        return $this;
+    }
 }

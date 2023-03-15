@@ -30,7 +30,8 @@
         "guzzlehttp/guzzle": "^6.3|^7.0",
         "pragmarx/countries": "^0.8.2",
         "africc/php-epp2": "^1.0",
-        "upmind/domainnameapi-sdk": "^1.0"
+        "upmind/domainnameapi-sdk": "^1.0",
+        "fakerphp/faker": "^1.0"
     },
     "extra": {
         "laravel": {
