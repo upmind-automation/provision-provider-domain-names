@@ -220,7 +220,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         if ($custom != 0 && $default != 0) {
             throw $this->errorResult(
-                "It's not possible to mix Namecheap's default nameservers with other ones",
+                "It's not possible to mix provider default nameservers with other ones",
                 $params
             );
         }
@@ -242,10 +242,6 @@ class Provider extends DomainNames implements ProviderInterface
         $sld = Utils::normalizeSld($params->sld);
         $tld = Utils::normalizeTld($params->tld);
 
-        if (!in_array($tld, NamecheapApi::TRANSFER_TLD)) {
-            throw $this->errorResult(sprintf("Transfer is not available for TLD %s", $tld), $params);
-        }
-
         $domainName = Utils::getDomain($sld, $tld);
 
         $eppCode = $params->epp_code ?: '0000';
@@ -262,15 +258,7 @@ class Provider extends DomainNames implements ProviderInterface
             if (is_null($prevOrder)) {
                 $transferId = $this->api()->initiateTransfer($domainName, $eppCode);
 
-                return DomainResult::create([
-                    'id'         => $transferId,
-                    'domain'     => $domainName,
-                    'ns'         => [],
-                    'statuses'   => [],
-                    'created_at' => null,
-                    'updated_at' => null,
-                    'expires_at' => null,
-                ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
+                throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
             } else {
                 throw $this->errorResult(
                     sprintf('Transfer order(s) for %s already exists!', $domainName),
@@ -394,11 +382,11 @@ class Provider extends DomainNames implements ProviderInterface
 
             $currentLockStatus = $this->api()->getRegistrarLockStatus($domainName);
             if (!$lock && !$currentLockStatus) {
-                throw $this->errorResult(sprintf('Domain %s already unlocked', $domainName), $params);
+                return $this->_getInfo($domainName, sprintf('Domain %s already unlocked', $domainName));
             }
 
             if ($lock && $currentLockStatus) {
-                throw $this->errorResult(sprintf('Domain %s already locked', $domainName), $params);
+                return $this->_getInfo($domainName, sprintf('Domain %s already locked', $domainName));
             }
 
             $this->api()->setRegistrarLock($domainName, $lock);

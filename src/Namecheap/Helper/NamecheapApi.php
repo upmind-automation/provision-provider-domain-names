@@ -34,14 +34,6 @@ class NamecheapApi
         'io',
     ];
 
-    public const TRANSFER_TLD = [
-        "biz", "ca", "cc", "co",
-        "co.uk", "com", "com.es", "com.pe",
-        "es", "in", "info", "me",
-        "me.uk", "mobi", "net", "net.pe",
-        "nom.es", "org", "org.es", "org.pe",
-        "org.uk", "pe", "tv", "us",
-    ];
 
     /**
      * Contact Types
@@ -82,12 +74,6 @@ class NamecheapApi
 
             $available = (string) $domain->attributes()->Available === "true";
 
-            $canTransfer = false;
-
-            if (!$available) {
-                $canTransfer = !$this->getRegistrarLockStatus($domainName);
-            }
-
             $dacDomains[] = DacDomain::create([
                 'domain'       => $domainName,
                 'description'  => sprintf(
@@ -96,7 +82,7 @@ class NamecheapApi
                 ),
                 'tld'          => Utils::getTld($domainName),
                 'can_register' => $available,
-                'can_transfer' => $canTransfer,
+                'can_transfer' => !$available,
                 'is_premium'   => $domain->attributes()->IsPremiumName === "true",
             ]);
         }
@@ -202,11 +188,11 @@ class NamecheapApi
 
     /**
      * @param  string  $domainName
-     * @param  ContactParams  $contactParams
+     * @param  ContactData  $contactParams
      *
      * @return array
      */
-    public function updateRegistrantContact(string $domainName, ContactParams $contactParams): array
+    public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
     {
         $currentContacts = $this->getContacts($domainName);
 
@@ -224,23 +210,9 @@ class NamecheapApi
 
         $this->makeRequest($params);
 
-        $result = [
-            'organisation' => $contactParams->organisation ?: '-',
-            'name'         => $contactParams->name,
-            'address1'     => $contactParams->address1,
-            'city'         => $contactParams->city,
-            'state'        => $contactParams->state ?: '-',
-            'postcode'     => $contactParams->postcode,
-            'country_code' => Utils::normalizeCountryCode($contactParams->country_code),
-            'email'        => $contactParams->email,
-            'phone'        => $contactParams->phone,
-        ];
+        $registrant = $this->getContacts($domainName)->Registrant;
 
-        if (isset($contactParams->organisation)) {
-            $result['organisation'] = $contactParams->organisation;
-        }
-
-        return $result;
+        return $this->parseContact($registrant, self::CONTACT_TYPE_REGISTRANT);
     }
 
     /**
@@ -273,8 +245,6 @@ class NamecheapApi
     }
 
     /**
-     * Send request and return the response.
-     *
      * @param  string  $domainName
      * @param  bool  $lock
      *
@@ -408,7 +378,7 @@ class NamecheapApi
         $response->getBody()->close();
 
         if (empty($result)) {
-            throw new RuntimeException('Empty Namecheap api response');
+            throw new RuntimeException('Empty provider api response');
         }
 
         return $this->parseResponseData($result);
@@ -504,9 +474,9 @@ class NamecheapApi
             'city'         => (string) $contact->City,
             'state'        => (string) $contact->StateProvince ?: '-',
             'postcode'     => (string) $contact->PostalCode,
-            'country_code' => (string) $contact->Country,
+            'country_code' => Utils::normalizeCountryCode((string) $contact->Country),
             'email'        => (string) $contact->EmailAddress,
-            'phone'        => (string) $contact->Phone,
+            'phone'        => Utils::internationalPhoneToEpp((string) $contact->Phone),
         ]);
     }
 
@@ -572,7 +542,7 @@ class NamecheapApi
             $type.'PostalCode'       => (string) $contact->PostalCode,
             $type.'Country'          => Utils::normalizeCountryCode((string) $contact->Country),
             $type.'EmailAddress'     => (string) $contact->EmailAddress,
-            $type.'Phone'            => (string) $contact->Phone,
+            $type.'Phone'            => Utils::internationalPhoneToEpp((string) $contact->Phone),
         ];
     }
 
@@ -589,14 +559,14 @@ class NamecheapApi
         return [
             $type.'OrganizationName' => $contactParams->organisation ?: '-',
             $type.'FirstName'        => $nameParts['firstName'],
-            $type.'LastName'         => $nameParts['lastName'],
+            $type.'LastName'         => $nameParts['lastName']?: $nameParts['firstName'],
             $type.'Address1'         => $contactParams->address1,
             $type.'City'             => $contactParams->city,
             $type.'StateProvince'    => $contactParams->state ?: '-',
             $type.'PostalCode'       => $contactParams->postcode,
             $type.'Country'          => Utils::normalizeCountryCode($contactParams->country_code),
             $type.'EmailAddress'     => $contactParams->email,
-            $type.'Phone'            => $contactParams->phone,
+            $type.'Phone'            => Utils::internationalPhoneToEpp($contactParams->phone),
         ];
     }
 }
