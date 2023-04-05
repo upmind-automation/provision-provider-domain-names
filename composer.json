@@ -23,7 +23,7 @@
         }
     },
     "require": {
-        "upmind/provision-provider-base": "^3.0",
+        "upmind/provision-provider-base": "^3.7",
         "metaregistrar/php-epp-client": "^1.0",
         "hexonet/php-sdk": "^5.0",
         "propaganistas/laravel-phone": "^4.2",
