@@ -9,9 +9,9 @@ Ensure you also read the guidelines on [CONTRIBUTING](CONTRIBUTING.md).
 
 Links/resources to familiarize yourself with before you begin.
 
-- [Upmind Provision Provider Base]()
+- [Upmind Provision Provider Base](https://github.com/upmind-automation/provision-provider-base#readme)
   - README explains the structure of Upmind provision providers; classes, responsibilities etc
-- [Upmind Provision Workbench]()
+- [Upmind Provision Workbench](https://github.com/upmind-automation/provision-workbench#readme)
   - A local development tool which provides a convenient UI for creating and managing provision configurations, running and inspecting provision functions etc
 
 ## Requirements
