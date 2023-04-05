@@ -1,0 +1,245 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Upmind\ProvisionProviders\DomainNames\Centralnic;
+
+use AfriCC\EPP\Client as EPPClient;
+use AfriCC\EPP\FrameInterface;
+use Exception;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
+use stdClass;
+use Throwable;
+use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+
+/**
+ * An extensin of the EPP Client which supports a PSR-3 compliant logger.
+ */
+class Client extends EPPClient
+{
+    /**
+     * @var bool
+     */
+    protected $loggedIn = false;
+
+    /**
+     * @var string
+     */
+    protected $username;
+
+    /**
+     * @var string
+     */
+    protected $password;
+
+    /**
+     * @var string
+     */
+    protected $host;
+
+    /**
+     * @var LoggerInterface|null
+     */
+    protected $logger;
+
+    public function __construct(
+        string $username,
+        string $password,
+        string $host,
+        ?int $port = null,
+        ?string $certPath = null,
+        ?LoggerInterface $logger = null,
+        array $additionalConfig = []
+    ) {
+        $this->username = $username;
+        $this->password = $password;
+        $this->host = $host;
+        $this->logger = $logger;
+
+        parent::__construct(array_merge([
+            'username' => $username,
+            'password' => $password,
+            'host' => $host,
+            'port' => $port ?? 700,
+            'ssl' => isset($certPath),
+            'local_cert' => $certPath,
+            'debug' => isset($logger),
+            'services' => [
+                'urn:ietf:params:xml:ns:domain-1.0'
+            ],
+            'serviceExtensions' => [
+            ],
+        ], $additionalConfig));
+    }
+
+    public function sendFrame(FrameInterface $frame)
+    {
+        try {
+            return parent::sendFrame($frame);
+        } catch (Exception $e) {
+            throw $this->error(
+                'Unexpected Registry Network Error',
+                $e,
+                ['frame' => get_class($frame)],
+                ['frame_content' => $frame->__toString()]
+            );
+        }
+    }
+
+    /**
+     * @param string $message
+     *
+     * @return void
+     */
+    protected function log($message, $color = '0;32')
+    {
+        if (isset($this->logger)) {
+            if (is_string($message)) {
+                // remove binary header
+                $header = mb_substr($message, 0, 4);
+                if (false === mb_detect_encoding($header, null, true)) {
+                    $message = mb_substr($message, 4, mb_strlen($message) - 4);
+                }
+
+                // and another try in-case the binary header appared to be valid utf8 or ascii or !== 4 bytes
+                if (is_string($message) && preg_match('/(.{0,16})<\\?xml version/', $message, $matches)) {
+                    $message = Str::replaceFirst($matches[1], '', $message);
+                }
+            }
+
+            if (!empty($message)) {
+                $this->logger->debug(
+                    sprintf(
+                        'Centralnic [%s]: %s',
+                        $color === '1;31' ? 'SEND' : 'RECV',
+                        $this->replaceSensitive($this->prettifyXml($message))
+                    ),
+                    [
+                        'host' => $this->host,
+                        'username' => $this->username,
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function generateClientTransactionId()
+    {
+        return mt_rand() . mt_rand();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function login($newPassword = false)
+    {
+        try {
+            parent::login();
+            $this->loggedIn = true;
+        } catch (Exception $e) {
+            throw $this->error(
+                sprintf(
+                    'Registry Auth Error: %s',
+                    trim(Str::replaceFirst('Authentication error;', '', $e->getMessage()))
+                ),
+                $e
+            );
+        }
+    }
+
+    public function connect()
+    {
+        try {
+            return parent::connect();
+        } catch (Exception $e) {
+            if (Str::contains($e->getMessage(), ['Timeout', 'timeout', 'timed out'])) {
+                throw $this->error(
+                    sprintf('Registry Connection Error: %s', $e->getMessage()),
+                    $e
+                );
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function close()
+    {
+        if ($this->loggedIn) {
+            $this->loggedIn = false;
+            return parent::close();
+        }
+
+        if (is_resource($this->socket)) {
+            return fclose($this->socket);
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws ProvisionFunctionError
+     *
+     * @return no-return
+     */
+    protected function error(string $message, Throwable $previous, array $data = [], array $debug = [])
+    {
+        throw (new ProvisionFunctionError($this->replaceSensitive($message), 0, $previous))
+            ->withData($this->replaceSensitive($data))
+            ->withDebug($this->replaceSensitive($debug));
+    }
+
+    protected function replaceSensitive($data)
+    {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
+        if ($data instanceof stdClass) {
+            $data = (array)$data;
+        }
+
+        if (is_array($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k] = $this->replaceSensitive($v);
+            }
+            return $data;
+        }
+
+        if (is_string($data)) {
+            $data = str_replace(
+                [$this->username, $this->password],
+                ['[USERNAME]', '[PASSWORD]'],
+                $data
+            );
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string|mixed $xml
+     *
+     * @return string|mixed
+     */
+    protected function prettifyXml($xml)
+    {
+        try {
+            $dom = new \DOMDocument('1.0');
+            $dom->formatOutput = true;
+            $dom->loadXml($xml);
+
+            return $dom->saveXML() ?: $xml;
+        } catch (Throwable $e) {
+            return $xml;
+        }
+    }
+}
