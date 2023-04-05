@@ -83,6 +83,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
  - [Nayden Panchev](https://github.com/airnayden)
  - [Ivaylo Georgiev](https://github.com/Georgiev-Ivaylo)
  - [Nikolai Arsov](https://github.com/nikiarsov777)
+ - [Codeline](https://codeline.fi/)
  - [All Contributors](../../contributors)
 
 ## License
