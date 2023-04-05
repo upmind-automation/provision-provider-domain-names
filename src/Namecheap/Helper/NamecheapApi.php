@@ -7,11 +7,12 @@ namespace Upmind\ProvisionProviders\DomainNames\Namecheap\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use RuntimeException;
 use SimpleXMLElement;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -35,7 +36,6 @@ class NamecheapApi
         'io',
     ];
 
-
     /**
      * Contact Types
      */
@@ -48,10 +48,13 @@ class NamecheapApi
 
     protected NamecheapConfiguration $configuration;
 
-    public function __construct(Client $client, NamecheapConfiguration $configuration)
+    protected SystemInfo $systemInfo;
+
+    public function __construct(Client $client, NamecheapConfiguration $configuration, SystemInfo $systemInfo)
     {
         $this->client = $client;
         $this->configuration = $configuration;
+        $this->systemInfo = $systemInfo;
     }
 
     /**
@@ -370,7 +373,7 @@ class NamecheapApi
             'ApiUser'  => $this->configuration->username,
             'ApiKey'   => $this->configuration->api_token,
             'UserName' => $this->configuration->username,
-            'ClientIp' => request()->server('SERVER_ADDR'),
+            'ClientIp' => Arr::first($this->systemInfo->outgoing_ips),
         ], $params);
 
         $response = $this->client->get('/xml.response', ['query' => $params]);

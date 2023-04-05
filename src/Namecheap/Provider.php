@@ -475,7 +475,7 @@ class Provider extends DomainNames implements ProviderInterface
             'handler'         => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
         ]);
 
-        return $this->api = new NamecheapApi($client, $this->configuration);
+        return $this->api = new NamecheapApi($client, $this->configuration, $this->getSystemInfo());
     }
 
     /**
