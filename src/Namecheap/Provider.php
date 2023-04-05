@@ -90,8 +90,7 @@ class Provider extends DomainNames implements ProviderInterface
         return AboutData::create()
             ->setName('Namecheap')
             ->setDescription('Registering, hosting, and managing Namecheap domains')
-            //TODO upload logo file
-            ->setLogoUrl('https://api.upmind.io/images/logos/provision/namecheap-logo.png');
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/namecheap-logo@2x.png');
     }
 
     /**
