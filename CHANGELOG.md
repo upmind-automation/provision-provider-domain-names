@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.2.0 2023-04-05
+
+- Require `upmind/provision-provider-base` ^3.7
+- Implement Namecheap provider
+
 ## v2.1.0 2023-03-15
 
 - Add Example provider as a basic template for creating new providers
