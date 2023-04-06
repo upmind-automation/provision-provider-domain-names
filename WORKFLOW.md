@@ -16,7 +16,7 @@ Links/resources to familiarize yourself with before you begin.
 
 ## Steps
 
-Follow the below steps to create a new provider using Namecheap as an example:
+Follow the below steps to create a new provider, using Namecheap as an example:
 
 1. Install the [Upmind Provision Workbench](https://github.com/upmind-automation/provision-workbench#readme)
 2. Fork [this repository](https://github.com/upmind-automation/provision-provider-domain-names)
