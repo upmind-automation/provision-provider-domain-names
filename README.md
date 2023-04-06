@@ -31,7 +31,7 @@ The easiest way to see this provision category in action and to develop/test cha
 
 Alternatively you can start using it for your business immediately with [Upmind.com](https://upmind.com/start) - the ultimate web hosting billing and management solution.
 
-For developing new providers, please refer to the [WORKFLOW](WORKFLOW.md) guide.
+**If you wish to develop a new Provider, please refer to the [WORKFLOW](WORKFLOW.md) guide.**
 
 ## Supported Providers
 
