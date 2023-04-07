@@ -155,6 +155,7 @@ class Utils
         $unsupported = [
             'mx',
             'es',
+            'pt',
         ];
 
         return !in_array(static::getRootTld($tld), $unsupported);
