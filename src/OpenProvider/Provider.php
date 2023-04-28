@@ -445,9 +445,9 @@ class Provider extends DomainNames implements ProviderInterface
             'admin' => $this->_parseContactInfo($domainData['admin_handle'], 'customers'),
             'tech' => $this->_parseContactInfo($domainData['tech_handle'], 'customers'),
             'ns' => $ns,
-            'created_at' => $domainData['creation_date'],
-            'updated_at' => $domainData['last_changed'],
-            'expires_at' => $domainData['expiration_date'],
+            'created_at' => $domainData['creation_date'] ?? null,
+            'updated_at' => $domainData['last_changed'] ?? null,
+            'expires_at' => $domainData['expiration_date'] ?? null,
         ])->setMessage($msg);
 
         /**
