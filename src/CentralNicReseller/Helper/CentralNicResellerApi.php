@@ -295,7 +295,7 @@ class CentralNicResellerApi
 
                 $result['ns' . ($i + 1)] = [
                     'host' => strtolower($ns->getHostName()),
-                    'ip' => array_keys($ips)[0]
+                    'ip' => count($ips) ? $ips[0] : ''
                 ];
             }
         }
@@ -307,11 +307,17 @@ class CentralNicResellerApi
     {
         $host = new eppHost($hostName);
         $info = new eppInfoHostRequest($host);
-
         /** @var eppInfoHostResponse */
-        $response = $this->connection->request($info);
+        try {
+            $response = $this->connection->request($info);
+            return array_keys($response->getHostAddresses());
+        } catch (eppException $e) {
+            if ($e->getCode() == 2303) {
+                return [];
+            }
 
-        return $response->getHostAddresses();
+            throw $e;
+        }
     }
 
     public function setRegistrarLock(string $domainName, array $addStatuses, array $removeStatuses): void
@@ -508,7 +514,7 @@ class CentralNicResellerApi
         $uncreatedHosts = $this->checkUncreatedHosts($nameservers);
 
         foreach ($nameservers as $nameserver) {
-            if (!empty($uncreatedHosts) && in_array($nameserver['host'], $uncreatedHosts)) {
+            if (!empty($uncreatedHosts) && in_array(strtolower($nameserver['host']), $uncreatedHosts)) {
                 $this->createHost($nameserver['host'], $nameserver['ip'] ?? null);
             }
 
