@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.2.2 2023-04-28
+
+- Fix OpenProvider _getDomain() undefined index errors
+
 ## v2.2.1 2023-04-07
 
 - Add .pt to list of TLDs which don't support WHOIS privacy
