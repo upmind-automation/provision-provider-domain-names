@@ -80,7 +80,7 @@ class CentralNicApi
         return $this->lockedStatuses;
     }
 
-    public function poll(int $limit, ?object $since): array
+    public function poll(int $limit, ?Carbon $since): array
     {
         $notifications = [];
         $countRemaining = 0;
@@ -424,7 +424,7 @@ class CentralNicApi
         return $response->getDomainNameservers();
     }
 
-    private function createHost(string $host, string $ip = null): void
+    private function createHost(string $host, ?string $ip): void
     {
         $create = new eppCreateHostRequest(new eppHost($host, $ip));
 
