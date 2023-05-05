@@ -8,8 +8,6 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use AfriCC\EPP\Frame\Response;
-use AfriCC\EPP\Frame\Response\MessageQueue;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppContactHandle;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
@@ -389,20 +387,6 @@ class Provider extends DomainNames implements ProviderInterface
     public function getEppCode(EppParams $params): EppCodeResult
     {
         throw $this->errorResult('Not implemented');
-
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld)
-        );
-
-        try {
-            $eppCode = $this->api()->getDomainEppCode($domainName);
-            return EppCodeResult::create([
-                'epp_code' => $eppCode ?? "-",
-            ])->setMessage('EPP/Auth code obtained');
-        } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
-        }
     }
 
     public function updateIpsTag(IpsTagParams $params): ResultData

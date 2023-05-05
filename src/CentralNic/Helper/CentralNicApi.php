@@ -401,18 +401,6 @@ class CentralNicApi
         return $response->getDomainStatuses();
     }
 
-    public function getDomainEppCode(string $domainName): ?string
-    {
-        $domain = new eppDomain($domainName);
-
-        $info = new eppInfoDomainRequest($domain);
-
-        /** @var eppInfoDomainResponse $response */
-        $response = $this->connection->request($info);
-
-        return $response->getDomainAuthInfo();
-    }
-
     public function getHosts(string $domainName): ?array
     {
         $domain = new eppDomain($domainName);
