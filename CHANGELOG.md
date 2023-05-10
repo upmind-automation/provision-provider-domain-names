@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.2.3 2023-05-10
+
+- Normalize OpenProvider .es state name during contact create/update
+
 ## v2.2.2 2023-04-28
 
 - Fix OpenProvider _getDomain() undefined index errors
