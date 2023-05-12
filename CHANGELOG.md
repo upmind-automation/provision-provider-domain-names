@@ -2,6 +2,13 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.0 2023-05-11
+
+- Add nullable registrant, billing and tech contacts to TransferParams
+- Make admin contact nullable in TransferParams
+- Update ConnectReseller, Hexonet, LogicBoxes, NameSilo, OpenProvider and OpenSRS
+  to use registrant contact data for transfers where available
+
 ## v2.2.3 2023-05-10
 
 - Normalize OpenProvider .es state name during contact create/update
