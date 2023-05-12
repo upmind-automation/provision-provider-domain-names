@@ -159,13 +159,18 @@ class Provider extends DomainNames implements ProviderInterface
             // we need to initiate a transfer order
         }
 
+        $contact = $params->registrant->register
+            ?? $params->admin->register
+            ?? $params->tech->register
+            ?? $params->billing->register
+            ?? null;
+
+        if (!$contact) {
+            throw $this->errorResult('Contact details are required to initiate transfer');
+        }
+
         $eppCode = $params->epp_code ?? '0000';
-        $customerId = $this->_getCustomerId(
-            $params->registrant->register
-                ?? $params->admin->register
-                ?? $params->tech->register
-                ?? $params->billing->register
-        );
+        $customerId = $this->_getCustomerId($contact);
 
         $transferResponse = $this->_initiateTransfer($customerId, $domainName, $eppCode);
 
