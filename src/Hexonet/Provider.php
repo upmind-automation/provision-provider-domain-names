@@ -653,12 +653,16 @@ class Provider extends DomainNames implements ProviderInterface
         // return HexonetHelper::updateRegistrant($api, Utils::getDomain($params->sld, $params->tld), $params->contact)
         //     ->setMessage('Registrant contact details updated');
 
-        return $this->updateCreateContact($params, eppContactHandle::CONTACT_TYPE_REGISTRANT)
+        $domain = Utils::getDomain($params->sld, $params->tld);
+
+        return $this->createContact($domain, eppContactHandle::CONTACT_TYPE_REGISTRANT, $params->contact)
             ->setMessage('Registrant contact details updated');
     }
 
     /**
      * A generic function to handle all contact create/update actions
+     *
+     * @deprecated Always create a new contact instead of updating existing handle
      *
      * @param UpdateDomainContactParams $params
      * @param string $contactType One of: reg, billing, admin, tech
