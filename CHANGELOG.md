@@ -2,7 +2,7 @@
 
 All notable changes to the package will be documented in this file.
 
-## v2.3.0 2023-05-11
+## v2.3.0 2023-05-12
 
 - Add nullable registrant, billing and tech contacts to TransferParams
 - Make admin contact nullable in TransferParams
