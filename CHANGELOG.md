@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.1 2023-05-12
+
+- Update Hexonet updateRegistrantContact() to always create a new contact object
+  instead of updating existing handle
+
 ## v2.3.0 2023-05-12
 
 - Add nullable registrant, billing and tech contacts to TransferParams
