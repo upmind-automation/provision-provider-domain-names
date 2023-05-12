@@ -131,9 +131,10 @@ class Provider extends DomainNames implements ProviderInterface
         return $result->setMessage('Demo domain transfer complete')
             ->setStatuses(['Active'])
             ->setLocked(false)
+            ->setRegistrant($params->registrant->register)
             ->setAdmin($params->admin->register)
-            ->setTech($params->admin->register)
-            ->setBilling($params->admin->register)
+            ->setTech($params->tech->register)
+            ->setBilling($params->billing->register)
             ->setUpdatedAt(Carbon::now())
             ->setExpiresAt($expires->addYears($params->renew_years));
     }

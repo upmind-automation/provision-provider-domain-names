@@ -205,7 +205,7 @@ class Provider extends DomainNames implements ProviderInterface
         $customerId = Arr::get($params, 'admin.id');
 
         if (!$customerId) {
-            $customerId = $this->_handleCustomer($tld, Arr::get($params, 'admin'), 'admin');
+            $customerId = $this->_handleCustomer($tld, Arr::get($params, 'registrant'), 'registrant');
         }
 
         $initiate = $this->initiateTransfer($customerId, $tld, $sld, $eppCode);

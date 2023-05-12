@@ -6,6 +6,7 @@ namespace Upmind\ProvisionProviders\DomainNames\Hexonet\Helper;
 
 use HEXONET\APIClient as HexonetApiClient;
 use HEXONET\Response as HexonetResponse;
+use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -25,6 +26,7 @@ use Upmind\ProvisionProviders\DomainNames\Hexonet\Data\Configuration;
  *
  * Class HexonetHelper
  * @package Upmind\ProvisionProviders\DomainNames\Hexonet\Helper
+ * @link https://github.com/centralnicgroup-public/hexonet-api-documentation/blob/master/API/DOMAIN
  */
 class HexonetApi
 {
@@ -123,6 +125,98 @@ class HexonetApi
         // }
     }
 
+    /**
+     * @link https://github.com/centralnicgroup-public/hexonet-api-documentation/blob/master/API/DOMAIN/TRANSFERDOMAIN.md
+     */
+    public function initiateTransfer(
+        string $domain,
+        int $period,
+        ?string $eppCode,
+        ?ContactParams $ownerContact = null,
+        ?ContactParams $adminContact = null,
+        ?ContactParams $techContact = null,
+        ?ContactParams $billingContact = null,
+        ?bool $userTransfer = null
+    ): array {
+        $userTransfer = $userTransfer ?? Arr::get(
+            $this->checkTransfer($domain, $eppCode),
+            'PROPERTY.USERTRANSFERREQUIRED.0'
+        );
+
+        $params = [
+            'action' => $userTransfer ? 'USERTRANSFER' : 'REQUEST',
+            'domain' => $domain,
+            'auth' => $eppCode,
+            'period' => $period,
+        ];
+
+        if ($ownerContact) {
+            $params['ownercontact0'] = $this->transformContactParams($ownerContact);
+        }
+
+        if ($adminContact) {
+            $params['admincontact0'] = $this->transformContactParams($adminContact);
+        }
+
+        if ($techContact) {
+            $params['techcontact0'] = $this->transformContactParams($techContact);
+        }
+
+        if ($billingContact) {
+            $params['billingcontact0'] = $this->transformContactParams($billingContact);
+        }
+
+        return $this->runCommand('TransferDomain', $params)->getHash();
+    }
+
+    /**
+     * Note, this function is way slower than the EPP equivalent for some reason!
+     *
+     * https://github.com/centralnicgroup-public/hexonet-api-documentation/blob/master/API/DOMAIN/TRANSFER/CHECKDOMAINTRANSFER.md
+     */
+    public function checkTransfer(string $domain, ?string $eppCode = null): array
+    {
+        $response = $this->runCommand('CheckDomainTransfer', [
+            'domain' => $domain,
+            'auth' => $eppCode,
+        ]);
+
+        $status = $response->getCode();
+        $check = $response->getHash();
+
+        if (Arr::get($check, 'PROPERTY.TRANSFERLOCK.0')) {
+            throw ProvisionFunctionError::create('Domain is locked')->withData([
+                'response' => $check,
+            ]);
+        }
+
+        if (Arr::get($check, 'PROPERTY.AUTHISVALID.0') === 'NO') {
+            throw ProvisionFunctionError::create('Invalid EPP Code')->withData([
+                'response' => $check,
+            ]);
+        }
+
+        if (empty($eppCode) && Arr::get($check, 'PROPERTY.AUTHREQUIRED.0')) {
+            throw ProvisionFunctionError::create('EPP Code is required to initiate transfer')->withData([
+                'response' => $check,
+            ]);
+        }
+
+        if ($status != 218) {
+            $errorMessage = 'Domain not transferrable';
+
+            if (preg_match('/^(?:[\w ]+); ([\w ]+)$/', $response->getDescription(), $matches)) {
+                $errorMessage = ucfirst(strtolower($matches[1]));
+            }
+
+            throw ProvisionFunctionError::create($errorMessage)->withData([
+                'response' => $check,
+            ]);
+        }
+
+        return $check;
+    }
+
     public function markDomainRenewalAsPaid(string $domain): array
     {
         return $this->runCommand('PayDomainRenewal', [
@@ -166,23 +260,9 @@ class HexonetApi
         string $domain,
         ContactParams $contact
     ): ContactResult {
-        $nameParts = explode(' ', $contact->name ?: $contact->organisation);
-
         $params = [
             'domain' => $domain,
-            'ownercontact0' => [
-                'firstname' => array_shift($nameParts),
-                'lastname' => implode(' ', $nameParts),
-                'organization' => $contact->organisation,
-                'street' => $contact->address1,
-                'city' => $contact->city,
-                'state' => $contact->has('state') ? $contact->state : null,
-                'zip' => $contact->postcode,
-                'country' => Utils::normalizeCountryCode($contact->country_code),
-                'phone' => $contact->phone,
-                // 'fax' => ,
-                'email' => $contact->email,
-            ],
+            'ownercontact0' => $this->transformContactParams($contact),
         ];
 
         $result = $this->runCommand('ModifyDomain', $params); // nothing useful in the result
@@ -303,5 +383,29 @@ class HexonetApi
         }
 
         return $processed;
+    }
+
+    /**
+     * Transform the given contact params to a params array in the correct format
+     * for the Hexonet API.
+     */
+    public function transformContactParams(ContactParams $contact): array
+    {
+        $name = $contact->name ?: $contact->organisation;
+        @[$firstName, $lastName] = explode(' ', $name, 2);
+
+        return [
+            'name' => $name,
+            'firstname' => $firstName,
+            'lastname' => $lastName ?? $firstName,
+            'organization' => $contact->organisation,
+            'email' => $contact->email,
+            'phone' => Utils::internationalPhoneToEpp($contact->phone),
+            'street' => $contact->address1,
+            'city' => $contact->city,
+            'state' => $contact->state,
+            'zip' => $contact->postcode,
+            'country' => Utils::normalizeCountryCode($contact->country_code),
+        ];
     }
 }

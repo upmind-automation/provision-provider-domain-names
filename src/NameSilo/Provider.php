@@ -301,7 +301,7 @@ class Provider extends DomainNames implements ProviderInterface
         $this->_callApi([
             'domain' => $domain,
             'auth' => Arr::get($params, 'epp_code'),
-            'contact_id' => $this->_handleContact($params->admin),
+            'contact_id' => $this->_handleContact($params->registrant),
             'auto_renew' => 0,
         ], 'transferDomain');
 

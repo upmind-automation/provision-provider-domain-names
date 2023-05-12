@@ -160,7 +160,12 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         $eppCode = $params->epp_code ?? '0000';
-        $customerId = $this->_getCustomerId($params->admin->register);
+        $customerId = $this->_getCustomerId(
+            $params->registrant->register
+                ?? $params->admin->register
+                ?? $params->tech->register
+                ?? $params->billing->register
+        );
 
         $transferResponse = $this->_initiateTransfer($customerId, $domainName, $eppCode);
 

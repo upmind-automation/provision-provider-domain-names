@@ -358,82 +358,114 @@ class Provider extends DomainNames implements ProviderInterface
                 );
             }
 
-            /**
-             * The bellow is commented out, because we'll be leaving registrar/contact changes for later when the customer requests it.
-             */
-            // Handle the contacts for the transfer
-            /*if (Arr::has($params, 'registrant.id')) {
-                $registrantId = Arr::get($params, 'registrant.id');
+            $checkData = EppHelper::checkTransfer($connection, $domain, $eppCode)->getData();
+            $userTransfer = !empty($checkData['USERTRANSFERREQUIRED']);
 
-                // Get Data
-                $registrant = EppHelper::getContactInfo($connection, $registrantId);
+            // if (isset($params->registrant->register)) {
+            //     // Create contact instance and get the ID as a string
+            //     $registrant = EppHelper::createContact(
+            //         $connection,
+            //         $params->registrant->register->email,
+            //         $params->registrant->register->phone,
+            //         $params->registrant->register->name ?: $params->registrant->register->organisation,
+            //         $params->registrant->register->organisation ?: $params->registrant->register->name,
+            //         $params->registrant->register->address1,
+            //         $params->registrant->register->postcode,
+            //         $params->registrant->register->city,
+            //         $params->registrant->register->state,
+            //         $params->registrant->register->country_code,
+            //         self::CONTACT_AUTO
+            //     );
+            // }
 
-                // Check if valid
-                if (is_null($registrant)) {
-                    throw $this->errorResult("Invalid registrant ID provided!", $params);
-                }
-            } else {
-                // Try to set contact type
-                if (Arr::has($params, 'registrant.register.type')
-                    && in_array(Arr::get($params, 'registrant.register.type'), [
-                        self::CONTACT_LOC,
-                        self::CONTACT_INT,
-                        self::CONTACT_AUTO
-                    ])
-                ) {
-                    $contactType = Arr::get($params, 'registrant.register.type');
-                } else {
-                    $contactType = self::CONTACT_AUTO;
-                }
+            // if (isset($params->billing->register)) {
+            //     // Create contact instance and get the ID as a string
+            //     $billing = EppHelper::createContact(
+            //         $connection,
+            //         $params->billing->register->email,
+            //         $params->billing->register->phone,
+            //         $params->billing->register->name ?: $params->billing->register->organisation,
+            //         $params->billing->register->organisation ?: $params->billing->register->name,
+            //         $params->billing->register->address1,
+            //         $params->billing->register->postcode,
+            //         $params->billing->register->city,
+            //         $params->billing->register->state,
+            //         $params->billing->register->country_code,
+            //         self::CONTACT_AUTO
+            //     );
+            // }
 
-                // Create contact instance and get the ID as a string
-                $registrant = EppHelper::createContact(
-                    $connection,
-                    Arr::get($params, 'registrant.register.email'),
-                    Arr::get($params, 'registrant.register.phone'),
-                    Arr::get($params, 'registrant.register.name', Arr::get($params, 'registrant.register.organisation')),
-                    Arr::get($params, 'registrant.register.organisation', Arr::get($params, 'registrant.register.name')),
-                    Arr::get($params, 'registrant.register.address1'),
-                    Arr::get($params, 'registrant.register.postcode'),
-                    Arr::get($params, 'registrant.register.city'),
-                    Arr::get($params, 'registrant.register.country_code'),
-                    $contactType
-                );
+            // if (isset($params->tech->register)) {
+            //     // Create contact instance and get the ID as a string
+            //     $tech = EppHelper::createContact(
+            //         $connection,
+            //         $params->tech->register->email,
+            //         $params->tech->register->phone,
+            //         $params->tech->register->name ?: $params->tech->register->organisation,
+            //         $params->tech->register->organisation ?: $params->tech->register->name,
+            //         $params->tech->register->address1,
+            //         $params->tech->register->postcode,
+            //         $params->tech->register->city,
+            //         $params->tech->register->state,
+            //         $params->tech->register->country_code,
+            //         self::CONTACT_AUTO
+            //     );
+            // }
 
-                // Check for errors
-                if (isset($registrant['error'])) {
-                    throw $this->errorResult($registrant['error'], $params, $registrant);
-                }
+            // if (isset($params->admin->register)) {
+            //     // Create contact instance and get the ID as a string
+            //     $admin = EppHelper::createContact(
+            //         $connection,
+            //         $params->admin->register->email,
+            //         $params->admin->register->phone,
+            //         $params->admin->register->name ?: $params->admin->register->organisation,
+            //         $params->admin->register->organisation ?: $params->admin->register->name,
+            //         $params->admin->register->address1,
+            //         $params->admin->register->postcode,
+            //         $params->admin->register->city,
+            //         $params->admin->register->state,
+            //         $params->admin->register->country_code,
+            //         self::CONTACT_AUTO
+            //     );
+            // }
 
-                $registrantId = $registrant['contact_id'];
-            }*/
+            $this->api()->initiateTransfer(
+                $domain,
+                intval($params->renew_years),
+                $params->epp_code,
+                $params->registrant->register ?? null,
+                $params->admin->register ?? null,
+                $params->tech->register ?? null,
+                $params->billing->register ?? null,
+                $userTransfer
+            );
 
-            try {
-                // Request Domain Transfer
-                EppHelper::transferRequest(
-                    $connection,
-                    $domain,
-                    [],
-                    null,
-                    null,
-                    null,
-                    null,
-                    $eppCode,
-                    $params->renew_years
-                );
-            } catch (eppException $e) {
-                $errorMessage = $e->getReason() ?: $e->getMessage();
+            // try {
+            //     // Request Domain Transfer
+            //     EppHelper::transferRequest(
+            //         $connection,
+            //         $domain,
+            //         [],
+            //         $registrant->contact_id ?? null,
+            //         $admin->contact_id ?? null,
+            //         $billing->contact_id ?? null,
+            //         $tech->contact_id ?? null,
+            //         $eppCode,
+            //         intval($params->renew_years)
+            //     );
+            // } catch (eppException $e) {
+            //     $errorMessage = $e->getReason() ?: $e->getMessage();
 
-                if (Str::startsWith($errorMessage, '531 Authorization failed')) {
-                    $errorMessage = sprintf('Incorrect EPP/Auth Code for domain %s', $domain);
-                }
+            //     if (Str::startsWith($errorMessage, '531 Authorization failed')) {
+            //         $errorMessage = sprintf('Incorrect EPP/Auth Code for domain %s', $domain);
+            //     }
 
-                if (Str::startsWith($errorMessage, '504 Missing required attribute') && empty($eppCode)) {
-                    $errorMessage = sprintf('EPP/Auth Code required to initiate transfer of %s', $domain);
-                }
+            //     if (Str::startsWith($errorMessage, '504 Missing required attribute') && empty($eppCode)) {
+            //         $errorMessage = sprintf('EPP/Auth Code required to initiate transfer of %s', $domain);
+            //     }
 
-                throw $this->errorResult($errorMessage, $params, [], $e);
-            }
+            //     throw $this->errorResult($errorMessage, $params, [], $e);
+            // }
 
             try {
                 // if domain is active, return success
