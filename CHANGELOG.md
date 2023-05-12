@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.2 2023-05-12
+
+- Fix transfer() contact handling where null is given
+
 ## v2.3.1 2023-05-12
 
 - Update Hexonet updateRegistrantContact() to always create a new contact object
