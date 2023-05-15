@@ -81,6 +81,10 @@ class Utils
     /**
      * Normalize a top-level domain by trimming periods (.) and shifting
      * to lowercase.
+     *
+     * @param string $tld E.g., '.ES'
+     *
+     * @return string E.g., 'es'
      */
     public static function normalizeTld(string $tld): string
     {
@@ -253,6 +257,14 @@ class Utils
     public static function normalizeCountryCode(?string $countryCode): ?string
     {
         return Countries::normalizeCode($countryCode);
+    }
+
+    /**
+     * Normalizes a given state name for the given TLD.
+     */
+    public static function normalizeState(string $tld, ?string $state, ?string $postCode): ?string
+    {
+        return Countries::normalizeStateName($tld, $state, $postCode);
     }
 
     public static function stateNameToCode(?string $countryCode, ?string $stateName): ?string
