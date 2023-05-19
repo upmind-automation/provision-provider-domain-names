@@ -71,7 +71,6 @@ class CentralNicResellerApi
     protected array $lockedStatuses = [
         'clientTransferProhibited',
         'clientUpdateProhibited',
-        'clientDeleteProhibited',
     ];
 
     public function __construct(EppConnection $connection, Configuration $configuration)
@@ -216,7 +215,7 @@ class CentralNicResellerApi
             'id' => $response->getDomainId(),
             'domain' => $response->getDomainName(),
             'statuses' => $response->getDomainStatuses() ?? [],
-            'locked' => boolval(array_intersect($this->lockedStatuses, $response->getDomainStatuses())),
+            'locked' => boolval(array_intersect($this->lockedStatuses, $response->getDomainStatuses() ?? [])),
             'registrant' => $registrantId ? $this->getContactInfo($registrantId) : null,
             'billing' => $billingId ? $this->getContactInfo($billingId) : null,
             'tech' => $techId ? $this->getContactInfo($techId) : null,
@@ -228,7 +227,7 @@ class CentralNicResellerApi
         ];
     }
 
-    public function initiateTransfer(string $domainName, string $eppCode, int $renewYears): eppTransferResponse
+    public function initiateTransfer(string $domainName, ?string $eppCode, int $renewYears): eppTransferResponse
     {
         $domain = new eppDomain($domainName);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\CentralNicReseller;
 
 use Carbon\Carbon;
+use ErrorException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -45,7 +46,7 @@ use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension\EppCon
 class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
-    protected EppConnection $client;
+    protected EppConnection $connection;
 
     protected CentralNicResellerApi $api;
 
