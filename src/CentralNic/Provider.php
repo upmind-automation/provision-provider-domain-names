@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\CentralNic;
 
 use Carbon\Carbon;
+use ErrorException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -127,7 +128,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         if (!$checkResult[0]->can_register) {
-            throw $this->errorResult('This domain is not available to register');
+            throw $this->errorResult($checkResult[0]->description);
         }
 
         $contacts = $this->getRegisterParams($params);
@@ -239,12 +240,6 @@ class Provider extends DomainNames implements ProviderInterface
         );
 
         $eppCode = $params->epp_code ?: null;
-
-        try {
-            return $this->_getInfo($domainName, 'Domain active in registrar account');
-        } catch (eppException $e) {
-
-        }
 
         try {
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, intval($params->renew_years));
@@ -386,7 +381,20 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function getEppCode(EppParams $params): EppCodeResult
     {
-        throw $this->errorResult('Not implemented');
+        $domainName = Utils::getDomain(
+            Utils::normalizeSld($params->sld),
+            Utils::normalizeTld($params->tld)
+        );
+
+        try {
+            $eppCode = $this->api()->updateEppCode($domainName);
+
+            return EppCodeResult::create([
+                'epp_code' => $eppCode,
+            ])->setMessage('EPP/Auth code obtained');
+        } catch (eppException $e) {
+            return $this->_eppExceptionHandler($e, $params->toArray());
+        }
     }
 
     public function updateIpsTag(IpsTagParams $params): ResultData
@@ -424,7 +432,7 @@ class Provider extends DomainNames implements ProviderInterface
                 // Set connection data
                 $connection->setHostname($this->resolveAPIURL());
                 $connection->setPort(700);
-                $connection->setUsername($this->configuration->username);
+                $connection->setUsername($this->configuration->registrar_handle_id);
                 $connection->setPassword($this->configuration->password);
 
                 $connection->login();
@@ -437,6 +445,7 @@ class Provider extends DomainNames implements ProviderInterface
         } catch (eppException $e) {
             switch ($e->getCode()) {
                 case 2001:
+                case 2400:
                     $errorMessage = 'Authentication error; check credentials';
                     break;
                 case 2200:

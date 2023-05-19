@@ -66,7 +66,6 @@ class CentralNicApi
     protected array $lockedStatuses = [
         'clientTransferProhibited',
         'clientUpdateProhibited',
-        'clientDeleteProhibited',
     ];
 
     public function __construct(EppConnection $connection, Configuration $configuration)
@@ -153,16 +152,27 @@ class CentralNicApi
                 $premium = true;
             }
 
+            $description = sprintf(
+                'Domain is %s to register. %s',
+                $available ? 'available' : 'not available',
+                $check['reason'],
+            );
+
+            $canTransfer = !$available;
+
+            if ($check['reason']) {
+                if (preg_match('/suffix .* does not exist/i', $check['reason'])) {
+                    $description = "This TLD is unavailable for new registrations";
+                    $canTransfer = false;
+                }
+            }
+
             $result[] = DacDomain::create([
                 'domain' => $check['domainname'],
-                'description' => sprintf(
-                    'Domain is %s to register. %s',
-                    $available ? 'available' : 'not available',
-                    $check['reason'],
-                ),
+                'description' => $description,
                 'tld' => Utils::getTld($check['domainname']),
                 'can_register' => $available,
-                'can_transfer' => !$available,
+                'can_transfer' => $canTransfer,
                 'is_premium' => $premium,
             ]);
         }
@@ -206,7 +216,7 @@ class CentralNicApi
         ];
     }
 
-    public function initiateTransfer(string $domainName, string $eppCode, int $renewYears): eppTransferResponse
+    public function initiateTransfer(string $domainName, ?string $eppCode, int $renewYears): eppTransferResponse
     {
         $domain = new eppDomain($domainName);
 
@@ -259,7 +269,7 @@ class CentralNicApi
             'id' => $response->getDomainId(),
             'domain' => $response->getDomainName(),
             'statuses' => $response->getDomainStatuses() ?? [],
-            'locked' => boolval(array_intersect($this->lockedStatuses, $response->getDomainStatuses())),
+            'locked' => boolval(array_intersect($this->lockedStatuses, $response->getDomainStatuses() ?? [])),
             'registrant' => $registrantId ? $this->getContactInfo($registrantId) : null,
             'billing' => $billingId ? $this->getContactInfo($billingId) : null,
             'tech' => $techId ? $this->getContactInfo($techId) : null,
@@ -289,6 +299,26 @@ class CentralNicApi
         $this->connection->request($update);
 
         return $this->getContactInfo($contactID);
+    }
+
+    public function updateEppCode(string $domainName): string
+    {
+        $code = self::generateValidAuthCode();
+
+        $mod = new eppDomain($domainName);
+        $mod->setAuthorisationCode($code);
+
+        $update = new eppUpdateDomainRequest(
+            new eppDomain($domainName),
+            null,
+            null,
+            $mod
+        );
+
+        /** @var eppUpdateDomainResponse $response */
+        $this->connection->request($update);
+
+        return $code;
     }
 
     public function updateNameServers(
@@ -357,7 +387,11 @@ class CentralNicApi
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
         /** @var eppInfoContactResponse */
-        $response = $this->connection->request($request);
+        try {
+            $response = $this->connection->request($request);
+        } catch (eppException $e) {
+            return DomainContactInfo::create(['contact_id' => $contactId,]);
+        }
 
         return DomainContactInfo::create([
             'contact_id' => $contactId,
