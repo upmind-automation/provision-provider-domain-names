@@ -1,0 +1,362 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Upmind\ProvisionProviders\DomainNames\GoDaddy\Helper;
+
+use Carbon\Carbon;
+use GuzzleHttp\Client;
+use Illuminate\Support\Arr;
+use Throwable;
+use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
+use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
+use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
+use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
+use Upmind\ProvisionProviders\DomainNames\GoDaddy\Data\Configuration;
+
+/**
+ * Class GoDaddyCommand
+ *
+ * @package Upmind\ProvisionProviders\DomainNames\Namecheap\Helper
+ */
+class GoDaddyApi
+{
+    /**
+     * Contact Types
+     */
+    public const CONTACT_TYPE_REGISTRANT = 'Registrant';
+    public const CONTACT_TYPE_TECH = 'Tech';
+    public const CONTACT_TYPE_ADMIN = 'Admin';
+    public const CONTACT_TYPE_BILLING = 'Billing';
+
+    protected Client $client;
+
+    protected Configuration $configuration;
+
+    public function __construct(Client $client, Configuration $configuration)
+    {
+        $this->client = $client;
+        $this->configuration = $configuration;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function checkMultipleDomains(array $domainList): array
+    {
+        $command = "/v1/domains/available";
+
+        $dacDomains = [];
+
+        foreach ($domainList as $domainName) {
+            $params = [
+                'domain' => $domainName,
+            ];
+
+            try {
+                $response = $this->makeRequest($command, $params);
+
+                $available = (boolean)$response['available'];
+
+                $dacDomains[] = DacDomain::create([
+                    'domain' => $domainName,
+                    'description' => sprintf(
+                        'Domain is %s to register',
+                        $available ? 'available' : 'not available'
+                    ),
+                    'tld' => Utils::getTld($domainName),
+                    'can_register' => $available,
+                    'can_transfer' => !$available,
+                    'is_premium' => false,
+                ]);
+            } catch (\Throwable $e) {
+                $response = $e->getResponse();
+                $body = trim($response->getBody()->__toString());
+                $responseData = json_decode($body, true);
+                if ($responseData['code'] == 'UNSUPPORTED_TLD') {
+                    $dacDomains[] = DacDomain::create([
+                        'domain' => $domainName,
+                        'description' => 'Domain is not available to register. Unsupported TLD',
+                        'tld' => Utils::getTld($domainName),
+                        'can_register' => false,
+                        'can_transfer' => false,
+                        'is_premium' => false,
+                    ]);
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
+        return $dacDomains;
+    }
+
+    public function register(string $domainName, int $years, array $contacts, array $nameServers): void
+    {
+        $command = "/v1/domains/purchase";
+
+        $body = array(
+            'domain' => $domainName,
+            'nameServers' => $nameServers,
+            'period' => $years,
+        );
+
+        $consent = array(
+            'agreedAt' => date('Y-m-d\TH:i:s\Z'),
+            'agreedBy' => $contacts[self::CONTACT_TYPE_REGISTRANT]['name'],
+            'agreementKeys' => [$this->getAgreementKey(Utils::getTld($domainName))],
+        );
+
+        $body['consent'] = $consent;
+
+        foreach ($contacts as $type => $contact) {
+            $contactParams = $this->setContactParams($contact, $type);
+            $body = array_merge($body, $contactParams);
+        }
+
+        $this->makeRequest($command, null, $body, "POST");
+    }
+
+    public function initiateTransfer(string $domainName, string $eppCode, ContactParams $contact, int $period): string
+    {
+        $command = "/v1/domains/{$domainName}/transfer";
+
+        $body = array(
+            'authCode' => $eppCode,
+            'period' => $period,
+        );
+
+        $consent = array(
+            'agreedAt' => date('Y-m-d\TH:i:s\Z'),
+            'agreedBy' => $contact['name'],
+            'agreementKeys' => ["DNTA"],
+        );
+
+        $body['consent'] = $consent;
+
+        $adminParams = $this->setContactParams($contact, self::CONTACT_TYPE_ADMIN);
+        $registrantParams = $this->setContactParams($contact, self::CONTACT_TYPE_REGISTRANT);
+        $techParams = $this->setContactParams($contact, self::CONTACT_TYPE_TECH);
+        $billingParams = $this->setContactParams($contact, self::CONTACT_TYPE_BILLING);
+
+        $body = array_merge($body, $registrantParams, $techParams, $adminParams, $billingParams);
+
+        $response = $this->makeRequest($command, null, $body, "POST");
+
+        return (string)$response['orderId'];
+    }
+
+    private function getAgreementKey(string $tld)
+    {
+        $command = "/v1/domains/agreements";
+
+        $params = ['tlds' => [$tld]];
+
+        $response = $this->makeRequest($command, $params);
+
+        return $response[0]['agreementKey'];
+    }
+
+    public function getDomainInfo(string $domainName): array
+    {
+        $command = "/v1/domains/{$domainName}";
+        $response = $this->makeRequest($command);
+
+        return [
+            'id' => (string)$response['domainId'],
+            'domain' => (string)$response['domain'],
+            'statuses' => [$response['status']],
+            'locked' => $response['locked'],
+            'registrant' => isset($response['contactRegistrant']) ? $this->parseContact($response['contactRegistrant'], self::CONTACT_TYPE_REGISTRANT) : null,
+            'billing' => isset($response['contactBilling']) ? $this->parseContact($response['contactBilling'], self::CONTACT_TYPE_BILLING) : null,
+            'tech' => isset($response['contactTech']) ? $this->parseContact($response['contactTech'], self::CONTACT_TYPE_TECH) : null,
+            'admin' => isset($response['contactAdmin']) ? $this->parseContact($response['contactAdmin'], self::CONTACT_TYPE_ADMIN) : null,
+            'ns' => NameserversResult::create($this->parseNameservers($response['nameServers'])),
+            'created_at' => Utils::formatDate((string)$response['createdAt']),
+            'updated_at' => null,
+            'expires_at' => isset($response['expires']) ? Utils::formatDate($response['expires']) : null,
+        ];
+    }
+
+    public function renew(string $domainName, int $period): void
+    {
+        $command = "/v1/domains/{$domainName}/renew";
+
+        $body = array('period' => $period);
+
+        $this->makeRequest($command, null, $body, "POST");
+    }
+
+    public function getDomainEppCode(string $domainName): string
+    {
+        $command = "/v1/domains/{$domainName}";
+        $response = $this->makeRequest($command);
+
+        return $response['authCode'];
+    }
+
+    public function setRenewalMode(string $domainName, bool $autoRenew): void
+    {
+        $command = "/v1/domains/{$domainName}";
+        $body = array('renewAuto' => $autoRenew);
+
+        $this->makeRequest($command, null, $body, "PATCH");
+    }
+
+    public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
+    {
+        $command = "/v1/domains/{$domainName}/contacts";
+
+        $registrantParams = $this->setContactParams($contactParams, self::CONTACT_TYPE_REGISTRANT);
+
+        $this->makeRequest($command, null, $registrantParams, "PATCH");
+
+        return $this->getDomainInfo($domainName)['registrant'];
+    }
+
+    public function updateNameservers(string $domainName, array $nameservers): array
+    {
+        $command = "/v1/domains/{$domainName}";
+
+        $body = array('nameServers' => $nameservers);
+
+        $this->makeRequest($command, null, $body, "PATCH");
+
+        $response = $this->makeRequest($command);
+
+        return $this->parseNameservers($response['nameServers']);
+    }
+
+    private function getNameParts(?string $name): array
+    {
+        $nameParts = explode(" ", $name);
+        $firstName = array_shift($nameParts);
+        $lastName = implode(" ", $nameParts);
+
+        return compact('firstName', 'lastName');
+    }
+
+    private function setContactParams(ContactParams $contactParams, string $type): array
+    {
+        $nameParts = $this->getNameParts($contactParams->name ?? $contactParams->organisation);
+
+        return [
+            "contact{$type}" => [
+                'addressMailing' => [
+                    'address1' => $contactParams->address1,
+                    'city' => $contactParams->city,
+                    'country' => Utils::normalizeCountryCode($contactParams->country_code),
+                    'postalCode' => $contactParams->postcode,
+                    'state' => $contactParams->state ?: '',
+                ],
+                'organization' => $contactParams->organisation ?: '',
+                'nameFirst' => $nameParts['firstName'],
+                'nameLast' => $nameParts['lastName'] ?: $nameParts['firstName'],
+                'email' => $contactParams->email,
+                'phone' => Utils::internationalPhoneToEpp($contactParams->phone),
+            ]
+        ];
+    }
+
+    private function parseContact(array $contact, string $type): ContactData
+    {
+        return ContactData::create([
+            'organisation' => (string)$contact['organization'] ?: '-',
+            'name' => $contact['nameFirst'] . " " . $contact['nameLast'],
+            'address1' => (string)$contact['addressMailing']['address1'],
+            'city' => (string)$contact['addressMailing']['city'],
+            'state' => (string)$contact['addressMailing']['state'] ?: '-',
+            'postcode' => (string)$contact['addressMailing']['postalCode'],
+            'country_code' => Utils::normalizeCountryCode((string)$contact['addressMailing']['country'],),
+            'email' => (string)$contact['email'],
+            'phone' => Utils::internationalPhoneToEpp((string)$contact['phone']),
+        ]);
+    }
+
+    private function parseNameservers(array $nameservers): array
+    {
+        $result = [];
+        $i = 1;
+
+        foreach ($nameservers as $ns) {
+            $result['ns' . $i] = ['host' => (string)$ns];
+            $i++;
+        }
+
+        return $result;
+    }
+
+    public function makeRequest(string $command, ?array $params = null, ?array $body = null, ?string $method = 'GET'): ?array
+    {
+        $requestParams = [];
+
+        if ($params) {
+            $requestParams['query'] = $params;
+        }
+
+        if ($body) {
+            $requestParams['body'] = json_encode($body);
+        }
+
+        $response = $this->client->request($method, $command, $requestParams);
+        $result = $response->getBody()->getContents();
+
+        $response->getBody()->close();
+
+        return $this->parseResponseData($result);
+    }
+
+    public function getRegistrarLockStatus(string $domainName): bool
+    {
+        $command = "/v1/domains/{$domainName}";
+        $response = $this->makeRequest($command);
+
+        return (boolean)$response['locked'];
+    }
+
+    public function setRegistrarLock(string $domainName, bool $lock): void
+    {
+        $command = "/v1/domains/{$domainName}";
+        $body = array('locked' => $lock);
+
+        $this->makeRequest($command, null, $body, "PATCH");
+    }
+
+
+    private function parseResponseData(string $result): array
+    {
+        $parsedResult = json_decode($result, true);
+
+        if (!$parsedResult) {
+            throw ProvisionFunctionError::create('Unknown Provider API Error')
+                ->withData([
+                    'response' => $result,
+                ]);
+        }
+
+        if ($error = $this->getResponseErrorMessage($parsedResult)) {
+            throw ProvisionFunctionError::create($error)
+                ->withData([
+                    'response' => $parsedResult,
+                ]);
+        }
+
+        return $parsedResult;
+    }
+
+    protected function getResponseErrorMessage($responseData): ?string
+    {
+        $statusCode = $responseData['code'] ?? 'unknown';
+        if ($statusCode == "NOT_FOUND") {
+            if (isset($responseData['message'])) {
+                $errorMessage = $responseData['message'];
+            }
+        }
+
+        return $errorMessage ?? null;
+    }
+
+}
