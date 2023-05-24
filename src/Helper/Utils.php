@@ -18,13 +18,17 @@ class Utils
      * @param string|null $format
      * @return string|null Formatted date, or null
      */
-    public static function formatDate(?string $date, ?string $format = null): ?string
+    public static function formatDate(?string $date, ?string $format = null, ?string $adjustHours = null): ?string
     {
         if (empty($date)) {
             return null;
         }
 
         $dateObject = Carbon::parse($date);
+
+        if ($adjustHours) {
+            $dateObject->addHours($adjustHours);
+        }
 
         if (!is_null($format)) {
             return $dateObject->format($format);

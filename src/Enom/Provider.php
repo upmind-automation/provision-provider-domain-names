@@ -206,35 +206,34 @@ class Provider extends DomainNames implements ProviderInterface
         $sld = $params->sld;
         $tld = $params->tld;
 
-        $domain = Utils::getDomain($sld, $tld);
         // TODO: `renew_years` (period) is not needed here.
         //$period = Arr::get($params, 'renew_years', 1);
         // TODO: In development, `epp_code` is not needed as well, but required when sending the requests, so we may just send a random string
         $eppCode = $params->epp_code ?: '1234';
 
         try {
-            // Check for previous order first
-            $prevOrder = $this->api()->getDomainTransferOrders($sld, $tld);
-
-            if (is_null($prevOrder)) {
-                // Attempt to create a new transfer order.
-                $transfer = $this->api()->initiateTransfer($sld, $tld, $eppCode);
-
-                // Transfer is most probably still pending, so we'll return just a basic info with the transfer order id, the domain and the order creation date
-                return DomainResult::create([
-                    'id' => (string) $transfer['orderId'],
-                    'domain' => $domain,
-                    'ns' => [],
-                    'statuses' => [],
-                    'created_at' => Utils::formatDate($transfer['date']),
-                    'updated_at' => Utils::formatDate($transfer['date']),
-                    'expires_at' => Utils::formatDate($transfer['date'])
-                ]);
-            } else {
-                $this->errorResult(sprintf('Transfer order(s) for %s already exists!', $domain), $prevOrder, $params);
-            }
+            return $this->_getInfo($sld, $tld, 'Domain is active in registrar account');
         } catch (\Throwable $e) {
-            $this->handleException($e, $params);
+            // Domain not active in account: proceed to initiate or check transfer order below
+        }
+
+        try {
+            // Check for previous order first
+            if ($prevOrders = $this->api()->getDomainTransferOrders($sld, $tld)) {
+                $prevOrder = collect($prevOrders)->sortByDesc('date')->first();
+                throw $this->errorResult(
+                    sprintf('Transfer order in progress since %s', $prevOrder['date']),
+                    $prevOrders,
+                    $params
+                );
+            }
+
+            // Attempt to create a new transfer order.
+            $this->api()->initiateTransfer($sld, $tld, $eppCode);
+
+            throw $this->errorResult('Domain transfer order initiated');
+        } catch (\Throwable $e) {
+            throw $this->handleException($e, $params);
         }
     }
 
