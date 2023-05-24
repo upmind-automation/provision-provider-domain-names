@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.3 2023-05-24
+
+- Fix Enom transfer() logic to only return success upon transfer completion
+
 ## v2.3.2 2023-05-12
 
 - Fix transfer() contact handling where null is given
