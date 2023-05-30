@@ -144,10 +144,10 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult('Domain is not available to register', ['check' => $checkDomain[0]]);
         }
 
-        $data['owner_handle'] = $this->_handleCustomer(Arr::get($params, 'registrant'), 'registrant');
-        $data['billing_handle'] = $this->_handleCustomer(Arr::get($params, 'billing'), 'billing');
-        $data['admin_handle'] = $this->_handleCustomer(Arr::get($params, 'admin'), 'admin');
-        $data['tech_handle'] = $this->_handleCustomer(Arr::get($params, 'tech'), 'tech');
+        $data['owner_handle'] = $this->_handleCustomer($tld, Arr::get($params, 'registrant'), 'registrant');
+        $data['billing_handle'] = $this->_handleCustomer($tld, Arr::get($params, 'billing'), 'billing');
+        $data['admin_handle'] = $this->_handleCustomer($tld, Arr::get($params, 'admin'), 'admin');
+        $data['tech_handle'] = $this->_handleCustomer($tld, Arr::get($params, 'tech'), 'tech');
 
         $data['period'] = Arr::get($params, 'renew_years', 1);
         $data['unit'] = 'y';
@@ -205,7 +205,7 @@ class Provider extends DomainNames implements ProviderInterface
         $customerId = Arr::get($params, 'admin.id');
 
         if (!$customerId) {
-            $customerId = $this->_handleCustomer(Arr::get($params, 'admin'), 'admin');
+            $customerId = $this->_handleCustomer($tld, Arr::get($params, 'registrant'), 'registrant');
         }
 
         $initiate = $this->initiateTransfer($customerId, $tld, $sld, $eppCode);
@@ -302,6 +302,7 @@ class Provider extends DomainNames implements ProviderInterface
         // }
 
         // return $this->_updateCustomer(
+        //     $params->tld,
         //     $contactHandle,
         //     Arr::get($contact, 'email'),
         //     Arr::get($contact, 'phone'),
@@ -318,6 +319,7 @@ class Provider extends DomainNames implements ProviderInterface
         $domainId = $this->_getDomain($domain, '', false)->id;
 
         $contactHandle = $this->_createCustomer(
+            $params->tld,
             $params->contact->email,
             $params->contact->phone,
             $params->contact->name ?? $params->contact->organisation,
@@ -445,9 +447,9 @@ class Provider extends DomainNames implements ProviderInterface
             'admin' => $this->_parseContactInfo($domainData['admin_handle'], 'customers'),
             'tech' => $this->_parseContactInfo($domainData['tech_handle'], 'customers'),
             'ns' => $ns,
-            'created_at' => $domainData['creation_date'],
-            'updated_at' => $domainData['last_changed'],
-            'expires_at' => $domainData['expiration_date'],
+            'created_at' => $domainData['creation_date'] ?? null,
+            'updated_at' => $domainData['last_changed'] ?? null,
+            'expires_at' => $domainData['expiration_date'] ?? null,
         ])->setMessage($msg);
 
         /**
@@ -461,6 +463,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     protected function _updateCustomer(
+        string $tld,
         ?string $contactHandle,
         ?string $email,
         ?string $telephone,
@@ -497,7 +500,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'city' => $city,
                 'country' => Utils::normalizeCountryCode($country),
                 'number' => '',
-                'state' => $state ?? Utils::normalizeCountryCode($country),
+                'state' => Utils::normalizeState($tld, $state, $postcode) ?? Utils::normalizeCountryCode($country),
                 'street' => $address,
                 'suffix' => '',
                 'zipcode' => $postcode,
@@ -693,12 +696,13 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->token = $loginResult['data']['token'];
     }
 
-    protected function _handleCustomer(DataSet $params, string $role = '')
+    protected function _handleCustomer(string $tld, DataSet $params, string $role = '')
     {
         if (Arr::has($params, 'id')) {
             $customerId = Arr::get($params, 'id');
         } else {
             $customerId = $this->_createCustomer(
+                $tld,
                 Arr::get($params, 'register.email'),
                 Arr::get($params, 'register.phone'),
                 Arr::get($params, 'register.name') ?? Arr::get($params, 'register.organisation'),
@@ -714,6 +718,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     protected function _createCustomer(
+        string $tld,
         string $email,
         string $telephone,
         string $name,
@@ -772,7 +777,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'city' => $city,
                 'country' => Utils::normalizeCountryCode($countryName),
                 'number' => '',
-                'state' => $state,
+                'state' => Utils::normalizeState($tld, $state, $postcode) ?? Utils::normalizeCountryCode($countryName),
                 'street' => $address,
                 'suffix' => '',
                 'zipcode' => $postcode,

@@ -14,7 +14,10 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $tld Domain TLD
  * @property-read int $renew_years For how long to be renewed upon transfer
  * @property-read string $epp_code EPP code for domain transfer
- * @property-read RegisterContactParams $admin Admin contact data
+ * @property-read RegisterContactParams|null $registrant Registrant contact data
+ * @property-read RegisterContactParams|null $billing Billing contact data
+ * @property-read RegisterContactParams|null $tech Tech contact data
+ * @property-read RegisterContactParams|null $admin Admin contact data
  */
 class TransferParams extends DataSet
 {
@@ -25,7 +28,10 @@ class TransferParams extends DataSet
             'tld' => ['required', 'alpha-dash-dot'],
             'renew_years' => ['integer', 'max:10'],
             'epp_code' => ['string'],
-            'admin' => ['required', RegisterContactParams::class],
+            'registrant' => ['nullable', RegisterContactParams::class],
+            'billing' => ['nullable', RegisterContactParams::class],
+            'tech' => ['nullable', RegisterContactParams::class],
+            'admin' => ['nullable', RegisterContactParams::class],
         ]);
     }
 }

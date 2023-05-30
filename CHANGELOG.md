@@ -2,6 +2,34 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.3 2023-05-24
+
+- Fix Enom transfer() logic to only return success upon transfer completion
+
+## v2.3.2 2023-05-12
+
+- Fix transfer() contact handling where null is given
+
+## v2.3.1 2023-05-12
+
+- Update Hexonet updateRegistrantContact() to always create a new contact object
+  instead of updating existing handle
+
+## v2.3.0 2023-05-12
+
+- Add nullable registrant, billing and tech contacts to TransferParams
+- Make admin contact nullable in TransferParams
+- Update ConnectReseller, Hexonet, LogicBoxes, NameSilo, OpenProvider and OpenSRS
+  to use registrant contact data for transfers where available
+
+## v2.2.3 2023-05-10
+
+- Normalize OpenProvider .es state name during contact create/update
+
+## v2.2.2 2023-04-28
+
+- Fix OpenProvider _getDomain() undefined index errors
+
 ## v2.2.1 2023-04-07
 
 - Add .pt to list of TLDs which don't support WHOIS privacy

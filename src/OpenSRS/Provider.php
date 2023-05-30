@@ -306,15 +306,15 @@ class Provider extends DomainNames implements ProviderInterface
 
         $contacts = [];
 
-        if (!Arr::has($params, 'admin.register')) {
-            return $this->errorResult('Admin contact data is required!');
+        if (!Arr::has($params, 'registrant.register')) {
+            return $this->errorResult('Registrant contact data is required!');
         }
 
         $contactData = [
-            OpenSrsApi::CONTACT_TYPE_REGISTRANT => Arr::get($params, 'admin.register'),
-            OpenSrsApi::CONTACT_TYPE_TECH => Arr::get($params, 'admin.register'),
-            OpenSrsApi::CONTACT_TYPE_ADMIN => Arr::get($params, 'admin.register'),
-            OpenSrsApi::CONTACT_TYPE_BILLING => Arr::get($params, 'admin.register')
+            OpenSrsApi::CONTACT_TYPE_REGISTRANT => Arr::get($params, 'registrant.register'),
+            OpenSrsApi::CONTACT_TYPE_TECH => Arr::get($params, 'tech.register') ?? Arr::get($params, 'registrant.register'),
+            OpenSrsApi::CONTACT_TYPE_ADMIN => Arr::get($params, 'admin.register') ?? Arr::get($params, 'registrant.register'),
+            OpenSrsApi::CONTACT_TYPE_BILLING => Arr::get($params, 'billing.register') ?? Arr::get($params, 'registrant.register'),
         ];
 
         foreach ($contactData as $type => $contactParams) {

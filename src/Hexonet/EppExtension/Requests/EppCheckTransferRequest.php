@@ -11,7 +11,7 @@ use Metaregistrar\EPP\eppRequest;
  */
 class EppCheckTransferRequest extends eppRequest
 {
-    public function __construct(string $domainName)
+    public function __construct(string $domainName, ?string $eppCode = null)
     {
         parent::__construct();
 
@@ -40,6 +40,13 @@ class EppCheckTransferRequest extends eppRequest
         $domain->setAttribute('key', 'DOMAIN');
         $domain->setAttribute('value', $domainName);
         $keyValueExtension->appendChild($domain);
+
+        if (!empty($eppCode)) {
+            $auth = $this->createElement('keyvalue:kv');
+            $auth->setAttribute('key', 'AUTH');
+            $auth->setAttribute('value', $eppCode);
+            $keyValueExtension->appendChild($auth);
+        }
 
         $extension->appendChild($keyValueExtension);
 

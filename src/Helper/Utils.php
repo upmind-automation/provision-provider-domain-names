@@ -18,13 +18,17 @@ class Utils
      * @param string|null $format
      * @return string|null Formatted date, or null
      */
-    public static function formatDate(?string $date, ?string $format = null): ?string
+    public static function formatDate(?string $date, ?string $format = null, ?string $adjustHours = null): ?string
     {
         if (empty($date)) {
             return null;
         }
 
         $dateObject = Carbon::parse($date);
+
+        if ($adjustHours) {
+            $dateObject->addHours($adjustHours);
+        }
 
         if (!is_null($format)) {
             return $dateObject->format($format);
@@ -81,6 +85,10 @@ class Utils
     /**
      * Normalize a top-level domain by trimming periods (.) and shifting
      * to lowercase.
+     *
+     * @param string $tld E.g., '.ES'
+     *
+     * @return string E.g., 'es'
      */
     public static function normalizeTld(string $tld): string
     {
@@ -253,6 +261,14 @@ class Utils
     public static function normalizeCountryCode(?string $countryCode): ?string
     {
         return Countries::normalizeCode($countryCode);
+    }
+
+    /**
+     * Normalizes a given state name for the given TLD.
+     */
+    public static function normalizeState(string $tld, ?string $state, ?string $postCode): ?string
+    {
+        return Countries::normalizeStateName($tld, $state, $postCode);
     }
 
     public static function stateNameToCode(?string $countryCode, ?string $stateName): ?string

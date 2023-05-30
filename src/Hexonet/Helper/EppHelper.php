@@ -528,7 +528,7 @@ class EppHelper
         ?string $eppCode = null,
         int $renewYears = 1
     ): eppTransferResponse {
-        $transferCheck = self::checkTransfer($connection, $domain);
+        $transferCheck = self::checkTransfer($connection, $domain, $eppCode);
         $checkData = $transferCheck->getData();
 
         if (!$transferCheck->isAvailable()) {
@@ -550,24 +550,25 @@ class EppHelper
         $domainInfo->setPeriod($renewYears);
         $domainInfo->setPeriodUnit('y');
 
-        // Add Registrant Contact
-        if (!is_null($registrantId)) {
-            $domainInfo->setRegistrant(new eppContactHandle($registrantId));
-        }
+        // This doesn't appear to do anything!!
+        // // Add Registrant Contact
+        // if (!is_null($registrantId)) {
+        //     $domainInfo->setRegistrant(new eppContactHandle($registrantId));
+        // }
+        //
+        // // Add Contacts
+        // if (!is_null($adminContactId)) {
+        //     $domainInfo->addContact(new eppContactHandle($adminContactId, eppContactHandle::CONTACT_TYPE_ADMIN));
+        // }
+        //
+        // if (!is_null($billingContactId)) {
+        //     $domainInfo->addContact(new eppContactHandle($billingContactId, eppContactHandle::CONTACT_TYPE_TECH));
+        // }
 
-        // Add Contacts
-        if (!is_null($adminContactId)) {
-            $domainInfo->addContact(new eppContactHandle($adminContactId, eppContactHandle::CONTACT_TYPE_ADMIN));
-        }
-
-        if (!is_null($billingContactId)) {
-            $domainInfo->addContact(new eppContactHandle($billingContactId, eppContactHandle::CONTACT_TYPE_TECH));
-        }
-
-        if (!is_null($techContactId)) {
-            $domainInfo->addContact(new eppContactHandle($techContactId, eppContactHandle::CONTACT_TYPE_BILLING));
-        }
-
+        // if (!is_null($techContactId)) {
+        //     $domainInfo->addContact(new eppContactHandle($techContactId, eppContactHandle::CONTACT_TYPE_BILLING));
+        // }
+        //
         // // Set Name Servers
         // self::validateNameServers($nameServers);
 
@@ -590,10 +591,44 @@ class EppHelper
         return $connection->request($transferRequest);
     }
 
-    public static function checkTransfer(eppConnection $connection, string $domain): EppCheckTransferResponse
-    {
-        /** @var EppCheckTransferResponse */
-        return $connection->request(new EppCheckTransferRequest($domain));
+    public static function checkTransfer(
+        eppConnection $connection,
+        string $domain,
+        ?string $eppCode = null
+    ): EppCheckTransferResponse {
+        try {
+            /** @var EppCheckTransferResponse $response */
+            $response = $connection->request(new EppCheckTransferRequest($domain, $eppCode));
+        } catch (eppException $e) {
+            /** @var EppCheckTransferResponse $response */
+            if (!$response = $e->getResponse()) {
+                throw $e; // unexpected error
+            }
+
+            if ('2' !== substr((string)$response->getCode(), 0, 1)) {
+                throw $e; // non 2xx errors are unrelated to the checked domain status
+            }
+        }
+
+        $checkData = $response->getData();
+
+        if (!empty($checkData['TRANSFERLOCK'])) {
+            throw self::errorResult('Domain is currently transfer-locked', ['check_data' => $checkData]);
+        }
+
+        if ($checkData['AUTHISVALID'] === 'NO') {
+            throw self::errorResult('EPP Code is invalid', ['check_data' => $checkData]);
+        }
+
+        if (empty($eppCode) && !empty($checkData['AUTHREQUIRED'])) {
+            throw self::errorResult('EPP Code is required to initiate transfer', ['check_data' => $checkData]);
+        }
+
+        if (!$response->isAvailable()) {
+            throw self::errorResult($response->getUnavailableReason(), ['check_data' => $checkData]);
+        }
+
+        return $response;
     }
 
     /**

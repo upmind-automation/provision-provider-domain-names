@@ -571,7 +571,7 @@ class EnomApi
                         'orderId' => (int) $childData->transferorderid,
                         'status' => (string) $childData->orderstatus,
                         'statusId' => (int) $childData->statusid,
-                        'date' => Utils::formatDate((string) $childData->orderdate)
+                        'date' => Utils::formatDate((string) $childData->orderdate, null, (string)$result->TimeDifference)
                     ];
                 }
             }

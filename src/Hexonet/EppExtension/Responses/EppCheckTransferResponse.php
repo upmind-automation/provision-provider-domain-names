@@ -12,10 +12,25 @@ use Metaregistrar\EPP\eppResponse;
  */
 class EppCheckTransferResponse extends eppResponse
 {
+    public function getCode(): int
+    {
+        return intval(substr($this->getResultReason(), 0, 3)) ?: intval(Str::before($this->getResultReason(), ' '));
+    }
+
     public function isAvailable(): bool
     {
         return $this->getResultCode() == 1000
             && Str::startsWith($this->getResultReason(), '218 ');
+    }
+
+    public function getUnavailableReason(): string
+    {
+        // attempt to make error less verbose
+        if (preg_match("/^(?:219 [\w ]+); ([\w ]+)$/", $this->getResultReason(), $matches)) {
+            return ucfirst(strtolower($matches[1]));
+        }
+
+        return $this->getResultReason();
     }
 
     /**

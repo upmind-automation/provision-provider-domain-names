@@ -273,15 +273,15 @@ class Provider extends DomainNames implements ProviderInterface
 
         // initiate the transfer
         $contacts = $params->toArray();
-        $customerId = $this->_getCustomerId($contacts, 'admin');
+        $customerId = $this->_getCustomerId($contacts, 'registrant');
         $response = $this->_callApi([
             'domain-name' => $domain,
             'auth-code' => Arr::get($params, 'epp_code'),
             'customer-id' => $customerId,
-            'reg-contact-id' => $this->_handelContact($contacts, 'admin', $customerId, $params->tld),
+            'reg-contact-id' => $this->_handelContact($contacts, 'registrant', $customerId, $params->tld),
             'admin-contact-id' => $this->_handelContact($contacts, 'admin', $customerId, $params->tld),
-            'tech-contact-id' => $this->_handelContact($contacts, 'admin', $customerId, $params->tld),
-            'billing-contact-id' => $this->_handelContact($contacts, 'admin', $customerId, $params->tld),
+            'tech-contact-id' => $this->_handelContact($contacts, 'tech', $customerId, $params->tld),
+            'billing-contact-id' => $this->_handelContact($contacts, 'billing', $customerId, $params->tld),
             'invoice-option' => 'NoInvoice',
             'auto-renew' => false,
         ], 'domains/transfer.json', 'POST');

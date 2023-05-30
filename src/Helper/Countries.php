@@ -289,7 +289,7 @@ class Countries
     }
 
     /**
-     * Normalize the given country code.
+     * Normalize the given country code to upper-case.
      */
     public static function normalizeCode($countryCode): ?string
     {
@@ -352,5 +352,178 @@ class Countries
                     return strtolower($state->postal) == $stateCode;
                 })
                 ->name ?? null;
+    }
+
+    /**
+     * Normalize state name
+     */
+    public static function normalizeStateName(string $tld, ?string $state, ?string $postCode): ?string
+    {
+        if (empty($state)) {
+            return null;
+        }
+
+        if (Utils::normalizeTld($tld) === 'es') {
+            $state = self::accentsToAscii(strtoupper(trim($state)));
+
+            if (empty($postCode)) {
+                return $state;
+            }
+
+            /** @link https://support.openprovider.eu/hc/en-us/articles/216647268--es-List-of-approved-provinces */
+            $postCodeMap = [
+                '01' => 'ARABA',
+                '02' => 'ALBACETE',
+                '03' => 'ALICANTE',
+                '04' => 'ALMERIA',
+                '05' => 'AVILA',
+                '06' => 'BADAJOZ',
+                '07' => 'ILLES BALEARS',
+                '08' => 'BARCELONA',
+                '09' => 'BURGOS',
+                '10' => 'CACERES',
+                '11' => 'CADIZ',
+                '12' => 'CASTELLON',
+                '13' => 'CIUDAD REAL',
+                '14' => 'CORDOBA',
+                '15' => 'CORUÑA, A',
+                '16' => 'CUENCA',
+                '17' => 'GIRONA',
+                '18' => 'GRANADA',
+                '19' => 'GUADALAJARA',
+                '20' => 'GIPUZKOA',
+                '21' => 'HUELVA',
+                '22' => 'HUESCA',
+                '23' => 'JAEN',
+                '24' => 'LEON',
+                '25' => 'LLEIDA',
+                '26' => 'RIOJA, LA',
+                '27' => 'LUGO',
+                '28' => 'MADRID',
+                '29' => 'MALAGA',
+                '30' => 'MURCIA',
+                '31' => 'NAVARRA',
+                '32' => 'OURENSE',
+                '33' => 'ASTURIAS',
+                '34' => 'PALENCIA',
+                '35' => 'PALMAS, LAS',
+                '36' => 'PONTEVEDRA',
+                '37' => 'SALAMANCA',
+                '38' => 'SANTA CRUZ DE TENERIFE',
+                '39' => 'CANTABRIA',
+                '40' => 'SEGOVIA',
+                '41' => 'SEVILLA',
+                '42' => 'SORIA',
+                '43' => 'TARRAGONA',
+                '44' => 'TERUEL',
+                '45' => 'TOLEDO',
+                '46' => 'VALENCIA',
+                '47' => 'VALLADOLID',
+                '48' => 'BIZKAIA',
+                '49' => 'ZAMORA',
+                '50' => 'ZARAGOZA',
+                '51' => 'CEUTA',
+                '52' => 'MELILLA',
+            ];
+
+            return $postCodeMap[substr($postCode, 0, 2)] ?? $state;
+        }
+
+        return $state;
+    }
+
+    /**
+     * Convert accented characters to their ASCII equivalents.
+     *
+     * @param string $string E.g., Almería
+     *
+     * @return string E.g., Almeria
+     */
+    public static function accentsToAscii(string $string): string
+    {
+        $normalizeChars = [
+            'Š' => 'S',
+            'š' => 's',
+            'Ð' => 'Dj',
+            'Ž' => 'Z',
+            'ž' => 'z',
+            'À' => 'A',
+            'Á' => 'A',
+            'Â' => 'A',
+            'Ã' => 'A',
+            'Ä' => 'A',
+            'Å' => 'A',
+            'Æ' => 'A',
+            'Ç' => 'C',
+            'È' => 'E',
+            'É' => 'E',
+            'Ê' => 'E',
+            'Ë' => 'E',
+            'Ì' => 'I',
+            'Í' => 'I',
+            'Î' => 'I',
+            'Ï' => 'I',
+            'Ñ' => 'N',
+            'Ń' => 'N',
+            'Ò' => 'O',
+            'Ó' => 'O',
+            'Ô' => 'O',
+            'Õ' => 'O',
+            'Ö' => 'O',
+            'Ø' => 'O',
+            'Ù' => 'U',
+            'Ú' => 'U',
+            'Û' => 'U',
+            'Ü' => 'U',
+            'Ý' => 'Y',
+            'Þ' => 'B',
+            'ß' => 'Ss',
+            'à' => 'a',
+            'á' => 'a',
+            'â' => 'a',
+            'ã' => 'a',
+            'ä' => 'a',
+            'å' => 'a',
+            'æ' => 'a',
+            'ç' => 'c',
+            'è' => 'e',
+            'é' => 'e',
+            'ê' => 'e',
+            'ë' => 'e',
+            'ì' => 'i',
+            'í' => 'i',
+            'î' => 'i',
+            'ï' => 'i',
+            'ð' => 'o',
+            'ñ' => 'n',
+            'ń' => 'n',
+            'ò' => 'o',
+            'ó' => 'o',
+            'ô' => 'o',
+            'õ' => 'o',
+            'ö' => 'o',
+            'ø' => 'o',
+            'ù' => 'u',
+            'ú' => 'u',
+            'û' => 'u',
+            'ü' => 'u',
+            'ý' => 'y',
+            'ý' => 'y',
+            'þ' => 'b',
+            'ÿ' => 'y',
+            'ƒ' => 'f',
+            'ă' => 'a',
+            'î' => 'i',
+            'â' => 'a',
+            'ș' => 's',
+            'ț' => 't',
+            'Ă' => 'A',
+            'Î' => 'I',
+            'Â' => 'A',
+            'Ș' => 'S',
+            'Ț' => 'T',
+        ];
+
+        return strtr($string, $normalizeChars);
     }
 }
