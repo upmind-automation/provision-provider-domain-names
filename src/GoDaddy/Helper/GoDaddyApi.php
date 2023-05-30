@@ -306,7 +306,7 @@ class GoDaddyApi
 
         $response->getBody()->close();
 
-        if (!$result) {
+        if ($result === "") {
             return null;
         }
 
