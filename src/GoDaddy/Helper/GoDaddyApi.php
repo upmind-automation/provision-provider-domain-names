@@ -306,6 +306,10 @@ class GoDaddyApi
 
         $response->getBody()->close();
 
+        if (!$result) {
+            return null;
+        }
+
         return $this->parseResponseData($result);
     }
 
@@ -358,5 +362,4 @@ class GoDaddyApi
 
         return $errorMessage ?? null;
     }
-
 }

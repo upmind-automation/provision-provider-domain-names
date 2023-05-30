@@ -67,16 +67,6 @@ class Provider extends DomainNames implements ProviderInterface
     public function poll(PollParams $params): PollResult
     {
         throw $this->errorResult('Not implemented');
-
-        /*$since = $params->after_date ? Carbon::parse($params->after_date) : null;
-
-        try {
-            $poll = $this->api()->poll(intval($params->limit), $since);
-
-            return PollResult::create($poll);
-        } catch (\Throwable $e) {
-            $this->handleException($e, $params);
-        }*/
     }
 
     /**
