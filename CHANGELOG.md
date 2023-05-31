@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.3.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.3.5) - 2023-06-01
+
+- Fix OpenProvider transfer() fallback to default nameservers when NS lookup returns empty
+
 ## [v2.3.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.3.4) - 2023-05-31
 
 - Update Namecheap contact phone processing to only convert to EPP format when
