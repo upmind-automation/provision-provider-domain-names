@@ -2,6 +2,14 @@
 
 All notable changes to the package will be documented in this file.
 
+## v2.3.4 2023-05-31
+
+- Update Namecheap contact phone processing to only convert to EPP format when
+  required, to avoid errors for existing domains with invalid contact phone numbers
+- Update Namecheap API error message formatting
+- Update Namecheap renew() function, use reactivate method for expired domains
+- Run code formatter
+
 ## v2.3.3 2023-05-24
 
 - Fix Enom transfer() logic to only return success upon transfer completion
