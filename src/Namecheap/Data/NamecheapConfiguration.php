@@ -20,10 +20,10 @@ class NamecheapConfiguration extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
-            'username'  => ['required', 'string', 'min:3', 'max:20'],
+            'username' => ['required', 'string', 'min:3', 'max:20'],
             'api_token' => ['required', 'string', 'min:6', 'max:50'],
-            'sandbox'   => ['nullable', 'boolean'],
-            'debug'     => ['nullable', 'boolean'],
+            'sandbox' => ['nullable', 'boolean'],
+            'debug' => ['nullable', 'boolean'],
         ]);
     }
 }

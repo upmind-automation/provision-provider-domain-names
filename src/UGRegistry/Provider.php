@@ -398,7 +398,7 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             'admin' => $this->_parseContactInfo($domainData['data']['domain']['contacts']['admin']),
             'tech' => $this->_parseContactInfo($domainData['data']['domain']['contacts']['tech']),
             'ns' => $ns,
-            'created_at' =>  Utils::formatDate($domainData['data']['domain']['registration_date']),
+            'created_at' => Utils::formatDate($domainData['data']['domain']['registration_date']),
             'updated_at' => null,
             'expires_at' => Utils::formatDate($domainData['data']['domain']['expiry_date']),
         ])->setMessage('Domain info retrieved');

@@ -112,7 +112,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn($tld) => $sld.".".Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
         $domainList = rtrim(implode(",", $domains), ',');
@@ -149,9 +149,9 @@ class Provider extends DomainNames implements ProviderInterface
 
         $contacts = [
             NamecheapApi::CONTACT_TYPE_REGISTRANT => $params->registrant->register,
-            NamecheapApi::CONTACT_TYPE_ADMIN      => $params->admin->register,
-            NamecheapApi::CONTACT_TYPE_TECH       => $params->tech->register,
-            NamecheapApi::CONTACT_TYPE_BILLING    => $params->billing->register,
+            NamecheapApi::CONTACT_TYPE_ADMIN => $params->admin->register,
+            NamecheapApi::CONTACT_TYPE_TECH => $params->tech->register,
+            NamecheapApi::CONTACT_TYPE_BILLING => $params->billing->register,
         ];
 
         try {
@@ -206,10 +206,10 @@ class Provider extends DomainNames implements ProviderInterface
         $default = 0;
 
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
-            if (Arr::has($params, $prefix.$i)) {
-                $host = Arr::get($params, $prefix.$i)->host;
+            if (Arr::has($params, $prefix . $i)) {
+                $host = Arr::get($params, $prefix . $i)->host;
                 if (!in_array($host, self::DEFAULT_NAMESERVERS)) {
-                    $nameServers .= $host.",";
+                    $nameServers .= $host . ",";
                     $custom++;
                 } else {
                     $default++;
@@ -464,14 +464,14 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         $client = new Client([
-            'base_uri'        => $this->resolveAPIURL(),
-            'headers'         => [
+            'base_uri' => $this->resolveAPIURL(),
+            'headers' => [
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/Namecheap',
             ],
             'connect_timeout' => 10,
-            'timeout'         => 60,
-            'verify'          => !$this->configuration->sandbox,
-            'handler'         => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'timeout' => 60,
+            'verify' => !$this->configuration->sandbox,
+            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
         ]);
 
         return $this->api = new NamecheapApi($client, $this->configuration, $this->getSystemInfo());

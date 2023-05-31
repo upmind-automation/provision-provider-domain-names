@@ -563,8 +563,8 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame = new \AfriCC\EPP\Frame\Command\Info\Domain();
         $infoFrame->setDomain($domainName);
 
-//        $infoXml = $infoFrame->__toString();
-//        $this->getLogger()->debug(__METHOD__, compact('client', 'infoXml', 'xmlResponse'));
+        //        $infoXml = $infoFrame->__toString();
+        //        $this->getLogger()->debug(__METHOD__, compact('client', 'infoXml', 'xmlResponse'));
 
         $xmlResponse = $client->request($infoFrame);
         $domainData = $xmlResponse->data();
@@ -631,15 +631,15 @@ class Provider extends DomainNames implements ProviderInterface
             'admin' => $contacts['administrative'] ?? null,
             'tech' => $contacts['technical'] ?? null,
             'ns' => $ns,
-            'created_at' =>  Utils::formatDate($domainData['infData']['crDate']),
+            'created_at' => Utils::formatDate($domainData['infData']['crDate']),
             'updated_at' => Utils::formatDate($domainData['infData']['upDate'] ?? $domainData['infData']['crDate']),
             'expires_at' => Utils::formatDate($domainData['infData']['exDate']),
         ])->setMessage($msg);
 
-//        $arrSearch = array_search("Active", $currentStatuses);
-//        if ($assertActive && $arrSearch === false) {
-//            throw $this->errorResult(sprintf('Domain name is %s', $status), $info->toArray());
-//        }
+        //        $arrSearch = array_search("Active", $currentStatuses);
+        //        if ($assertActive && $arrSearch === false) {
+        //            throw $this->errorResult(sprintf('Domain name is %s', $status), $info->toArray());
+        //        }
 
         return $info;
     }
@@ -723,15 +723,15 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
         $infoFrame->appendStreet('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:street[]', $contact->address1);
 
-//        $infoFrame->setCity($mode, $contact->city);
-//        $infoFrame->setName($mode, $contact->name);
-//        $infoFrame->setCountryCode($mode, Utils::normalizeCountryCode($contact->country_code));
-//        $infoFrame->setEmail($mode, $contact->email);
-//        $infoFrame->setOrganization($mode, $contact->organisation?? $contact->name);
-//        $infoFrame->setPostalCode($mode, $contact->postcode);
-//        $infoFrame->addStreet($mode, $contact->address1);
-//        $infoFrame->setVoice($mode, Utils::internationalPhoneToEpp($contact->phone));
-//        $infoFrame->setProvince($mode, Utils::stateNameToCode($contact->country_code, $contact->state));
+        //        $infoFrame->setCity($mode, $contact->city);
+        //        $infoFrame->setName($mode, $contact->name);
+        //        $infoFrame->setCountryCode($mode, Utils::normalizeCountryCode($contact->country_code));
+        //        $infoFrame->setEmail($mode, $contact->email);
+        //        $infoFrame->setOrganization($mode, $contact->organisation?? $contact->name);
+        //        $infoFrame->setPostalCode($mode, $contact->postcode);
+        //        $infoFrame->addStreet($mode, $contact->address1);
+        //        $infoFrame->setVoice($mode, Utils::internationalPhoneToEpp($contact->phone));
+        //        $infoFrame->setProvince($mode, Utils::stateNameToCode($contact->country_code, $contact->state));
 
         $xmlResponse = $client->request($infoFrame);
         $this->checkResponse($xmlResponse);
@@ -792,16 +792,16 @@ class Provider extends DomainNames implements ProviderInterface
         $id = $this->generateHandle();
         $infoFrame->setId($id);
 
-//        $mode = 'create';
-//        $infoFrame->appendCity('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:city', $contact->city);
-//        $infoFrame->appendEmail('contact:chg/contact:email', $contact->email);
-//        $infoFrame->appendCountryCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:cc', Utils::normalizeCountryCode($contact->country_code));
-//        $infoFrame->appendName('contact:chg/contact:postalInfo[@type=\'%s\']/contact:name', $contact->name);
-//        $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation?? $contact->name);
-//        $infoFrame->appendPostalCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:pc', $contact->postcode);
-//        $infoFrame->appendProvince('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:sp', Utils::stateNameToCode($contact->country_code, $contact->state));
-//        $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
-//        $infoFrame->appendStreet('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:street[]', $contact->address1);
+        //        $mode = 'create';
+        //        $infoFrame->appendCity('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:city', $contact->city);
+        //        $infoFrame->appendEmail('contact:chg/contact:email', $contact->email);
+        //        $infoFrame->appendCountryCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:cc', Utils::normalizeCountryCode($contact->country_code));
+        //        $infoFrame->appendName('contact:chg/contact:postalInfo[@type=\'%s\']/contact:name', $contact->name);
+        //        $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation?? $contact->name);
+        //        $infoFrame->appendPostalCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:pc', $contact->postcode);
+        //        $infoFrame->appendProvince('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:sp', Utils::stateNameToCode($contact->country_code, $contact->state));
+        //        $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
+        //        $infoFrame->appendStreet('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:street[]', $contact->address1);
 
         $infoFrame->setCity($contact->city);
         $infoFrame->setName($contact->name ?? $contact->organisation);

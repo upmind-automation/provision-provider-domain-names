@@ -218,7 +218,7 @@ class Provider extends DomainNames implements ProviderInterface
                     //'f_whois_privacy' => '' // TODO - privacy
                     'domain' => $domain,
                     'reg_username' => bin2hex(random_bytes(6)),
-                    'reg_password' =>  bin2hex(random_bytes(6)),
+                    'reg_password' => bin2hex(random_bytes(6)),
                     'handle' => 'process',
                     'period' => Arr::get($params, 'renew_years', 1),
                     'reg_type' => 'new',
@@ -346,7 +346,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'attributes' => [
                     'domain' => $domain,
                     'reg_username' => $username,
-                    'reg_password' =>  bin2hex(random_bytes(6)),
+                    'reg_password' => bin2hex(random_bytes(6)),
                     'auth_info' => $eppCode,
                     'change_contact' => 0,
                     'handle' => 'process',

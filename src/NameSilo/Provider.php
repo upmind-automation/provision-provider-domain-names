@@ -708,7 +708,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $return;
         }
 
-        $return  = $xml[$error->line - 1] . "\n";
+        $return = $xml[$error->line - 1] . "\n";
         $return .= str_repeat('-', $error->column) . "^\n";
 
         switch ($error->level) {
@@ -900,7 +900,7 @@ class Provider extends DomainNames implements ProviderInterface
             'admin' => $contacts['administrative'],
             'tech' => $contacts['technical'],
             'ns' => $ns,
-            'created_at' =>  Utils::formatDate((string)$domainData->reply->created),
+            'created_at' => Utils::formatDate((string)$domainData->reply->created),
             'updated_at' => null,
             'expires_at' => Utils::formatDate((string)$domainData->reply->expires),
         ])->setMessage($msg);
@@ -1075,11 +1075,11 @@ class Provider extends DomainNames implements ProviderInterface
                 $domainParts = explode('.', Arr::get($params, 'nameservers.ns' . $i . '.host'));
                 $tld = array_pop($domainParts);
                 $data['domain'] = array_pop($domainParts) . '.' . $tld;
-                $data['new_host']  = implode('.', $domainParts);
+                $data['new_host'] = implode('.', $domainParts);
                 if (!Arr::has($params, 'nameservers.ns' . $i . '.ip') || Arr::get($params, 'nameservers.ns' . $i . '.ip') == null) {
                     continue;
                 }
-                $data['ip1']  = Arr::get($params, 'nameservers.ns' . $i . '.ip');
+                $data['ip1'] = Arr::get($params, 'nameservers.ns' . $i . '.ip');
                 $this->_callApi(
                     $data,
                     'addRegisteredNameServer'
@@ -1095,7 +1095,7 @@ class Provider extends DomainNames implements ProviderInterface
         $data['domain'] = $domain;
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'ns' . $i)) {
-                $data['ns' . $i]  = Arr::get($params, 'ns' . $i . '.host');
+                $data['ns' . $i] = Arr::get($params, 'ns' . $i . '.host');
             }
         }
         $this->_callApi(

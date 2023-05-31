@@ -65,7 +65,7 @@ class NamecheapApi
     public function checkMultipleDomains(string $domainList): array
     {
         $params = [
-            'command'    => 'namecheap.domains.check',
+            'command' => 'namecheap.domains.check',
             'DomainList' => $domainList,
         ];
 
@@ -79,15 +79,15 @@ class NamecheapApi
             $available = (string) $domain->attributes()->Available === "true";
 
             $dacDomains[] = DacDomain::create([
-                'domain'       => $domainName,
-                'description'  => sprintf(
+                'domain' => $domainName,
+                'description' => sprintf(
                     'Domain is %s to register',
                     $available ? 'available' : 'not available'
                 ),
-                'tld'          => Utils::getTld($domainName),
+                'tld' => Utils::getTld($domainName),
                 'can_register' => $available,
                 'can_transfer' => !$available,
-                'is_premium'   => $domain->attributes()->IsPremiumName === "true",
+                'is_premium' => $domain->attributes()->IsPremiumName === "true",
             ]);
         }
 
@@ -105,9 +105,9 @@ class NamecheapApi
     public function register(string $domainName, int $years, array $contacts, string $nameServers): void
     {
         $params = [
-            'command'     => 'namecheap.domains.create',
-            'DomainName'  => $domainName,
-            'Years'       => $years,
+            'command' => 'namecheap.domains.create',
+            'DomainName' => $domainName,
+            'Years' => $years,
             'Nameservers' => $nameServers,
         ];
 
@@ -128,10 +128,10 @@ class NamecheapApi
     public function initiateTransfer(string $domainName, string $eppCode): string
     {
         $params = [
-            'command'    => 'namecheap.domains.transfer.create',
+            'command' => 'namecheap.domains.transfer.create',
             'DomainName' => $domainName,
-            'EPPCode'    => 'base64:'.base64_encode($eppCode),
-            'Years'      => 1,
+            'EPPCode' => 'base64:' . base64_encode($eppCode),
+            'Years' => 1,
         ];
 
         $response = $this->makeRequest($params)->DomainTransferCreateResult;
@@ -148,9 +148,9 @@ class NamecheapApi
     public function renew(string $domainName, int $period): void
     {
         $params = [
-            'command'    => 'namecheap.domains.renew',
+            'command' => 'namecheap.domains.renew',
             'DomainName' => $domainName,
-            'Years'      => $period,
+            'Years' => $period,
         ];
 
         $this->makeRequest($params);
@@ -164,7 +164,7 @@ class NamecheapApi
     public function getDomainInfo(string $domainName): array
     {
         $params = [
-            'command'    => 'namecheap.domains.getinfo',
+            'command' => 'namecheap.domains.getinfo',
             'DomainName' => $domainName,
         ];
 
@@ -175,15 +175,15 @@ class NamecheapApi
         $status = (string) $response->attributes()->Status;
 
         return [
-            'id'         => (string) $response->attributes()->ID,
-            'domain'     => (string) $response->attributes()->DomainName,
-            'statuses'   => [$status === "Ok" ? 'Active' : $status],
-            'locked'     => $lock,
+            'id' => (string) $response->attributes()->ID,
+            'domain' => (string) $response->attributes()->DomainName,
+            'statuses' => [$status === "Ok" ? 'Active' : $status],
+            'locked' => $lock,
             'registrant' => $this->parseContact($contacts->Registrant, self::CONTACT_TYPE_REGISTRANT),
-            'billing'    => $this->parseContact($contacts->AuxBilling, self::CONTACT_TYPE_BILLING),
-            'tech'       => $this->parseContact($contacts->Tech, self::CONTACT_TYPE_TECH),
-            'admin'      => $this->parseContact($contacts->Admin, self::CONTACT_TYPE_ADMIN),
-            'ns'         => NameserversResult::create($this->parseNameservers($response->DnsDetails)),
+            'billing' => $this->parseContact($contacts->AuxBilling, self::CONTACT_TYPE_BILLING),
+            'tech' => $this->parseContact($contacts->Tech, self::CONTACT_TYPE_TECH),
+            'admin' => $this->parseContact($contacts->Admin, self::CONTACT_TYPE_ADMIN),
+            'ns' => NameserversResult::create($this->parseNameservers($response->DnsDetails)),
             'created_at' => Utils::formatDate((string) $response->DomainDetails->CreatedDate),
             'updated_at' => null,
             'expires_at' => Utils::formatDate((string) $response->DomainDetails->ExpiredDate),
@@ -206,7 +206,7 @@ class NamecheapApi
         $auxBillingParams = $this->setXMLContactParams($currentContacts->AuxBilling, self::CONTACT_TYPE_BILLING);
 
         $params = [
-            'command'    => 'namecheap.domains.setContacts',
+            'command' => 'namecheap.domains.setContacts',
             'DomainName' => $domainName,
         ];
 
@@ -235,9 +235,9 @@ class NamecheapApi
         }
 
         $params = [
-            'command'     => $command,
-            'SLD'         => $sld,
-            'TLD'         => $tld,
+            'command' => $command,
+            'SLD' => $sld,
+            'TLD' => $tld,
             'NameServers' => $nameservers,
         ];
 
@@ -257,7 +257,7 @@ class NamecheapApi
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $params = [
-            'command'    => 'namecheap.domains.setRegistrarLock',
+            'command' => 'namecheap.domains.setRegistrarLock',
             'DomainName' => $domainName,
             'LockAction' => $lock ? "lock" : "unlock",
         ];
@@ -275,8 +275,8 @@ class NamecheapApi
     {
         $params = [
             'command' => 'namecheap.domains.dns.getList',
-            'SLD'     => $sld,
-            'TLD'     => $tld,
+            'SLD' => $sld,
+            'TLD' => $tld,
         ];
 
         return $this->makeRequest($params)->DomainDNSGetListResult;
@@ -290,7 +290,7 @@ class NamecheapApi
     public function getRegistrarLockStatus(string $domainName): bool
     {
         $params = [
-            'command'    => 'namecheap.domains.getRegistrarLock',
+            'command' => 'namecheap.domains.getRegistrarLock',
             'DomainName' => $domainName,
         ];
 
@@ -314,7 +314,7 @@ class NamecheapApi
     private function getContacts(string $domainName): SimpleXMLElement
     {
         $params = [
-            'command'    => 'namecheap.domains.getContacts',
+            'command' => 'namecheap.domains.getContacts',
             'DomainName' => $domainName,
         ];
 
@@ -329,9 +329,9 @@ class NamecheapApi
     public function getDomainTransferOrders(string $domainName): ?array
     {
         $params = [
-            'command'    => 'namecheap.domains.transfer.getlist',
+            'command' => 'namecheap.domains.transfer.getlist',
             'SearchTerm' => $domainName,
-            'ListType'   => 'INPROGRESS',
+            'ListType' => 'INPROGRESS',
         ];
 
         $response = $this->makeRequest($params);
@@ -342,10 +342,10 @@ class NamecheapApi
         if ($orderCount > 0) {
             foreach ($response->TransferGetListResult->children() as $order) {
                 $orders[] = [
-                    'orderId'  => (string) $order->attributes()->OrderID,
-                    'status'   => (string) $order->attributes()->Status,
+                    'orderId' => (string) $order->attributes()->OrderID,
+                    'status' => (string) $order->attributes()->Status,
                     'statusId' => (int) $order->attributes()->StatusID,
-                    'date'     => Utils::formatDate((string) $order->attributes()->StatusDate),
+                    'date' => Utils::formatDate((string) $order->attributes()->StatusDate),
                 ];
             }
 
@@ -370,8 +370,8 @@ class NamecheapApi
     {
         // Prepare command params
         $params = array_merge([
-            'ApiUser'  => $this->configuration->username,
-            'ApiKey'   => $this->configuration->api_token,
+            'ApiUser' => $this->configuration->username,
+            'ApiKey' => $this->configuration->api_token,
             'UserName' => $this->configuration->username,
             'ClientIp' => Arr::first($this->systemInfo->outgoing_ips),
         ], $params);
@@ -473,14 +473,14 @@ class NamecheapApi
 
         return ContactData::create([
             'organisation' => (string) $contact->OrganizationName ?: '-',
-            'name'         => $contact->FirstName." ".$contact->LastName,
-            'address1'     => (string) $contact->Address1,
-            'city'         => (string) $contact->City,
-            'state'        => (string) $contact->StateProvince ?: '-',
-            'postcode'     => (string) $contact->PostalCode,
+            'name' => $contact->FirstName . " " . $contact->LastName,
+            'address1' => (string) $contact->Address1,
+            'city' => (string) $contact->City,
+            'state' => (string) $contact->StateProvince ?: '-',
+            'postcode' => (string) $contact->PostalCode,
             'country_code' => Utils::normalizeCountryCode((string) $contact->Country),
-            'email'        => (string) $contact->EmailAddress,
-            'phone'        => (string) $contact->Phone,
+            'email' => (string) $contact->EmailAddress,
+            'phone' => (string) $contact->Phone,
         ]);
     }
 
@@ -507,7 +507,7 @@ class NamecheapApi
         $i = 1;
 
         foreach ($DnsDetails->children() as $ns) {
-            $result['ns'.$i] = ['host' => (string) $ns];
+            $result['ns' . $i] = ['host' => (string) $ns];
             $i++;
         }
 
@@ -537,16 +537,16 @@ class NamecheapApi
     private function setXMLContactParams(SimpleXMLElement $contact, string $type): array
     {
         return [
-            $type.'OrganizationName' => (string) $contact->OrganizationName ?: '-',
-            $type.'FirstName'        => (string) $contact->FirstName,
-            $type.'LastName'         => (string) $contact->LastName,
-            $type.'Address1'         => (string) $contact->Address1,
-            $type.'City'             => (string) $contact->City,
-            $type.'StateProvince'    => (string) $contact->StateProvince ?: '-',
-            $type.'PostalCode'       => (string) $contact->PostalCode,
-            $type.'Country'          => Utils::normalizeCountryCode((string) $contact->Country),
-            $type.'EmailAddress'     => (string) $contact->EmailAddress,
-            $type.'Phone'            => (string) $contact->Phone,
+            $type . 'OrganizationName' => (string) $contact->OrganizationName ?: '-',
+            $type . 'FirstName' => (string) $contact->FirstName,
+            $type . 'LastName' => (string) $contact->LastName,
+            $type . 'Address1' => (string) $contact->Address1,
+            $type . 'City' => (string) $contact->City,
+            $type . 'StateProvince' => (string) $contact->StateProvince ?: '-',
+            $type . 'PostalCode' => (string) $contact->PostalCode,
+            $type . 'Country' => Utils::normalizeCountryCode((string) $contact->Country),
+            $type . 'EmailAddress' => (string) $contact->EmailAddress,
+            $type . 'Phone' => (string) $contact->Phone,
         ];
     }
 
@@ -561,16 +561,16 @@ class NamecheapApi
         $nameParts = $this->getNameParts($contactParams->name ?? $contactParams->organisation);
 
         return [
-            $type.'OrganizationName' => $contactParams->organisation ?: '-',
-            $type.'FirstName'        => $nameParts['firstName'],
-            $type.'LastName'         => $nameParts['lastName']?: $nameParts['firstName'],
-            $type.'Address1'         => $contactParams->address1,
-            $type.'City'             => $contactParams->city,
-            $type.'StateProvince'    => $contactParams->state ?: '-',
-            $type.'PostalCode'       => $contactParams->postcode,
-            $type.'Country'          => Utils::normalizeCountryCode($contactParams->country_code),
-            $type.'EmailAddress'     => $contactParams->email,
-            $type.'Phone'            => Utils::internationalPhoneToEpp($contactParams->phone),
+            $type . 'OrganizationName' => $contactParams->organisation ?: '-',
+            $type . 'FirstName' => $nameParts['firstName'],
+            $type . 'LastName' => $nameParts['lastName'] ?: $nameParts['firstName'],
+            $type . 'Address1' => $contactParams->address1,
+            $type . 'City' => $contactParams->city,
+            $type . 'StateProvince' => $contactParams->state ?: '-',
+            $type . 'PostalCode' => $contactParams->postcode,
+            $type . 'Country' => Utils::normalizeCountryCode($contactParams->country_code),
+            $type . 'EmailAddress' => $contactParams->email,
+            $type . 'Phone' => Utils::internationalPhoneToEpp($contactParams->phone),
         ];
     }
 }

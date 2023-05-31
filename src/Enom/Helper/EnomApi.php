@@ -69,9 +69,9 @@ class EnomApi
     {
         // Params for basic domain info
         $params = [
-            'command'   =>  'GetDomainInfo',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'GetDomainInfo',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $domainInfo = $this->makeRequest($params);
@@ -110,9 +110,9 @@ class EnomApi
     {
         // Params for basic domain info
         $params = [
-            'command'   =>  'GetContacts',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'GetContacts',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $contacts = $this->makeRequest($params);
@@ -169,10 +169,10 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'SynchAuthInfo',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
-            'EmailEPP'  => 'True',
+            'command' => 'SynchAuthInfo',
+            'SLD' => $sld,
+            'TLD' => $tld,
+            'EmailEPP' => 'True',
             'RunSynchAutoInfo' => 'True'
         ];
 
@@ -191,10 +191,10 @@ class EnomApi
 
         // Command params
         $params = [
-            'command'   =>  'SetPassword',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
-            'EmailEPP'  => 'True',
+            'command' => 'SetPassword',
+            'SLD' => $sld,
+            'TLD' => $tld,
+            'EmailEPP' => 'True',
             'RunSynchAutoInfo' => 'True',
             'DomainPassword' => $password
         ];
@@ -213,9 +213,9 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'SetRenew',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
+            'command' => 'SetRenew',
+            'SLD' => $sld,
+            'TLD' => $tld,
             'RenewFlag' => (int) $autoRenew
         ];
 
@@ -231,9 +231,9 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'SetRegLock',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
+            'command' => 'SetRegLock',
+            'SLD' => $sld,
+            'TLD' => $tld,
             'UnlockRegistrar' => (string)intval(!$lock),
         ];
 
@@ -249,9 +249,9 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'GetRegLock',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'GetRegLock',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $result = $this->makeRequest($params);
@@ -279,8 +279,8 @@ class EnomApi
 
         $params = [
             'command' => 'Contacts',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
+            'SLD' => $sld,
+            'TLD' => $tld,
             'ContactType' => strtoupper($type),
             $type . 'FirstName' => $nameParts['firstName'],
             $type . 'LastName' => $nameParts['lastName'],
@@ -305,9 +305,9 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'GetPasswordBit',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'GetPasswordBit',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $result = $this->makeRequest($params);
@@ -322,9 +322,9 @@ class EnomApi
     {
         // Command params
         $params = [
-            'command'   =>  'GetWhoisContact',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'GetWhoisContact',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $whois = $this->makeRequest($params);
@@ -356,9 +356,9 @@ class EnomApi
     {
         // Update Name Servers Command Params
         $params = [
-            'command'   =>  'ModifyNS',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld
+            'command' => 'ModifyNS',
+            'SLD' => $sld,
+            'TLD' => $tld
         ];
 
         $nameServerNumber = 1;
@@ -383,10 +383,10 @@ class EnomApi
     {
         // Renew command params
         $params = [
-            'command'   =>  'extend',
-            'SLD'       =>  $sld,
-            'TLD'       =>  $tld,
-            'NumYears'  =>  $period,
+            'command' => 'extend',
+            'SLD' => $sld,
+            'TLD' => $tld,
+            'NumYears' => $period,
             'OverrideOrder' => 1 // allow multiple renewal orders in the same day
         ];
 
@@ -398,8 +398,8 @@ class EnomApi
             // Get Domain Info and Additional Services
             $idProtectParams = [
                 'command' => 'RenewServices',
-                'SLD'       =>  $sld,
-                'TLD'       =>  $tld,
+                'SLD' => $sld,
+                'TLD' => $tld,
                 'Service' => 'WPPS'
             ];
 
