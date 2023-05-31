@@ -192,7 +192,6 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
-
     /**
      * @param ArrayAccess $params
      * @param string $prefix

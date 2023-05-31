@@ -826,7 +826,6 @@ class Provider extends DomainNames implements ProviderInterface
                 throw $this->errorResult('Invalid registrant ID provided!', compact('contactId', 'params'), [], $e);
             }
 
-
             // Set Parameters for the update query
             $eppContactType = $params->type;
 
@@ -887,7 +886,6 @@ class Provider extends DomainNames implements ProviderInterface
 
         throw $this->errorResult($errorMessage, $data, $debug, $exception);
     }
-
 
     /**
      * Ensures the provider instance has a logged in EppConnection and returns it.

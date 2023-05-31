@@ -156,7 +156,6 @@ class Provider extends DomainNames implements ProviderInterface
                     'domain' => $domain
                 ], 'checkTransferStatus', 'GET');
 
-
                 if ($since !== null && $since->gt(Carbon::parse((string)$checkTransferStatus->reply->date))) {
                     continue;
                 }
@@ -212,7 +211,6 @@ class Provider extends DomainNames implements ProviderInterface
             'technical' => $this->_handleContact($params->tech, $domain),
             'billing' => $this->_handleContact($params->billing, $domain),
         ];
-
 
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'nameservers.ns' . $i)) {
@@ -734,7 +732,6 @@ class Provider extends DomainNames implements ProviderInterface
         return "$return\n---\n";
     }
 
-
     /**
      * @param string $email
      * @param string $telephone
@@ -978,7 +975,6 @@ class Provider extends DomainNames implements ProviderInterface
 
         return PromiseUtils::all($promises)->wait();
     }
-
 
     protected function formatDate(?string $date): ?string
     {

@@ -99,7 +99,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
@@ -163,7 +163,6 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContactInfo($registrantID)) {
                 throw $this->errorResult("Invalid registrant ID provided!", $params);
             }
-
         } else {
             if (!Arr::has($params, 'registrant.register')) {
                 throw $this->errorResult('Registrant contact data is required!');
@@ -180,7 +179,6 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContactInfo($adminID)) {
                 throw $this->errorResult("Invalid registrant ID provided!", $params);
             }
-
         } else {
             if (!Arr::has($params, 'admin.register')) {
                 throw $this->errorResult('Admin contact data is required!');
@@ -206,7 +204,6 @@ class Provider extends DomainNames implements ProviderInterface
                 $params->tech->register,
             );
         }
-
 
         if (Arr::has($params, 'billing.id')) {
             $billingID = $params->billing->id;
@@ -251,7 +248,6 @@ class Provider extends DomainNames implements ProviderInterface
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, intval($params->renew_years));
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
-
         } catch (eppException $e) {
             $this->_eppExceptionHandler($e, $params->toArray());
         }
@@ -328,7 +324,6 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         try {
-
             $this->api()->updateNameServers($domainName, $nameServers);
 
             $hosts = $this->api()->getHosts($domainName);
@@ -374,7 +369,6 @@ class Provider extends DomainNames implements ProviderInterface
             $this->api()->setRegistrarLock($domainName, $addStatuses, $removeStatuses);
 
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
-
         } catch (eppException $e) {
             return $this->_eppExceptionHandler($e, $params->toArray());
         }
@@ -447,7 +441,6 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             return $this->connection;
-
         } catch (eppException $e) {
             switch ($e->getCode()) {
                 case 2001:

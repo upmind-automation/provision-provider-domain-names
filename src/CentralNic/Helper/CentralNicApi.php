@@ -185,8 +185,7 @@ class CentralNicApi
         int    $period,
         array  $contacts,
         array  $nameServers
-    ): array
-    {
+    ): array {
         $domain = new eppDomain($domainName, $contacts[eppContactHandle::CONTACT_TYPE_REGISTRANT], [
             new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_ADMIN], eppContactHandle::CONTACT_TYPE_ADMIN),
             new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_TECH], eppContactHandle::CONTACT_TYPE_TECH),
@@ -324,8 +323,7 @@ class CentralNicApi
     public function updateNameServers(
         string $domainName,
         array  $nameservers
-    ): string
-    {
+    ): string {
         // If new nameservers are given, get the old ones to remove them
         $hosts = [];
         foreach ($nameservers as $nameserver) {

@@ -173,7 +173,6 @@ class Provider extends DomainNames implements ProviderInterface
             }
         }
 
-
         foreach ($checkDomains ?? [] as $chk) {
             $canRegister = boolval($chk['@name']['avail']);
             $canTransfer = false;

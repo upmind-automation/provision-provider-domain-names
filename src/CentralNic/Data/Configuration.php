@@ -17,7 +17,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  */
 class Configuration extends DataSet
 {
-
     public static function rules(): Rules
     {
         return new Rules([

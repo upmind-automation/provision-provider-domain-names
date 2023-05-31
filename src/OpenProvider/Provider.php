@@ -930,7 +930,6 @@ class Provider extends DomainNames implements ProviderInterface
 
             $offset += $limit;
 
-
             if (!isset($response['data']['results']) || $response['data']['total'] == 0) {
                 break;
             }
