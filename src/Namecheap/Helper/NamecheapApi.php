@@ -480,7 +480,7 @@ class NamecheapApi
             'postcode'     => (string) $contact->PostalCode,
             'country_code' => Utils::normalizeCountryCode((string) $contact->Country),
             'email'        => (string) $contact->EmailAddress,
-            'phone'        => Utils::internationalPhoneToEpp((string) $contact->Phone),
+            'phone'        => (string) $contact->Phone,
         ]);
     }
 
@@ -546,7 +546,7 @@ class NamecheapApi
             $type.'PostalCode'       => (string) $contact->PostalCode,
             $type.'Country'          => Utils::normalizeCountryCode((string) $contact->Country),
             $type.'EmailAddress'     => (string) $contact->EmailAddress,
-            $type.'Phone'            => Utils::internationalPhoneToEpp((string) $contact->Phone),
+            $type.'Phone'            => (string) $contact->Phone,
         ];
     }
 
