@@ -158,6 +158,23 @@ class NamecheapApi
 
     /**
      * @param  string  $domainName
+     * @param  int  $period
+     *
+     * @return void
+     */
+    public function reactivate(string $domainName, int $period): void
+    {
+        $params = [
+            'command' => 'namecheap.domains.reactivate',
+            'DomainName' => $domainName,
+            'Years' => $period,
+        ];
+
+        $this->makeRequest($params);
+    }
+
+    /**
+     * @param  string  $domainName
      *
      * @return array
      */

@@ -284,8 +284,19 @@ class Provider extends DomainNames implements ProviderInterface
         $period = intval($params->renew_years);
 
         try {
-            $this->api()->renew($domainName, $period);
-            return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
+            try {
+                $this->api()->renew($domainName, $period);
+            } catch (\Throwable $e) {
+                /** @link  */
+                if (Str::contains($e->getMessage(), '[2020166]')) {
+                    // domain already expired - renew using reactivate method
+                    $this->api()->reactivate($domainName, $period);
+                    return $this->_getInfo($domainName, 'Domain reactivated + renewed successfully');
+                }
+
+                throw $e;
+            }
+            return $this->_getInfo($domainName, 'Domain renewed successfully');
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
