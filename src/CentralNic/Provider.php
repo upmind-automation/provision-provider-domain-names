@@ -78,9 +78,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('CentralNic')
-            //TODO: fix desc, load logo
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/centralnic-logo@2x.png')
             ->setDescription('Register, transfer, renew and manage CentralNic domains');
-        //->setLogoUrl('https://api.upmind.io/images/logos/provision/centralnic-logo@2x.png');
     }
 
     public function poll(PollParams $params): PollResult
