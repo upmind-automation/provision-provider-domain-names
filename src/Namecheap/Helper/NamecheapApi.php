@@ -441,12 +441,12 @@ class NamecheapApi
                     $errors[] = 'Rejected request - please review whitelisted IPs';
                     break;
                 default:
-                    $errors[] = (string) $error;
+                    $errors[] = sprintf('[%s] %s', $error->attributes()->Number, $error);
                     break;
             }
         }
 
-        return sprintf("Provider API Errors: %s", implode(', ', $errors));
+        return sprintf("Provider API Error: %s", implode(', ', $errors));
     }
 
     private function parseXmlError(SimpleXMLElement $errors): array
