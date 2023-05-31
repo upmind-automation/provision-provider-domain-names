@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.4.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.4.0) - 2023-06-01
+
+- Implement CentralNic registry
+
 ## [v2.3.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.3.5) - 2023-06-01
 
 - Fix OpenProvider transfer() fallback to default nameservers when NS lookup returns empty
