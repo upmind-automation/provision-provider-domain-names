@@ -242,6 +242,12 @@ class Provider extends DomainNames implements ProviderInterface
         $eppCode = $params->epp_code ?: null;
 
         try {
+            return $this->_getInfo($domainName, 'Domain active in registrar account');
+        } catch (eppException $e) {
+            // continue on to initiate transfer
+        }
+
+        try {
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, intval($params->renew_years));
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
