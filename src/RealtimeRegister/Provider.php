@@ -44,9 +44,11 @@ use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
  */
 class Provider extends DomainNames implements ProviderInterface
 {
-    const MAX_CUSTOM_NAMESERVERS = 5;
     protected Configuration $configuration;
-    protected Client $client;
+
+    private const MAX_CUSTOM_NAMESERVERS = 5;
+
+    protected RealtimeRegisterApi $api;
 
     public function __construct(Configuration $configuration)
     {
@@ -62,7 +64,13 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Not implemented');
+        $since = $params->after_date ? Carbon::parse($params->after_date) : null;
+        try {
+            $poll = $this->api()->poll(intval($params->limit), $since);
+            return PollResult::create($poll);
+        } catch (\Throwable $e) {
+            $this->handleException($e, $params);
+        }
     }
 
     public function domainAvailabilityCheck(DacParams $params): DacResult
@@ -111,21 +119,42 @@ class Provider extends DomainNames implements ProviderInterface
         $nameServers = [];
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'nameservers.ns' . $i)) {
+                $host = strtolower(Arr::get($params, 'nameservers.ns' . $i)['host']);
+                $ip = Arr::get($params, 'nameservers.ns' . $i)['ip'];
+
                 $nameServers[] = [
-                    'host' => Arr::get($params, 'nameservers.ns' . $i)['host'],
-                    'ip' => Arr::get($params, 'nameservers.ns' . $i)['ip']
+                    'host' => $host,
+                    'ip' => $ip
                 ];
+
+                try {
+                    $this->api()->createHost($host, $ip);
+                } catch (RequestException $e) {
+                    if ($this->getRequestExceptionMessage($e) !== 'Hosts can only be created subordinate to a domain in your account') {
+                        $this->handleException($e, $params);
+                    }
+                } catch (\Throwable $e) {
+                    $this->handleException($e, $params);
+                }
             }
         }
 
         try {
-            $this->api()->register(
-                $domainName,
-                $contacts,
-                $nameServers,
-            );
+            $this->api()->register($domainName, $contacts);
+        } catch (\Throwable $e) {
+            $this->handleException($e, $params);
+        }
 
-            return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
+        try {
+            $this->api()->updateNameservers($domainName, $nameServers);
+        } catch (RequestException $e) {
+            $message = $this->getRequestExceptionMessage($e);
+        } catch (\Throwable $e) {
+            $message = $e->getMessage();
+        }
+
+        try {
+            return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully! %s', $domainName, $message ?? null));
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
@@ -306,13 +335,15 @@ class Provider extends DomainNames implements ProviderInterface
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'ns' . $i)) {
                 $nameServers[] = [
-                    'host' => Arr::get($params, 'ns' . $i)['host'],
+                    'host' => strtolower(Arr::get($params, 'ns' . $i)['host']),
                     'ip' => Arr::get($params, 'ns' . $i)['ip']
                 ];
             }
         }
 
         try {
+            $this->api()->getDomainInfo($domainName);
+
             $result = $this->api()->updateNameservers(
                 $domainName,
                 $nameServers,
@@ -393,9 +424,7 @@ class Provider extends DomainNames implements ProviderInterface
         if ($e instanceof RequestException) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-
                 $reason = $response->getReasonPhrase();
-
                 $responseBody = $response->getBody()->__toString();
                 $responseData = json_decode($responseBody, true);
                 $errorMessage = $responseData['message'] ?? null;
@@ -403,13 +432,32 @@ class Provider extends DomainNames implements ProviderInterface
                 throw $this->errorResult(
                     sprintf('Provider API error: %s', $errorMessage ?? $reason ?? null),
                     [],
-                    ['response_data' => $responseBData ?? null],
+                    ['response_data' => $responseData ?? null],
                     $e
                 );
             }
         }
 
         throw $e;
+    }
+
+    /**
+     * @param $e
+     * @return string|null
+     */
+    public function getRequestExceptionMessage($e): ?string
+    {
+        $message = null;
+        if ($e instanceof RequestException) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                $responseBody = $response->getBody()->__toString();
+                $responseData = json_decode($responseBody, true);
+                $message = $responseData['message'] ?? null;
+            }
+        }
+
+        return $message;
     }
 
     protected function api(): RealtimeRegisterApi
