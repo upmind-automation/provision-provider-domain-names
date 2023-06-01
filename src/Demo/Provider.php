@@ -59,6 +59,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('Demo Provider')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/demo-logo.png')
             ->setDescription('Demo provider which doesn\'t actually provision anything, but will pretend to');
     }
 

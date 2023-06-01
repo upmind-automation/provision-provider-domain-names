@@ -805,7 +805,7 @@ class Provider extends DomainNames implements ProviderInterface
             return [
                 'name' => $hostname,
             ];
-        }, Utils::lookupNameservers(Utils::getDomain($sld, $tld), false) ?? self::DEFAULT_NAMESERVERS);
+        }, Utils::lookupNameservers(Utils::getDomain($sld, $tld), false) ?: self::DEFAULT_NAMESERVERS);
 
         $transferOrder = $this->_callApi($params, 'domains/transfer', 'POST');
 
@@ -929,7 +929,6 @@ class Provider extends DomainNames implements ProviderInterface
             ], 'domains', 'GET');
 
             $offset += $limit;
-
 
             if (!isset($response['data']['results']) || $response['data']['total'] == 0) {
                 break;
