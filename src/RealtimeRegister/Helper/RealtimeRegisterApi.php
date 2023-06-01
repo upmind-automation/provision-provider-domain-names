@@ -15,6 +15,7 @@ use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
+use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\RealtimeRegister\Data\Configuration;
@@ -98,7 +99,7 @@ class RealtimeRegisterApi
         return $dacDomains;
     }
 
-    public function register(string $domainName, array $contacts, array $nameServers): void
+    public function register(string $domainName, array $contacts): void
     {
         $command = "/v2/domains/{$domainName}";
 
@@ -122,11 +123,6 @@ class RealtimeRegisterApi
         );
 
         $this->makeRequest($command, null, $body, "POST");
-
-        $this->updateNameservers(
-            $domainName,
-            $nameServers,
-        );
     }
 
     public function makeRequest(string $command, ?array $params = null, ?array $body = null, ?string $method = 'GET'): ?array
@@ -146,7 +142,7 @@ class RealtimeRegisterApi
 
         $response->getBody()->close();
 
-        if (!$result) {
+        if ($result === '') {
             return null;
         }
 
@@ -233,14 +229,14 @@ class RealtimeRegisterApi
     private function parseContact(array $contact): ContactData
     {
         return ContactData::create([
-            'organisation' => (string)$contact['organization'] ?: '-',
+            'organisation' => $contact['organization'] ?? '-',
             'name' => $contact['name'],
-            'address1' => (string)$contact['addressLine'][0],
-            'city' => (string)$contact['city'],
+            'address1' => $contact['addressLine'][0],
+            'city' => $contact['city'],
             'state' => $contact['state'] ?? '-',
-            'postcode' => (string)$contact['postalCode'],
-            'country_code' => Utils::normalizeCountryCode((string)$contact['country']),
-            'email' => (string)$contact['email'],
+            'postcode' => $contact['postalCode'],
+            'country_code' => Utils::normalizeCountryCode($contact['country']),
+            'email' => $contact['email'],
             'phone' => $contact['voice'] ?? null,
         ]);
     }
@@ -254,12 +250,16 @@ class RealtimeRegisterApi
         return false;
     }
 
-    public function getContact(string $handle): ContactData
+    public function getContact(string $handle): ?ContactData
     {
         $command = "v2/customers/{$this->configuration->customer}/contacts/{$handle}";
-        $response = $this->makeRequest($command);
 
-        return $this->parseContact($response);
+        try {
+            $response = $this->makeRequest($command);
+            return $this->parseContact($response);
+        } catch (RequestException $e) {
+            return null;
+        }
     }
 
     public function getDomainEppCode(string $domainName): ?string
@@ -327,15 +327,8 @@ class RealtimeRegisterApi
         $hosts = [];
         foreach ($nameservers as $ns) {
             $hosts[] = $ns['host'];
-            try {
-                $this->getHost($ns['host']);
-            } catch (RequestException $e) {
-                if (!$ns['ip']) {
-                    throw new ProvisionFunctionError(sprintf('IP address for %s host must not be null', $ns['host']), 0, null);
-                }
 
-                $this->createHost($ns['host'], $ns['ip']);
-            }
+            $this->createHost($ns['host'], $ns['ip']);
         }
 
         $body = array('ns' => $hosts);
@@ -348,27 +341,37 @@ class RealtimeRegisterApi
         return $this->parseNameservers($response['ns']);
     }
 
-    private function createHost(string $hostName, string $ip): void
+    public function createHost(string $host, ?string $ip = null)
     {
-        $command = "/v2/hosts/{$hostName}";
+        if (!$this->getHost($host)) {
+            if (!$ip) {
+                throw new ProvisionFunctionError(sprintf('IP address for %s host must not be null', $host), 0, null);
+            }
 
-        $version = 'V4';
-        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            $version = 'V6';
+            $command = "/v2/hosts/{$host}";
+
+            $version = 'V4';
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                $version = 'V6';
+            }
+
+            $body = array('addresses' => [['address' => $ip,
+                'ipVersion' => $version
+            ]]);
+
+            $this->makeRequest($command, null, $body, "POST");
         }
-
-        $body = array('addresses' => [['address' => $ip,
-            'ipVersion' => $version
-        ]]);
-
-        $this->makeRequest($command, null, $body, "POST");
     }
 
-    private function getHost(string $hostName): ?array
+    public function getHost(string $hostName): ?array
     {
         $command = "/v2/hosts/{$hostName}";
 
-        return $this->makeRequest($command);
+        try {
+            return $this->makeRequest($command);
+        } catch (RequestException $e) {
+            return null;
+        }
     }
 
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
@@ -437,5 +440,75 @@ class RealtimeRegisterApi
         $response = $this->makeRequest($command, null, $body, "POST");
 
         return (string)$response['processId'];
+    }
+
+    public function poll(int $limit, ?Carbon $since): ?array
+    {
+        $command = "/v2/processes";
+
+        $notifications = [];
+
+        $params = [
+            'limit' => $limit,
+            'type' => 'domain',
+            'action:in' => 'incomingTransfer,incomingInternalTransfer,renew,delete',
+        ];
+
+        if ($since != null) {
+            $params = array_merge($params, ['createdDate:gt' => $since->format('Y-m-d\TH:i:s\Z')]);
+        }
+
+        $response = $this->makeRequest($command, $params);
+
+        $countRemaining = $response['pagination']['total'];
+
+        if (isset($response['entities'])) {
+            foreach ($response['entities'] as $entity) {
+                $messageId = $entity['id'];
+
+                $type = $this->mapNotificationType($entity['action']);
+
+                if (is_null($type)) {
+                    // this message is irrelevant
+                    continue;
+                }
+
+                $message = 'Domain Process';
+                $domain = $entity['identifier'] ?? '';
+                $messageDateTime = Carbon::parse($entity['createdDate']);
+
+
+                $notifications[] = DomainNotification::create()
+                    ->setId($messageId)
+                    ->setType(DomainNotification::TYPE_TRANSFER_IN)
+                    ->setMessage($message)
+                    ->setDomains([$domain])
+                    ->setCreatedAt($messageDateTime)
+                    ->setExtra(['response' => json_encode($entity)]);
+            }
+        }
+
+        return [
+            'count_remaining' => $countRemaining,
+            'notifications' => $notifications,
+        ];
+    }
+
+    private function mapNotificationType(string $action): ?string
+    {
+        switch ($action) {
+            case 'incomingInternalTransfer':
+            case 'incomingTransfer':
+                $type = DomainNotification::TYPE_TRANSFER_IN;
+                break;
+            case 'renew':
+                $type = DomainNotification::TYPE_RENEWED;
+                break;
+            case 'delete':
+                $type = DomainNotification::TYPE_DELETED;
+                break;
+        }
+
+        return $type ?? null;
     }
 }
