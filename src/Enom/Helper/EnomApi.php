@@ -10,8 +10,8 @@ use InvalidArgumentException;
 use RuntimeException;
 use SimpleXMLElement;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainContactInfo;
 use Upmind\ProvisionProviders\DomainNames\Enom\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 
@@ -104,7 +104,7 @@ class EnomApi
     /**
      * @param string $sld
      * @param string $tld
-     * @return array
+     * @return ContactData[]
      */
     public function getDomainContacts(string $sld, string $tld): array
     {
@@ -600,15 +600,15 @@ class EnomApi
     /**
      * @param \SimpleXMLElement $rawContactData
      * @param   string  $type   Contact Type (Registrant, Tech, Admin, Billing)
-     * @return DomainContactInfo
+     * @return ContactData
      */
-    private function parseContact(\SimpleXMLElement $rawContactData, string $type): DomainContactInfo
+    private function parseContact(\SimpleXMLElement $rawContactData, string $type): ContactData
     {
         // Check if our contact type is valid
         self::validateContactType($type);
 
-        return DomainContactInfo::create([
-            'contact_id' => $type, // Using type here, because sometimes there's no obtainable PartyId
+        return ContactData::create([
+            // 'id' => $type, // Using type here, because sometimes there's no obtainable PartyId
             'name' => sprintf('%s %s', (string) $rawContactData->{$type . 'FirstName'}, (string) $rawContactData->{$type . 'LastName'}),
             'email' => (string) $rawContactData->{$type . 'EmailAddress'},
             'phone' => (string) $rawContactData->{$type . 'Phone'},
@@ -617,7 +617,7 @@ class EnomApi
             'city' => (string) $rawContactData->{$type . 'City'},
             'postcode' => (string) $rawContactData->{$type . 'PostalCode'},
             'country_code' => (string) $rawContactData->{$type . 'Country'},
-            'type' => null,
+            'type' => $type,
         ]);
     }
 

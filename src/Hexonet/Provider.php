@@ -191,7 +191,7 @@ class Provider extends DomainNames implements ProviderInterface
                     $contactType
                 );
 
-                $registrantId = $registrant->contact_id;
+                $registrantId = $registrant->id;
             }
 
             if (!$adminId = $params->admin->id) {
@@ -224,7 +224,7 @@ class Provider extends DomainNames implements ProviderInterface
                     $contactType
                 );
 
-                $adminId = $admin->contact_id;
+                $adminId = $admin->id;
             }
 
             if (!$billingId = $params->billing->id) {
@@ -257,7 +257,7 @@ class Provider extends DomainNames implements ProviderInterface
                     $contactType
                 );
 
-                $billingId = $billing->contact_id;
+                $billingId = $billing->id;
             }
 
             if (!$techId = $params->tech->id) {
@@ -290,7 +290,7 @@ class Provider extends DomainNames implements ProviderInterface
                     $contactType
                 );
 
-                $techId = $tech->contact_id;
+                $techId = $tech->id;
             }
 
             // Determine which name servers to use
@@ -801,7 +801,7 @@ class Provider extends DomainNames implements ProviderInterface
         );
 
         // Set contact on domain
-        EppHelper::setDomainContact($connection, $domain, $contactType, $contact->contact_id);
+        EppHelper::setDomainContact($connection, $domain, $contactType, $contact->id);
 
         return ContactResult::create($contact);
     }

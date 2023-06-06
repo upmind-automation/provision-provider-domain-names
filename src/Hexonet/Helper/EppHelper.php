@@ -42,7 +42,7 @@ use RuntimeException;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Helper;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainContactInfo;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Requests\EppCheckTransferRequest;
@@ -274,7 +274,7 @@ class EppHelper
      * @param string|null $countryCode
      * @param string|null $contactType
      * @param string|null $password
-     * @return DomainContactInfo
+     * @return ContactData
      *
      * @throws eppException If command fails
      */
@@ -292,7 +292,7 @@ class EppHelper
         ?string $countryCode,
         ?string $contactType = null,
         ?string $password = null
-    ): DomainContactInfo {
+    ): ContactData {
         if ($telephone) {
             $telephone = Utils::internationalPhoneToEpp($telephone);
         }
@@ -319,8 +319,8 @@ class EppHelper
         /** @var eppUpdateContactResponse $response */
         $response = $connection->request($updateRequest);
 
-        return DomainContactInfo::create([
-            'contact_id' => $contactId,
+        return ContactData::create([
+            'id' => $contactId,
             'name' => $name,
             'email' => $email,
             'phone' => $telephone,
@@ -385,7 +385,7 @@ class EppHelper
      * @param string|null $countryCode
      * @param string|null $contactType
      * @param string|null $password
-     * @return DomainContactInfo
+     * @return ContactData
      *
      * @throws eppException If command fails
      */
@@ -402,7 +402,7 @@ class EppHelper
         ?string $countryCode,
         ?string $contactType = null,
         ?string $password = null
-    ): DomainContactInfo {
+    ): ContactData {
         if ($telephone) {
             $telephone = Utils::internationalPhoneToEpp($telephone);
         }
@@ -428,8 +428,8 @@ class EppHelper
         /** @var eppCreateContactResponse $response */
         $response = $connection->request($contact);
 
-        return DomainContactInfo::create([
-            'contact_id' => $response->getContactId(),
+        return ContactData::create([
+            'id' => $response->getContactId(),
             'name' => $name,
             'email' => $email,
             'phone' => $telephone,
@@ -867,18 +867,18 @@ class EppHelper
      *
      * @param eppConnection $connection
      * @param string $contactId
-     * @return DomainContactInfo
+     * @return ContactData
      *
      * @throws eppException If command fails E.g., if contact id is invalid
      */
-    public static function getContactInfo(eppConnection $connection, string $contactId): DomainContactInfo
+    public static function getContactInfo(eppConnection $connection, string $contactId): ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
         /** @var eppInfoContactResponse */
         $response = $connection->request($request);
 
-        return DomainContactInfo::create([
-            'contact_id' => $contactId,
+        return ContactData::create([
+            'id' => $contactId,
             'name' => $response->getContactName(),
             'email' => $response->getContactEmail(),
             'phone' => $response->getContactVoice(),

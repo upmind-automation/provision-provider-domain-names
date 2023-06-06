@@ -8,7 +8,7 @@ use GuzzleHttp\Client;
 use RuntimeException;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainContactInfo;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\OpenSRS\Data\OpenSrsConfiguration;
 
 /**
@@ -114,17 +114,17 @@ class OpenSrsApi
     /**
      * @param array $rawContactData
      * @param   string  $type   Contact Type (owner, tech, admin, billing)
-     * @return DomainContactInfo
+     * @return ContactData
      */
-    public static function parseContact(array $rawContactData, string $type): DomainContactInfo
+    public static function parseContact(array $rawContactData, string $type): ContactData
     {
         // Check if our contact type is valid
         self::validateContactType($type, $rawContactData);
 
         $rawContactData = $rawContactData[$type];
 
-        return DomainContactInfo::create([
-            'contact_id' => $type,
+        return ContactData::create([
+            // 'id' => $type,
             'name' => sprintf('%s %s', (string) $rawContactData['first_name'], (string) $rawContactData['last_name']),
             'email' => (string) $rawContactData['email'],
             'phone' => (string) $rawContactData['phone'],
@@ -134,7 +134,7 @@ class OpenSrsApi
             'state' => $rawContactData['state'],
             'postcode' => (string) $rawContactData['postal_code'],
             'country_code' => (string) $rawContactData['country'],
-            'type' => null,
+            'type' => $type,
         ]);
     }
 

@@ -13,7 +13,6 @@ use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainContactInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Metaregistrar\EPP\eppCheckDomainRequest;
@@ -53,6 +52,7 @@ use Metaregistrar\EPP\eppUpdateResponse;
 use Metaregistrar\EPP\eppResponse;
 use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Data\Configuration;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 
 /**
  * Class CentralNicResellerCommand
@@ -263,14 +263,14 @@ class CentralNicResellerApi
         $this->connection->request($renewRequest);
     }
 
-    public function getContactInfo(string $contactId): DomainContactInfo
+    public function getContactInfo(string $contactId): ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
         /** @var eppInfoContactResponse */
         $response = $this->connection->request($request);
 
-        return DomainContactInfo::create([
-            'contact_id' => $contactId,
+        return ContactData::create([
+            'id' => $contactId,
             'name' => $response->getContactName() ?: '',
             'email' => $response->getContactEmail(),
             'phone' => $response->getContactVoice(),
@@ -379,7 +379,7 @@ class CentralNicResellerApi
         return $response->getDomainAuthInfo();
     }
 
-    public function updateRegistrantContact(string $domainName, ContactParams $params): DomainContactInfo
+    public function updateRegistrantContact(string $domainName, ContactParams $params): ContactData
     {
         $contactID = $this->createContact($params);
 
