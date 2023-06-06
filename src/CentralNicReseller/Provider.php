@@ -84,7 +84,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             return PollResult::create($poll);
         } catch (eppException $e) {
-            $this->_eppExceptionHandler($e, $params->toArray());
+            $this->_eppExceptionHandler($e);
         }
     }
 
@@ -103,7 +103,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'domains' => $dacDomains,
             ]);
         } catch (eppException $e) {
-            $this->_eppExceptionHandler($e, $params->toArray());
+            $this->_eppExceptionHandler($e);
         }
     }
 
@@ -144,7 +144,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -246,7 +246,7 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
 
         } catch (eppException $e) {
-            $this->_eppExceptionHandler($e, $params->toArray());
+            $this->_eppExceptionHandler($e);
         }
     }
 
@@ -264,7 +264,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -278,7 +278,7 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             return $this->_getInfo($domainName);
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -301,7 +301,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             return ContactResult::create($contact);
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -334,7 +334,7 @@ class Provider extends DomainNames implements ProviderInterface
             return NameserversResult::create($returnNameservers)
                 ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -369,7 +369,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
 
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -387,7 +387,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, 'Auto-renew mode updated');
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -405,7 +405,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'epp_code' => $eppCode,
             ])->setMessage('EPP/Auth code obtained');
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e, $params->toArray());
+            return $this->_eppExceptionHandler($e);
         }
     }
 
@@ -416,6 +416,9 @@ class Provider extends DomainNames implements ProviderInterface
 
     private function _eppExceptionHandler(eppException $exception, array $data = [], array $debug = []): void
     {
+        $data['error_reason'] = $exception->getReason();
+        $data['error_code'] = $exception->getCode();
+
         if ($response = $exception->getResponse()) {
             $debug['response_xml'] = $response->saveXML();
         }
