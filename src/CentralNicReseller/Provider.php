@@ -67,8 +67,12 @@ class Provider extends DomainNames implements ProviderInterface
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
-            ->setName('CentralNicReseller Provider')
-            ->setDescription('Register, transfer, renew and manage CentralNicReseller domains');
+            ->setName('CentralNic Reseller')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/centralnic-reseller-logo.png')
+            ->setDescription(
+                'Register, transfer, renew and manage over 1,100 TLDs with CentralNicReseller'
+                . ' (formerly RRPproxy) domains'
+            );
     }
 
     public function poll(PollParams $params): PollResult
