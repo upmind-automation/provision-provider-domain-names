@@ -290,11 +290,11 @@ class CentralNicResellerApi
 
         if (count($nameServers) > 0) {
             foreach ($nameServers as $i => $ns) {
-                $ips = $this->getHostAddresses($ns->getHostName());
+                // $ips = $this->getHostAddresses($ns->getHostName());
 
                 $result['ns' . ($i + 1)] = [
                     'host' => strtolower($ns->getHostName()),
-                    'ip' => count($ips) ? $ips[0] : ''
+                    // 'ip' => count($ips) ? $ips[0] : ''
                 ];
             }
         }
