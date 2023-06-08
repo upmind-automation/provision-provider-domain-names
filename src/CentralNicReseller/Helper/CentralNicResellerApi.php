@@ -521,7 +521,7 @@ class CentralNicResellerApi
 
         foreach ($nameservers as $nameserver) {
             if (!empty($uncreatedHosts) && in_array(strtolower($nameserver->host), $uncreatedHosts)) {
-                $this->createHost($nameserver->host, $nameserver->ip ?? null);
+                $this->createHost($nameserver->host, $nameserver->ip ?? Utils::lookupIpAddress($nameserver->host));
             }
 
             $domain->addHost(new eppHost($nameserver->host));
