@@ -53,6 +53,7 @@ use Metaregistrar\EPP\eppResponse;
 use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
+use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 
 /**
  * Class CentralNicResellerCommand
@@ -163,20 +164,23 @@ class CentralNicResellerApi
         return $result;
     }
 
+    /**
+     * @param string[] $contactIds
+     * @param Nameserver[] $nameServers
+     */
     public function register(
         string $domainName,
-        int    $period,
-        array  $contacts,
-        array  $nameServers
-    ): array
-    {
-        $domain = new eppDomain($domainName, $contacts[eppContactHandle::CONTACT_TYPE_REGISTRANT], [
-            new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_ADMIN], eppContactHandle::CONTACT_TYPE_ADMIN),
-            new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_TECH], eppContactHandle::CONTACT_TYPE_TECH),
-            new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_BILLING], eppContactHandle::CONTACT_TYPE_BILLING)
+        int $period,
+        array $contactIds,
+        array $nameServers
+    ): array {
+        $domain = new eppDomain($domainName, $contactIds[eppContactHandle::CONTACT_TYPE_REGISTRANT], [
+            new eppContactHandle($contactIds[eppContactHandle::CONTACT_TYPE_ADMIN], eppContactHandle::CONTACT_TYPE_ADMIN),
+            new eppContactHandle($contactIds[eppContactHandle::CONTACT_TYPE_TECH], eppContactHandle::CONTACT_TYPE_TECH),
+            new eppContactHandle($contactIds[eppContactHandle::CONTACT_TYPE_BILLING], eppContactHandle::CONTACT_TYPE_BILLING)
         ]);
 
-        $domain->setRegistrant(new eppContactHandle($contacts[eppContactHandle::CONTACT_TYPE_REGISTRANT]));
+        $domain->setRegistrant(new eppContactHandle($contactIds[eppContactHandle::CONTACT_TYPE_REGISTRANT]));
         $domain->setAuthorisationCode(self::generateValidAuthCode());
 
         $domain = $this->addNameServers($nameServers, $domain);
@@ -508,16 +512,19 @@ class CentralNicResellerApi
         return $response->getDomainNameservers();
     }
 
+    /**
+     * @param Nameserver[] $nameservers
+     */
     private function addNameServers(array $nameservers, eppDomain $domain): eppDomain
     {
         $uncreatedHosts = $this->checkUncreatedHosts($nameservers);
 
         foreach ($nameservers as $nameserver) {
-            if (!empty($uncreatedHosts) && in_array(strtolower($nameserver['host']), $uncreatedHosts)) {
-                $this->createHost($nameserver['host'], $nameserver['ip'] ?? null);
+            if (!empty($uncreatedHosts) && in_array(strtolower($nameserver->host), $uncreatedHosts)) {
+                $this->createHost($nameserver->host, $nameserver->ip ?? null);
             }
 
-            $domain->addHost(new eppHost($nameserver['host']));
+            $domain->addHost(new eppHost($nameserver->host));
         }
 
         return $domain;

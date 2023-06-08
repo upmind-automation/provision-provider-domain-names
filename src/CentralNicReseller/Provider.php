@@ -124,10 +124,10 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult('This domain is not available to register');
         }
 
-        $contacts = $this->getRegisterParams($params);
+        $contactIds = $this->getRegisterContactIds($params);
 
+        /** @var Nameserver[] $nameServers */
         $nameServers = [];
-
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'nameservers.ns' . $i)) {
                 $nameServers[] = Arr::get($params, 'nameservers.ns' . $i);
@@ -138,7 +138,7 @@ class Provider extends DomainNames implements ProviderInterface
             $this->api()->register(
                 $domainName,
                 intval($params->renew_years),
-                $contacts,
+                $contactIds,
                 $nameServers,
             );
 
@@ -148,7 +148,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
-    private function getRegisterParams(RegisterDomainParams $params): array
+    private function getRegisterContactIds(RegisterDomainParams $params): array
     {
         if (Arr::has($params, 'registrant.id')) {
             $registrantID = $params->registrant->id;
