@@ -420,8 +420,13 @@ class CentralNicResellerApi
             $eppContactType = self::CONTACT_AUTO;
         }
 
+        $name = $params->name ?: $params->organisation;
+        @[$firstName, $lastName] = explode(' ', $name, 2);
+        $lastName ??= $firstName;
+        $name = $firstName . ' ' . $lastName;
+
         $postalInfo = new eppContactPostalInfo(
-            $params->name ?: $params->organisation,
+            $name,
             $params->city,
             $countryCode,
             $params->organisation,
