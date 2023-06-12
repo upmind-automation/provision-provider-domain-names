@@ -153,18 +153,30 @@ class Provider extends DomainNames implements ProviderInterface
 
         $eppCode = $params->epp_code ?: '0000';
 
-        if (!Arr::has($params, 'admin.register')) {
-            return $this->errorResult('Admin contact data is required!');
-        }
-
         try {
             return $this->_getInfo($domainName, 'Domain active in registrar account');
         } catch (Throwable $e) {
             // domain not active - continue below
         }
 
+        if (!Arr::has($params, 'registrant.register')) {
+            return $this->errorResult('Registrant contact data is required!');
+        }
+
+        $contacts = array_filter([
+            GoDaddyApi::CONTACT_TYPE_REGISTRANT => $params->registrant->register ?? null,
+            GoDaddyApi::CONTACT_TYPE_ADMIN => $params->admin->register ?? null,
+            GoDaddyApi::CONTACT_TYPE_TECH => $params->tech->register ?? null,
+            GoDaddyApi::CONTACT_TYPE_BILLING => $params->billing->register ?? null,
+        ]);
+
         try {
-            $transferId = $this->api()->initiateTransfer($domainName, $eppCode, Arr::get($params, 'admin.register'), intval($params->renew_years));
+            $transferId = $this->api()->initiateTransfer(
+                $domainName,
+                $eppCode,
+                $contacts,
+                intval($params->renew_years)
+            );
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
         } catch (\Throwable $e) {

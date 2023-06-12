@@ -113,7 +113,10 @@ class GoDaddyApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
-    public function initiateTransfer(string $domainName, string $eppCode, ContactParams $contact, int $period): string
+    /**
+     * @param ContactParams[] $contacts
+     */
+    public function initiateTransfer(string $domainName, string $eppCode, array $contacts, int $period): string
     {
         $command = "/v1/domains/{$domainName}/transfer";
 
@@ -124,18 +127,18 @@ class GoDaddyApi
 
         $consent = [
             'agreedAt' => date('Y-m-d\TH:i:s\Z'),
-            'agreedBy' => $contact['name'],
+            'agreedBy' => $contacts[self::CONTACT_TYPE_REGISTRANT]['name'],
             'agreementKeys' => ["DNTA"],
         ];
 
         $body['consent'] = $consent;
 
-        $adminParams = $this->setContactParams($contact, self::CONTACT_TYPE_ADMIN);
-        $registrantParams = $this->setContactParams($contact, self::CONTACT_TYPE_REGISTRANT);
-        $techParams = $this->setContactParams($contact, self::CONTACT_TYPE_TECH);
-        $billingParams = $this->setContactParams($contact, self::CONTACT_TYPE_BILLING);
-
-        $body = array_merge($body, $registrantParams, $techParams, $adminParams, $billingParams);
+        foreach ($contacts as $type => $contact) {
+            if (!empty($contact)) {
+                $contactParams = $this->setContactParams($contact, $type);
+                $body = array_merge($body, $contactParams);
+            }
+        }
 
         $response = $this->makeRequest($command, null, $body, "POST");
 
