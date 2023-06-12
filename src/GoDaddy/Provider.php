@@ -46,8 +46,6 @@ class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    private const MAX_CUSTOM_NAMESERVERS = 5;
-
     /**
      * @var GoDaddyApi
      */
@@ -61,13 +59,13 @@ class Provider extends DomainNames implements ProviderInterface
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
-            ->setName('GoDaddy Provider')
+            ->setName('GoDaddy')
             ->setDescription('Register, transfer, renew and manage GoDaddy domains');
     }
 
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Not implemented');
+        throw $this->errorResult('Operation not supported');
     }
 
     /**
@@ -315,7 +313,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Not implemented');
+        throw $this->errorResult('Operation not supported');
     }
 
     /**

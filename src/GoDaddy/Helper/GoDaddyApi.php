@@ -18,9 +18,7 @@ use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\GoDaddy\Data\Configuration;
 
 /**
- * Class GoDaddyCommand
- *
- * @package Upmind\ProvisionProviders\DomainNames\Namecheap\Helper
+ * GoDaddy Domains API client.
  */
 class GoDaddyApi
 {
