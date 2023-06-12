@@ -55,7 +55,7 @@ class GoDaddyApi
 
         $dacDomains = [];
 
-        foreach ($response['domains'] as $result) {
+        foreach ($response['domains'] ?? [] as $result) {
             $available = boolval($result['available']);
 
             $dacDomains[] = DacDomain::create([
@@ -71,7 +71,7 @@ class GoDaddyApi
             ]);
         }
 
-        foreach ($response['errors'] as $result) {
+        foreach ($response['errors'] ?? [] as $result) {
             $dacDomains[] = DacDomain::create([
                 'domain' => $result['domain'],
                 'description' => sprintf('[%s] %s', $result['code'], $result['message']),
