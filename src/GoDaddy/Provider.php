@@ -76,7 +76,7 @@ class Provider extends DomainNames implements ProviderInterface
         $sld = Utils::normalizeSld($params->sld);
 
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
@@ -166,7 +166,6 @@ class Provider extends DomainNames implements ProviderInterface
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, Arr::get($params, 'admin.register'), intval($params->renew_years));
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
-
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }

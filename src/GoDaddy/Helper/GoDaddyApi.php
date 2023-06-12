@@ -91,17 +91,17 @@ class GoDaddyApi
     {
         $command = "/v1/domains/purchase";
 
-        $body = array(
+        $body = [
             'domain' => $domainName,
             'nameServers' => $nameServers,
             'period' => $years,
-        );
+        ];
 
-        $consent = array(
+        $consent = [
             'agreedAt' => date('Y-m-d\TH:i:s\Z'),
             'agreedBy' => $contacts[self::CONTACT_TYPE_REGISTRANT]['name'],
             'agreementKeys' => [$this->getAgreementKey(Utils::getTld($domainName))],
-        );
+        ];
 
         $body['consent'] = $consent;
 
@@ -117,16 +117,16 @@ class GoDaddyApi
     {
         $command = "/v1/domains/{$domainName}/transfer";
 
-        $body = array(
+        $body = [
             'authCode' => $eppCode,
             'period' => $period,
-        );
+        ];
 
-        $consent = array(
+        $consent = [
             'agreedAt' => date('Y-m-d\TH:i:s\Z'),
             'agreedBy' => $contact['name'],
             'agreementKeys' => ["DNTA"],
-        );
+        ];
 
         $body['consent'] = $consent;
 
@@ -178,7 +178,7 @@ class GoDaddyApi
     {
         $command = "/v1/domains/{$domainName}/renew";
 
-        $body = array('period' => $period);
+        $body = ['period' => $period];
 
         $this->makeRequest($command, null, $body, "POST");
     }
@@ -194,7 +194,7 @@ class GoDaddyApi
     public function setRenewalMode(string $domainName, bool $autoRenew): void
     {
         $command = "/v1/domains/{$domainName}";
-        $body = array('renewAuto' => $autoRenew);
+        $body = ['renewAuto' => $autoRenew];
 
         $this->makeRequest($command, null, $body, "PATCH");
     }
@@ -217,7 +217,7 @@ class GoDaddyApi
     {
         $command = "/v1/domains/{$domainName}";
 
-        $body = array('nameServers' => $nameservers);
+        $body = ['nameServers' => $nameservers];
 
         $this->makeRequest($command, null, $body, "PATCH");
 
@@ -314,17 +314,16 @@ class GoDaddyApi
         $command = "/v1/domains/{$domainName}";
         $response = $this->makeRequest($command);
 
-        return (boolean)$response['locked'];
+        return (bool)$response['locked'];
     }
 
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $command = "/v1/domains/{$domainName}";
-        $body = array('locked' => $lock);
+        $body = ['locked' => $lock];
 
         $this->makeRequest($command, null, $body, "PATCH");
     }
-
 
     private function parseResponseData(string $result): array
     {
