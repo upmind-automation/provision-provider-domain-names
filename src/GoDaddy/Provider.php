@@ -92,9 +92,7 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
-        $sld = Utils::normalizeSld($params->sld);
-        $tld = Utils::normalizeTld($params->tld);
-        $domainName = Utils::getDomain($sld, $tld);
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         $this->checkRegisterParams($params);
 
@@ -150,10 +148,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function transfer(TransferParams $params): DomainResult
     {
-        $sld = Utils::normalizeSld($params->sld);
-        $tld = Utils::normalizeTld($params->tld);
-
-        $domainName = Utils::getDomain($sld, $tld);
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         $eppCode = $params->epp_code ?: '0000';
 
@@ -179,10 +174,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function renew(RenewParams $params): DomainResult
     {
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld),
-        );
+        $domainName = Utils::getDomain($params->sld, $params->tld);
         $period = intval($params->renew_years);
 
         try {
@@ -195,10 +187,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function getInfo(DomainInfoParams $params): DomainResult
     {
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld)
-        );
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
             return $this->_getInfo($domainName, 'Domain data obtained');
@@ -216,15 +205,10 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
+        $domainName = Utils::getDomain($params->sld, $params->tld);
+
         try {
-            $contact = $this->api()
-                ->updateRegistrantContact(
-                    Utils::getDomain(
-                        Utils::normalizeSld($params->sld),
-                        Utils::normalizeTld($params->tld)
-                    ),
-                    $params->contact
-                );
+            $contact = $this->api()->updateRegistrantContact($domainName, $params->contact);
 
             return ContactResult::create($contact);
         } catch (\Throwable $e) {
@@ -234,10 +218,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld)
-        );
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
             $result = $this->api()->updateNameservers(
@@ -277,10 +258,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld)
-        );
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         $autoRenew = !!$params->auto_renew;
 
@@ -295,10 +273,7 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function getEppCode(EppParams $params): EppCodeResult
     {
-        $domainName = Utils::getDomain(
-            Utils::normalizeSld($params->sld),
-            Utils::normalizeTld($params->tld)
-        );
+        $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
             $eppCode = $this->api()->getDomainEppCode($domainName);
