@@ -43,52 +43,43 @@ class GoDaddyApi
     }
 
     /**
+     * @param string[] $domainList
+     *
+     * @return DacDomain[]
+     *
      * @throws Throwable
      */
     public function checkMultipleDomains(array $domainList): array
     {
-        $command = "/v1/domains/available";
+        $response = $this->makeRequest('/v1/domains/available', null, $domainList, 'POST');
 
         $dacDomains = [];
 
-        foreach ($domainList as $domainName) {
-            $params = [
-                'domain' => $domainName,
-            ];
+        foreach ($response['domains'] as $result) {
+            $available = boolval($result['available']);
 
-            try {
-                $response = $this->makeRequest($command, $params);
+            $dacDomains[] = DacDomain::create([
+                'domain' => $result['domain'],
+                'description' => sprintf(
+                    'Domain is %s to register',
+                    $available ? 'available' : 'not available'
+                ),
+                'tld' => Utils::getTld($result['domain']),
+                'can_register' => $available,
+                'can_transfer' => !$available,
+                'is_premium' => false,
+            ]);
+        }
 
-                $available = (boolean)$response['available'];
-
-                $dacDomains[] = DacDomain::create([
-                    'domain' => $domainName,
-                    'description' => sprintf(
-                        'Domain is %s to register',
-                        $available ? 'available' : 'not available'
-                    ),
-                    'tld' => Utils::getTld($domainName),
-                    'can_register' => $available,
-                    'can_transfer' => !$available,
-                    'is_premium' => false,
-                ]);
-            } catch (\Throwable $e) {
-                $response = $e->getResponse();
-                $body = trim($response->getBody()->__toString());
-                $responseData = json_decode($body, true);
-                if ($responseData['code'] == 'UNSUPPORTED_TLD') {
-                    $dacDomains[] = DacDomain::create([
-                        'domain' => $domainName,
-                        'description' => 'Domain is not available to register. Unsupported TLD',
-                        'tld' => Utils::getTld($domainName),
-                        'can_register' => false,
-                        'can_transfer' => false,
-                        'is_premium' => false,
-                    ]);
-                } else {
-                    throw $e;
-                }
-            }
+        foreach ($response['errors'] as $result) {
+            $dacDomains[] = DacDomain::create([
+                'domain' => $result['domain'],
+                'description' => sprintf('[%s] %s', $result['code'], $result['message']),
+                'tld' => Utils::getTld($result['domain']),
+                'can_register' => false,
+                'can_transfer' => false,
+                'is_premium' => false,
+            ]);
         }
 
         return $dacDomains;
