@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Data;
 
+use Illuminate\Support\Arr;
 use Upmind\ProvisionBase\Provider\DataSet\DataSet;
 use Upmind\ProvisionBase\Provider\DataSet\Rules;
 
@@ -31,5 +32,15 @@ class UpdateNameserversParams extends DataSet
             'ns4' => ['nullable', Nameserver::class],
             'ns5' => ['nullable', Nameserver::class],
         ]);
+    }
+
+    /**
+     * Returns a flat array of nameserver hosts.
+     *
+     * @return string[]
+     */
+    public function pluckHosts(): array
+    {
+        return array_values(array_filter(Arr::pluck($this->toArray(), 'host')));
     }
 }

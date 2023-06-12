@@ -241,17 +241,10 @@ class Provider extends DomainNames implements ProviderInterface
             Utils::normalizeTld($params->tld)
         );
 
-        $nameServers = [];
-        for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
-            if (Arr::has($params, 'ns' . $i)) {
-                $nameServers[] = Arr::get($params, 'ns' . $i)['host'];
-            }
-        }
-
         try {
             $result = $this->api()->updateNameservers(
                 $domainName,
-                $nameServers,
+                $params->pluckHosts(),
             );
 
             return NameserversResult::create($result)

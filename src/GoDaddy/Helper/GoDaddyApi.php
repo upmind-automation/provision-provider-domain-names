@@ -212,6 +212,9 @@ class GoDaddyApi
         return $this->getDomainInfo($domainName)['registrant'];
     }
 
+    /**
+     * @param string[] $nameservers
+     */
     public function updateNameservers(string $domainName, array $nameservers): array
     {
         $command = "/v1/domains/{$domainName}";
