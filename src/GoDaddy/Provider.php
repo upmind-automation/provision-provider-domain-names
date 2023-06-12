@@ -60,6 +60,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('GoDaddy')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/godaddy-logo.png')
             ->setDescription('Register, transfer, renew and manage GoDaddy domains');
     }
 
