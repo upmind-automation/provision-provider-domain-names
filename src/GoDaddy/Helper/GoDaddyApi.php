@@ -166,10 +166,18 @@ class GoDaddyApi
             'domain' => (string)$response['domain'],
             'statuses' => [$response['status']],
             'locked' => $response['locked'],
-            'registrant' => isset($response['contactRegistrant']) ? $this->parseContact($response['contactRegistrant'], self::CONTACT_TYPE_REGISTRANT) : null,
-            'billing' => isset($response['contactBilling']) ? $this->parseContact($response['contactBilling'], self::CONTACT_TYPE_BILLING) : null,
-            'tech' => isset($response['contactTech']) ? $this->parseContact($response['contactTech'], self::CONTACT_TYPE_TECH) : null,
-            'admin' => isset($response['contactAdmin']) ? $this->parseContact($response['contactAdmin'], self::CONTACT_TYPE_ADMIN) : null,
+            'registrant' => isset($response['contactRegistrant'])
+                ? $this->parseContact($response['contactRegistrant'])
+                : null,
+            'billing' => isset($response['contactBilling'])
+                ? $this->parseContact($response['contactBilling'])
+                : null,
+            'tech' => isset($response['contactTech'])
+                ? $this->parseContact($response['contactTech'])
+                : null,
+            'admin' => isset($response['contactAdmin'])
+                ? $this->parseContact($response['contactAdmin'])
+                : null,
             'ns' => NameserversResult::create($this->parseNameservers($response['nameServers'])),
             'created_at' => Utils::formatDate((string)$response['createdAt']),
             'updated_at' => null,
@@ -260,7 +268,7 @@ class GoDaddyApi
         ];
     }
 
-    private function parseContact(array $contact, string $type): ContactData
+    private function parseContact(array $contact): ContactData
     {
         return ContactData::create([
             'organisation' => (string)$contact['organization'] ?: null,

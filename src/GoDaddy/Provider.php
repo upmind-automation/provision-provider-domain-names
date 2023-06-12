@@ -178,7 +178,9 @@ class Provider extends DomainNames implements ProviderInterface
                 intval($params->renew_years)
             );
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), [
+                'transfer_id' => $transferId
+            ]);
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
