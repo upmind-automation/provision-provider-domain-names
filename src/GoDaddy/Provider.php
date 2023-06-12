@@ -117,20 +117,12 @@ class Provider extends DomainNames implements ProviderInterface
             GoDaddyApi::CONTACT_TYPE_BILLING => $params->billing->register,
         ];
 
-
-        $nameServers = [];
-        for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
-            if (Arr::has($params, 'nameservers.ns' . $i)) {
-                $nameServers[] = Arr::get($params, 'nameservers.ns' . $i)['host'];
-            }
-        }
-
         try {
             $this->api()->register(
                 $domainName,
                 intval($params->renew_years),
                 $contacts,
-                $nameServers,
+                $params->nameservers->pluckHosts(),
             );
 
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));

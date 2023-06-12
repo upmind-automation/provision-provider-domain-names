@@ -85,6 +85,10 @@ class GoDaddyApi
         return $dacDomains;
     }
 
+    /**
+     * @param ContactParams[] $contacts
+     * @param string[] $nameservers
+     */
     public function register(string $domainName, int $years, array $contacts, array $nameServers): void
     {
         $command = "/v1/domains/purchase";
@@ -255,15 +259,15 @@ class GoDaddyApi
     private function parseContact(array $contact, string $type): ContactData
     {
         return ContactData::create([
-            'organisation' => (string)$contact['organization'] ?: '-',
+            'organisation' => (string)$contact['organization'] ?: null,
             'name' => $contact['nameFirst'] . " " . $contact['nameLast'],
             'address1' => (string)$contact['addressMailing']['address1'],
             'city' => (string)$contact['addressMailing']['city'],
-            'state' => (string)$contact['addressMailing']['state'] ?: '-',
+            'state' => (string)$contact['addressMailing']['state'] ?: null,
             'postcode' => (string)$contact['addressMailing']['postalCode'],
-            'country_code' => Utils::normalizeCountryCode((string)$contact['addressMailing']['country'],),
+            'country_code' => Utils::normalizeCountryCode((string)$contact['addressMailing']['country']),
             'email' => (string)$contact['email'],
-            'phone' => Utils::internationalPhoneToEpp((string)$contact['phone']),
+            'phone' => (string)$contact['phone'],
         ]);
     }
 
