@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
@@ -345,24 +346,19 @@ class Provider extends DomainNames implements ProviderInterface
                 $body = trim($response->getBody()->__toString());
                 $responseData = json_decode($body, true);
 
-                $code = strtolower($responseData['code'] ?? 'unknown error');
+                $errorMessage = $responseData['message'] ?? 'unknown error';
+                if (Str::startsWith($errorMessage, "Request body doesn't fulfill schema")) {
+                    $errorMessage = 'Invalid request data';
+                }
 
                 throw $this->errorResult(
-                    sprintf('Provider API %s: %s', ucfirst($code), $responseData['message'] ?? null),
-                    [],
+                    sprintf('Provider API Error [%s]: %s', $responseData['code'] ?? 'unknown', $errorMessage),
                     ['response_data' => $responseData],
+                    [],
                     $e
                 );
             }
         }
-
-        if (!$e instanceof ProvisionFunctionError) {
-            $e = new ProvisionFunctionError('Unexpected Provider Error', $e->getCode(), $e);
-        }
-
-        throw $e->withDebug([
-            'params' => $params,
-        ]);
     }
 
     protected function api(): GoDaddyApi
