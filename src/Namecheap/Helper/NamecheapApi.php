@@ -32,10 +32,6 @@ class NamecheapApi
      */
     protected const ALLOWED_CONTACT_TYPES = ['registrant', 'tech', 'admin', 'auxbilling'];
 
-    public const NO_LOCK_TLDS = [
-        'io',
-    ];
-
     /**
      * Contact Types
      */
@@ -311,9 +307,7 @@ class NamecheapApi
             'DomainName' => $domainName,
         ];
 
-        $tld = Utils::getTld($domainName);
-
-        if (in_array($tld, self::NO_LOCK_TLDS)) {
+        if (!Utils::tldSupportsLocking(Utils::getTld($domainName))) {
             return false;
         }
 

@@ -130,6 +130,19 @@ class Utils
     }
 
     /**
+     * Determine whether  the registry of the given TLD supports domain locking.
+     */
+    public static function tldSupportsLocking(string $tld): bool
+    {
+        $unsupported = [
+            'io',
+            'de',
+        ];
+
+        return !in_array(static::getRootTld($tld), $unsupported);
+    }
+
+    /**
      * Determine whether the registry of the given TLD supports explicit renewal.
      */
     public static function tldSupportsExplicitRenewal(string $tld): bool

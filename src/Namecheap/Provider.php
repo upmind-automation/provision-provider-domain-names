@@ -382,11 +382,8 @@ class Provider extends DomainNames implements ProviderInterface
         $lock = !!$params->lock;
 
         try {
-            if (in_array($params->tld, NamecheapApi::NO_LOCK_TLDS)) {
-                throw $this->errorResult(
-                    sprintf('Domain %s does not support to change Registrar Lock.', $domainName),
-                    $params
-                );
+            if (!Utils::tldSupportsLocking($params->tld)) {
+                throw $this->errorResult(sprintf('%s domains do not support locking', $params->tld));
             }
 
             $currentLockStatus = $this->api()->getRegistrarLockStatus($domainName);
