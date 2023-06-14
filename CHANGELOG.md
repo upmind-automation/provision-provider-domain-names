@@ -2,9 +2,14 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.5.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.5.0) - 2023-06-12
+
+- Implement GoDaddy provider
+- Simplify obtaining name server hosts from params
+
 ## [v2.4.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.4.0) - 2023-06-01
 
-- Implement CentralNic registry
+- Implement CentralNic registry provider
 
 ## [v2.3.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.3.5) - 2023-06-01
 
