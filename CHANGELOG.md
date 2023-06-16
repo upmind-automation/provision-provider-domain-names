@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.6.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.6.0) - 2023-06-16
+
+- Implement CentralNic reseller provider
+
 ## [v2.5.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.5.1) - 2023-06-14
 
 - Add `Utils::tldSupportsLocking()`, disable lock for .io and .de
