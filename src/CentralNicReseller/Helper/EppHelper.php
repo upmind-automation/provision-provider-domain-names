@@ -275,10 +275,10 @@ class EppHelper
 
         return ContactData::create([
             'id' => $contactId,
-            'name' => $response->getContactName() ?: '',
+            'name' => $response->getContactName() ?: null,
             'email' => $response->getContactEmail(),
             'phone' => $response->getContactVoice(),
-            'organisation' => $response->getContactCompanyname() ?: '',
+            'organisation' => $response->getContactCompanyname() ?: null,
             'address1' => $response->getContactStreet(),
             'city' => $response->getContactCity(),
             'state' => $response->getContactProvince(),

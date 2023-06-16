@@ -189,7 +189,7 @@ class CentralNicResellerApi
         RegisterContactParams $adminContact,
         RegisterContactParams $techContact,
         RegisterContactParams $billingContact
-    )
+    ): array
     {
         $params = [
             'domain' => $domain,
