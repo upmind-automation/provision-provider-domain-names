@@ -335,16 +335,12 @@ class Provider extends DomainNames implements ProviderInterface
 
         try {
 
-            $this->epp()->updateNameServers($domainName, $nameServers);
+            $this->api()->updateNameservers($domainName, $params->pluckHosts());
 
-            $hosts = $this->epp()->getHosts($domainName);
+            $result = collect($params->pluckHosts())
+                ->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
 
-            $returnNameservers = [];
-            foreach ($hosts as $i => $ns) {
-                $returnNameservers['ns' . ($i + 1)] = $ns->getHostname();
-            }
-
-            return NameserversResult::create($returnNameservers)
+            return NameserversResult::create($result)
                 ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
         } catch (eppException $e) {
             return $this->_eppExceptionHandler($e);

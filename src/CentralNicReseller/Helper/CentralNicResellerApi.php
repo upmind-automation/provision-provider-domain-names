@@ -224,5 +224,19 @@ class CentralNicResellerApi
 
         return $this->runCommand('AddDomain', $params)->getHash();
     }
+
+    /**
+     * @param string[] $nameservers
+     */
+    public function updateNameservers(string $domain, array $nameservers): array
+    {
+        $params = ['domain' => $domain];
+
+        foreach (array_values($nameservers) as $i => $nameserver) {
+            $params['nameserver' . $i] = $nameserver;
+        }
+
+        return $this->runCommand('ModifyDomain', $params)->getHash();
+    }
 }
 
