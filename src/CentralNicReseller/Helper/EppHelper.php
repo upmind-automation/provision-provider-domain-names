@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Upmind\ProvisionBase\Helper;
 use Metaregistrar\EPP\rrpproxyEppRenewalmodeRequest;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -146,17 +147,22 @@ class EppHelper
         $result = [];
 
         foreach ($checks as $check) {
-            $available = (bool)$check['available'] == "true";
+            $canRegister = (bool)$check['available'] == "true";
+            $canTransfer = !$canRegister;
+
+            if (!$canRegister && isset($check['reason']) && Str::startsWith($check['reason'], 'Error:')) {
+                $canTransfer = false;
+            }
 
             $result[] = DacDomain::create([
                 'domain' => $check['domainname'],
                 'description' => $check['reason'] ?? sprintf(
-                        'Domain is %s to register',
-                        $available ? 'available' : 'not available',
-                    ),
+                    'Domain is %s to register',
+                    $canRegister ? 'available' : 'not available',
+                ),
                 'tld' => Utils::getTld($check['domainname']),
-                'can_register' => $available,
-                'can_transfer' => !$available,
+                'can_register' => $canRegister,
+                'can_transfer' => $canTransfer,
                 'is_premium' => false,
             ]);
         }
