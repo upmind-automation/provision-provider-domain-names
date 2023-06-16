@@ -181,6 +181,16 @@ class CentralNicResellerApi
         ];
     }
 
+    /**
+     * @return string Contact ID
+     */
+    public function createContact(ContactParams $contact): string
+    {
+        $result =  $this->runCommand('AddContact', $this->transformContactParams($contact))->getHash();
+
+        return $result['PROPERTY']['CONTACT'][0];
+    }
+
     public function register(
         string                $domain,
         int                   $period,
