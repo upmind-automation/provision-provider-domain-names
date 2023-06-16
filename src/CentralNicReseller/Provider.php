@@ -153,83 +153,6 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
-    private function getRegisterContactIds(RegisterDomainParams $params): array
-    {
-        if (Arr::has($params, 'registrant.id')) {
-            $registrantID = $params->registrant->id;
-
-            if (!$this->epp()->getContactInfo($registrantID)) {
-                throw $this->errorResult("Invalid registrant ID provided!", $params);
-            }
-
-        } else {
-            if (!Arr::has($params, 'registrant.register')) {
-                throw $this->errorResult('Registrant contact data is required!');
-            }
-
-            $registrantID = $this->epp()->createContact(
-                $params->registrant->register,
-            );
-        }
-
-        if (Arr::has($params, 'admin.id')) {
-            $adminID = $params->admin->id;
-
-            if (!$this->epp()->getContactInfo($adminID)) {
-                throw $this->errorResult("Invalid registrant ID provided!", $params);
-            }
-
-        } else {
-            if (!Arr::has($params, 'admin.register')) {
-                throw $this->errorResult('Admin contact data is required!');
-            }
-
-            $adminID = $this->epp()->createContact(
-                $params->admin->register,
-            );
-        }
-
-        if (Arr::has($params, 'tech.id')) {
-            $techID = $params->tech->id;
-
-            if (!$this->epp()->getContactInfo($techID)) {
-                throw $this->errorResult("Invalid registrant ID provided!", $params);
-            }
-        } else {
-            if (!Arr::has($params, 'tech.register')) {
-                throw $this->errorResult('Tech contact data is required!');
-            }
-
-            $techID = $this->epp()->createContact(
-                $params->tech->register,
-            );
-        }
-
-
-        if (Arr::has($params, 'billing.id')) {
-            $billingID = $params->billing->id;
-
-            if (!$this->epp()->getContactInfo($billingID)) {
-                throw $this->errorResult("Invalid registrant ID provided!", $params);
-            }
-        } else {
-            if (!Arr::has($params, 'billing.register')) {
-                throw $this->errorResult('Billing contact data is required!');
-            }
-
-            $billingID = $this->epp()->createContact(
-                $params->billing->register,
-            );
-        }
-
-        return [
-            eppContactHandle::CONTACT_TYPE_REGISTRANT => $registrantID,
-            eppContactHandle::CONTACT_TYPE_ADMIN => $adminID,
-            eppContactHandle::CONTACT_TYPE_TECH => $techID,
-            eppContactHandle::CONTACT_TYPE_BILLING => $billingID,
-        ];
-    }
-
     public function transfer(TransferParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -242,7 +165,7 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             return $this->_getInfo($domainName, 'Domain active in registrar account');
         } catch (eppException $e) {
-
+            // initiate transfer ...
         }
 
         try {
@@ -256,7 +179,9 @@ class Provider extends DomainNames implements ProviderInterface
                 $params->billing ?? null
             );
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+            throw $this->errorResult(sprintf('Transfer for %s domain successfully initiated!', $domainName), [
+                'transfer_id' => $transferId
+            ]);
 
         } catch (eppException $e) {
             $this->_eppExceptionHandler($e);
