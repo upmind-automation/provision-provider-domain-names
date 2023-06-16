@@ -210,6 +210,18 @@ class Utils
     }
 
     /**
+     * Determine whether the registry of the given TLD supports contacts when initiating transfer.
+     */
+    public static function tldSupportsTransferContacts(string $tld): bool
+    {
+        $unsupported = [
+            'online',
+        ];
+
+        return !in_array(static::getRootTld($tld), $unsupported);
+    }
+
+    /**
      * Convert a phone from "international format" (beginning with `+` and intl
      * dialling code) to "EPP format" described in RFC5733. To validate a phone
      * number is in valid international format, you can use the provided

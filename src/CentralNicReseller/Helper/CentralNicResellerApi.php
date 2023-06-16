@@ -117,6 +117,13 @@ class CentralNicResellerApi
         ?RegisterContactParams $billingContact = null
     ): array
     {
+        if (!Utils::tldSupportsTransferContacts(Utils::getTld($domain))) {
+            $ownerContact = null;
+            $adminContact = null;
+            $techContact = null;
+            $billingContact = null;
+        }
+
         $params = [
             'action' => 'REQUEST',
             'domain' => $domain,
