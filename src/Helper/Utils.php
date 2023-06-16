@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\Helper;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -123,6 +124,32 @@ class Utils
         } catch (Throwable $e) {
             if ($orFail) {
                 throw new ProvisionFunctionError(sprintf('Nameserver lookup for %s failed', $domain), 0, $e);
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * Use system DNS resolver to look up a host's IP address.
+     *
+     * @param string $domain
+     * @param bool $orFail When lookup fails: if true throw an error, otherwise return null
+     *
+     * @return string|null IP address
+     *
+     * @throws ProvisionFunctionError
+     */
+    public static function lookupIpAddress(string $domain, bool $orFail = true): ?string
+    {
+        try {
+            return Arr::first(
+                array_column(dns_get_record($domain, DNS_A), 'ip')
+                    ?: array_column(dns_get_record($domain, DNS_AAAA), 'ipv6')
+            );
+        } catch (Throwable $e) {
+            if ($orFail) {
+                throw new ProvisionFunctionError(sprintf('IP lookup for %s failed', $domain), 0, $e);
             }
 
             return null;
