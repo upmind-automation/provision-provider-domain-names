@@ -27,6 +27,7 @@ use Upmind\ProvisionProviders\DomainNames\UGRegistry\Provider as UGRegistry;
 use Upmind\ProvisionProviders\DomainNames\DomainNameApi\Provider as DomainNameApi;
 use Upmind\ProvisionProviders\DomainNames\CentralNic\Provider as CentralNic;
 use Upmind\ProvisionProviders\DomainNames\GoDaddy\Provider as GoDaddy;
+use Upmind\ProvisionProviders\DomainNames\InternetBS\Provider as InternetBS;
 
 class LaravelServiceProvider extends ProvisionServiceProvider
 {
@@ -56,5 +57,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'namecheap', Namecheap::class);
         $this->bindProvider('domain-names', 'centralnic', CentralNic::class);
         $this->bindProvider('domain-names', 'godaddy', GoDaddy::class);
+        $this->bindProvider('domain-names', 'internetbs', InternetBS::class);
     }
 }
