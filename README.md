@@ -54,6 +54,7 @@ The following providers are currently implemented:
   - [UGRegistry](https://registry.co.ug/docs/v2/)
   - [Namecheap](https://www.namecheap.com/support/api/methods/)
   - [CentralNic Registry](https://centralnic.support/hc/en-gb/articles/4403312126993-Where-do-I-find-the-Registry-API-documentation-)
+  - [CentralNic Reseller](https://kb.centralnicreseller.com/api/api-commands/api-command-reference)
   - [GoDaddy](https://developer.godaddy.com/doc/endpoint/domains)
 
 ## Functions

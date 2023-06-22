@@ -44,10 +44,10 @@ use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\CentralNic\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainContactInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\CentralNic\Data\Configuration;
+use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 
 /**
  * Class CentralNicHelper
@@ -280,7 +280,7 @@ class CentralNicApi
         ];
     }
 
-    public function updateRegistrantContact(string $domainName, ContactParams $params): DomainContactInfo
+    public function updateRegistrantContact(string $domainName, ContactParams $params): ContactData
     {
         $contactID = $this->createContact($params);
 
@@ -381,18 +381,18 @@ class CentralNicApi
         $this->connection->request($update);
     }
 
-    public function getContactInfo(string $contactId): DomainContactInfo
+    public function getContactInfo(string $contactId): ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
-        /** @var eppInfoContactResponse */
         try {
+            /** @var eppInfoContactResponse $response */
             $response = $this->connection->request($request);
         } catch (eppException $e) {
-            return DomainContactInfo::create(['contact_id' => $contactId,]);
+            return ContactData::create(['id' => $contactId]);
         }
 
-        return DomainContactInfo::create([
-            'contact_id' => $contactId,
+        return ContactData::create([
+            'id' => $contactId,
             'name' => $response->getContactName(),
             'email' => $response->getContactEmail(),
             'phone' => $response->getContactVoice(),

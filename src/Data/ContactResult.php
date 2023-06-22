@@ -28,8 +28,8 @@ class ContactResult extends ResultData
     public static function rules(): Rules
     {
         return new Rules([
-            'name' => ['required_without:organisation', 'string'],
-            'organisation' => ['required_without:name', 'string'],
+            'name' => ['nullable', 'string'],
+            'organisation' => ['nullable', 'string'],
             'email' => ['required', 'email'],
             'phone' => ['nullable', 'string', 'international_phone'],
             'address1' => ['required', 'string'],
