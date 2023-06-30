@@ -9,6 +9,9 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\Utils as PromiseUtils;
+use GuzzleHttp\Psr7\Response;
 use RuntimeException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
@@ -125,8 +128,15 @@ class RealtimeRegisterApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
-    public function makeRequest(string $command, ?array $params = null, ?array $body = null, ?string $method = 'GET'): ?array
-    {
+    /**
+     * @return Promise<array|null>
+     */
+    public function asyncRequest(
+        string $command,
+        ?array $params = null,
+        ?array $body = null,
+        string $method = 'GET'
+    ): Promise {
         $requestParams = [];
 
         if ($params) {
@@ -134,19 +144,28 @@ class RealtimeRegisterApi
         }
 
         if ($body) {
-            $requestParams['body'] = json_encode($body);
+            $requestParams['json'] = $body;
         }
 
-        $response = $this->client->request($method, $command, $requestParams);
-        $result = $response->getBody()->getContents();
+        return $this->client->requestAsync($method, $command, $requestParams)
+            ->then(function (Response $response): ?array {
+                $responseBody = trim($response->getBody()->__toString());
 
-        $response->getBody()->close();
+                if ($responseBody === '') {
+                    return null;
+                }
 
-        if ($result === '') {
-            return null;
-        }
+                return $this->parseResponseData($responseBody);
+            });
+    }
 
-        return $this->parseResponseData($result);
+    public function makeRequest(
+        string $command,
+        ?array $params = null,
+        ?array $body = null,
+        string $method = 'GET'
+    ): ?array {
+        return $this->asyncRequest($command, $params, $body, $method)->wait();
     }
 
     private function parseResponseData(string $result): array
