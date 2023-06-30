@@ -6,6 +6,7 @@ namespace Upmind\ProvisionProviders\DomainNames\RealtimeRegister\Helper;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
@@ -13,6 +14,7 @@ use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\Utils as PromiseUtils;
 use GuzzleHttp\Psr7\Response;
 use RuntimeException;
+use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
@@ -55,51 +57,49 @@ class RealtimeRegisterApi
     }
 
     /**
-     * @throws \Throwable
+     * @param string[] $domainList
+     *
+     * @return DacDomain[]
      */
     public function checkMultipleDomains(array $domainList): array
     {
-        $dacDomains = [];
+        $checkPromises = array_map(function ($domainName): Promise {
+            return $this->asyncRequest("/v2/domains/{$domainName}/check")
+                ->then(function (array $data) use ($domainName): DacDomain {
+                    $available = (bool)$data['available'];
 
-        foreach ($domainList as $domainName) {
-            $command = "/v2/domains/{$domainName}/check";
-
-            try {
-                $response = $this->makeRequest($command);
-
-                $available = (boolean)$response['available'];
-
-                $dacDomains[] = DacDomain::create([
-                    'domain' => $domainName,
-                    'description' => $response['reason'] ?? sprintf(
+                    return DacDomain::create([
+                        'domain' => $domainName,
+                        'description' => $data['reason'] ?? sprintf(
                             'Domain is %s to register',
                             $available ? 'available' : 'not available'
                         ),
-                    'tld' => Utils::getTld($domainName),
-                    'can_register' => $available,
-                    'can_transfer' => !$available,
-                    'is_premium' => $response['premium'],
-                ]);
-            } catch (\Throwable $e) {
-                $response = $e->getResponse();
-                $body = trim($response->getBody()->__toString());
-                $responseData = json_decode($body, true);
-                if ($responseData['type'] == 'UnsupportedTld') {
-                    $dacDomains[] = DacDomain::create([
+                        'tld' => Utils::getTld($domainName),
+                        'can_register' => $available,
+                        'can_transfer' => !$available,
+                        'is_premium' => $data['premium'] ?? false,
+                    ]);
+                })
+                ->otherwise(function (Throwable $e) use ($domainName): DacDomain {
+                    if (!$e instanceof ClientException) {
+                        throw $e;
+                    }
+
+                    $responseBody = trim($e->getResponse()->getBody()->__toString());
+                    $data = json_decode($responseBody, true);
+
+                    return DacDomain::create([
                         'domain' => $domainName,
-                        'description' => 'Domain is not available to register. Unsupported TLD',
+                        'description' => $data['message'] ?? 'Unknown error',
                         'tld' => Utils::getTld($domainName),
                         'can_register' => false,
                         'can_transfer' => false,
                         'is_premium' => false,
                     ]);
-                } else {
-                    throw $e;
-                }
-            }
-        }
+                });
+        }, $domainList);
 
-        return $dacDomains;
+        return PromiseUtils::all($checkPromises)->wait();
     }
 
     public function register(string $domainName, array $contacts): void
