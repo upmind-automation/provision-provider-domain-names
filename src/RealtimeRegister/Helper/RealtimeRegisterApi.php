@@ -344,18 +344,14 @@ class RealtimeRegisterApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
+    /**
+     * @param string[] $nameservers
+     */
     public function updateNameservers(string $domainName, array $nameservers): array
     {
         $command = "/v2/domains/{$domainName}/update";
 
-        $hosts = [];
-        foreach ($nameservers as $ns) {
-            $hosts[] = $ns['host'];
-
-            $this->createHost($ns['host'], $ns['ip']);
-        }
-
-        $body = array('ns' => $hosts);
+        $body = array('ns' => $nameservers);
 
         $this->makeRequest($command, null, $body, "POST");
 
