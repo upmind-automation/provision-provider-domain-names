@@ -248,11 +248,11 @@ class RealtimeRegisterApi
     private function parseContact(array $contact): ContactData
     {
         return ContactData::create([
-            'organisation' => $contact['organization'] ?? '-',
+            'organisation' => $contact['organization'] ?? null,
             'name' => $contact['name'],
             'address1' => $contact['addressLine'][0],
             'city' => $contact['city'],
-            'state' => $contact['state'] ?? '-',
+            'state' => $contact['state'] ?? null,
             'postcode' => $contact['postalCode'],
             'country_code' => Utils::normalizeCountryCode($contact['country']),
             'email' => $contact['email'],
