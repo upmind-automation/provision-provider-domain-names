@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.7.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.7.1) - 2023-07-03
+
+- Disable RealtimeRegister `poll()`
+
 ## [v2.7.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.7.0) - 2023-07-03
 
 - Implement RealtimeRegister provider
