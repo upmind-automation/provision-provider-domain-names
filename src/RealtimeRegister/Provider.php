@@ -116,44 +116,9 @@ class Provider extends DomainNames implements ProviderInterface
 
         $contacts = $this->getRegisterParams($contactParams);
 
-        // $nameServers = [];
-        // for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
-        //     if (Arr::has($params, 'nameservers.ns' . $i)) {
-        //         $host = strtolower(Arr::get($params, 'nameservers.ns' . $i)['host']);
-        //         $ip = Arr::get($params, 'nameservers.ns' . $i)['ip'] ?? Utils::lookupIpAddress($host);
-
-        //         $nameServers[] = [
-        //             'host' => $host,
-        //             'ip' => $ip
-        //         ];
-
-        //         try {
-        //             $this->api()->createHost($host, $ip);
-        //         } catch (RequestException $e) {
-        //             if ($this->getRequestExceptionMessage($e) !== 'Hosts can only be created subordinate to a domain in your account') {
-        //                 $this->handleException($e, $params);
-        //             }
-        //         } catch (\Throwable $e) {
-        //             $this->handleException($e, $params);
-        //         }
-        //     }
-        // }
-
         try {
             $this->api()->register($domainName, $contacts, $params->nameservers->pluckHosts());
-        } catch (\Throwable $e) {
-            $this->handleException($e, $params);
-        }
 
-        // try {
-        //     $this->api()->updateNameservers($domainName, $nameServers);
-        // } catch (RequestException $e) {
-        //     $message = $this->getRequestExceptionMessage($e);
-        // } catch (\Throwable $e) {
-        //     $message = $e->getMessage();
-        // }
-
-        try {
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
