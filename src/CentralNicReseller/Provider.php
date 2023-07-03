@@ -94,7 +94,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
@@ -182,7 +182,6 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult(sprintf('Transfer for %s domain successfully initiated!', $domainName), [
                 'transfer_id' => $transferId
             ]);
-
         } catch (eppException $e) {
             $this->_eppExceptionHandler($e);
         }
@@ -259,7 +258,6 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         try {
-
             $this->api()->updateNameservers($domainName, $params->pluckHosts());
 
             $result = collect($params->pluckHosts())
@@ -301,7 +299,6 @@ class Provider extends DomainNames implements ProviderInterface
             $this->epp()->setRegistrarLock($domainName, $addStatuses, $removeStatuses);
 
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
-
         } catch (eppException $e) {
             return $this->_eppExceptionHandler($e);
         }
@@ -390,7 +387,6 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             return $this->connection;
-
         } catch (eppException $e) {
             switch ($e->getCode()) {
                 case 2200:

@@ -77,7 +77,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
@@ -136,7 +136,6 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContact($registrantID)) {
                 throw $this->errorResult("Invalid registrant ID provided!", $params);
             }
-
         } else {
             if (!Arr::has($params, 'registrant.register')) {
                 throw $this->errorResult('Registrant contact data is required!');
@@ -153,7 +152,6 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContact($adminID)) {
                 throw $this->errorResult("Invalid registrant ID provided!", $params);
             }
-
         } else {
             if (!Arr::has($params, 'admin.register')) {
                 throw $this->errorResult('Admin contact data is required!');
@@ -232,7 +230,6 @@ class Provider extends DomainNames implements ProviderInterface
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, $contacts);
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
-
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }

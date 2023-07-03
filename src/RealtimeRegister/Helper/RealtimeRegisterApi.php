@@ -122,13 +122,13 @@ class RealtimeRegisterApi
             ];
         }
 
-        $body = array(
+        $body = [
             'customer' => $this->configuration->customer,
             'period' => 12,
             'registrant' => $contacts[self::CONTACT_TYPE_REGISTRANT],
             'contacts' => $queryContacts,
             'ns' => $nameservers,
-        );
+        ];
 
         $this->makeRequest($command, null, $body, "POST");
     }
@@ -301,7 +301,7 @@ class RealtimeRegisterApi
     public function setAuthCode(string $domainName): ?string
     {
         $command = "/v2/domains/{$domainName}/update";
-        $body = array('authcode' => '');
+        $body = ['authcode' => ''];
 
         $this->makeRequest($command, null, $body, "POST");
 
@@ -311,7 +311,7 @@ class RealtimeRegisterApi
     public function setRenewalMode(string $domainName, bool $autoRenew)
     {
         $command = "/v2/domains/{$domainName}/update";
-        $body = array('autoRenew' => $autoRenew);
+        $body = ['autoRenew' => $autoRenew];
 
         $this->makeRequest($command, null, $body, "POST");
     }
@@ -340,7 +340,7 @@ class RealtimeRegisterApi
 
         $command = "/v2/domains/{$domainName}/update";
 
-        $body = array('status' => array_values($statuses));
+        $body = ['status' => array_values($statuses)];
 
         $this->makeRequest($command, null, $body, "POST");
     }
@@ -349,7 +349,7 @@ class RealtimeRegisterApi
     {
         $command = "/v2/domains/{$domainName}/renew";
 
-        $body = array('period' => $period * 12);
+        $body = ['period' => $period * 12];
 
         $this->makeRequest($command, null, $body, "POST");
     }
@@ -361,7 +361,7 @@ class RealtimeRegisterApi
     {
         $command = "/v2/domains/{$domainName}/update";
 
-        $body = array('ns' => $nameservers);
+        $body = ['ns' => $nameservers];
 
         $this->makeRequest($command, null, $body, "POST");
 
@@ -385,9 +385,9 @@ class RealtimeRegisterApi
                 $version = 'V6';
             }
 
-            $body = array('addresses' => [['address' => $ip,
+            $body = ['addresses' => [['address' => $ip,
                 'ipVersion' => $version
-            ]]);
+            ]]];
 
             $this->makeRequest($command, null, $body, "POST");
         }
@@ -506,7 +506,6 @@ class RealtimeRegisterApi
                 $message = 'Domain Process';
                 $domain = $entity['identifier'] ?? '';
                 $messageDateTime = Carbon::parse($entity['createdDate']);
-
 
                 $notifications[] = DomainNotification::create()
                     ->setId($messageId)

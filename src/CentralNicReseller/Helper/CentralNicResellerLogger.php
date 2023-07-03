@@ -22,7 +22,7 @@ class CentralNicResellerLogger extends BaseCNRLogger
         $this->logger = $logger;
     }
 
-    public function log($post,  $r, $error = null): void
+    public function log($post, $r, $error = null): void
     {
         // Compile the Message
         $message = implode("\n", [

@@ -462,8 +462,7 @@ class EppHelper
     public function updateNameServers(
         string $domainName,
         array  $nameservers
-    ): string
-    {
+    ): string {
         // If new nameservers are given, get the old ones to remove them
         $hosts = [];
         foreach ($nameservers as $nameserver) {
