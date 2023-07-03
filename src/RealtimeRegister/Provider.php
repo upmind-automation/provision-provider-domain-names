@@ -64,6 +64,8 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function poll(PollParams $params): PollResult
     {
+        throw $this->errorResult('Polling is not supported by this provider');
+
         $since = $params->after_date ? Carbon::parse($params->after_date) : null;
         try {
             $poll = $this->api()->poll(intval($params->limit), $since);
