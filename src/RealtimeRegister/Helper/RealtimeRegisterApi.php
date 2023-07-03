@@ -102,7 +102,11 @@ class RealtimeRegisterApi
         return PromiseUtils::all($checkPromises)->wait();
     }
 
-    public function register(string $domainName, array $contacts): void
+    /**
+     * @param array<string,int>|string[] $contacts
+     * @param string[] $nameservers
+     */
+    public function register(string $domainName, array $contacts, array $nameservers): void
     {
         $command = "/v2/domains/{$domainName}";
 
@@ -123,6 +127,7 @@ class RealtimeRegisterApi
             'period' => 12,
             'registrant' => $contacts[self::CONTACT_TYPE_REGISTRANT],
             'contacts' => $queryContacts,
+            'ns' => $nameservers,
         );
 
         $this->makeRequest($command, null, $body, "POST");
