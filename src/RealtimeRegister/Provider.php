@@ -372,7 +372,18 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Not implemented');
+        $domainName = Utils::getDomain(
+            Utils::normalizeSld($params->sld),
+            Utils::normalizeTld($params->tld)
+        );
+
+        try {
+            $this->api()->pushTransfer($domainName, $params->ips_tag);
+
+            return $this->okResult('Domain released to new registrar');
+        } catch (\Throwable $e) {
+            $this->handleException($e, $params);
+        }
     }
 
     protected function handleException(Throwable $e, $params = null): void

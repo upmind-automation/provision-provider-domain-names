@@ -316,6 +316,16 @@ class RealtimeRegisterApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
+    public function pushTransfer(string $domainName, string $registrar): void
+    {
+        $this->makeRequest(
+            sprintf('/v2/domains/%s/transfer/push', $domainName),
+            null,
+            ['recipient' => $registrar],
+            'POST'
+        );
+    }
+
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $command = "/v2/domains/{$domainName}";
