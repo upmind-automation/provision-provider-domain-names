@@ -59,6 +59,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'centralnic', CentralNic::class);
         $this->bindProvider('domain-names', 'godaddy', GoDaddy::class);
         $this->bindProvider('domain-names', 'centralnic-reseller', CentralNicReseller::class);
-        $this->bindProvider('domain-names', 'realtimeregister', RealtimeRegister::class);
+        $this->bindProvider('domain-names', 'realtime-register', RealtimeRegister::class);
     }
 }

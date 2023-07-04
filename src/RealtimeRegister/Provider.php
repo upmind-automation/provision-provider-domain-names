@@ -59,7 +59,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('Realtime Register')
-            ->setDescription('Registering, hosting, and managing Realtime Register domains');
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/realtime-register-logo.png')
+            ->setDescription('Register, transfer, and manage RealtimeRegister domains');
     }
 
     public function poll(PollParams $params): PollResult
