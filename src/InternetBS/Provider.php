@@ -320,7 +320,6 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         $client = new Client([
-            'base_uri' => $this->resolveAPIURL(),
             'headers' => [
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/InternetBSApi',
             ],
@@ -331,12 +330,5 @@ class Provider extends DomainNames implements ProviderInterface
         ]);
 
         return $this->api = new InternetBSApi($client, $this->configuration);
-    }
-
-    private function resolveAPIURL(): string
-    {
-        return $this->configuration->sandbox
-            ? 'https://testapi.internet.bs'
-            : 'https://api.internet.bs/';
     }
 }

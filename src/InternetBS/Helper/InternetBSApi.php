@@ -40,6 +40,13 @@ class InternetBSApi
         $this->configuration = $configuration;
     }
 
+    public function getApiBaseUrl(): string
+    {
+        return $this->configuration->sandbox
+            ? 'https://testapi.internet.bs'
+            : 'https://api.internet.bs';
+    }
+
     public function makeRequest(
         string  $command,
         ?array  $params = null,
@@ -47,6 +54,8 @@ class InternetBSApi
         ?string $method = 'POST'
     ): ?array
     {
+        $url = sprintf('%s/%s', $this->getApiBaseUrl(), ltrim($command, '/'));
+
         $params = array_merge($params,
             [
                 'ApiKey' => $this->configuration->api_key,
@@ -65,7 +74,7 @@ class InternetBSApi
             $requestParams['body'] = json_encode($body);
         }
 
-        $response = $this->client->request($method, $command, $requestParams);
+        $response = $this->client->request($method, $url, $requestParams);
         $result = $response->getBody()->getContents();
 
         $response->getBody()->close();
