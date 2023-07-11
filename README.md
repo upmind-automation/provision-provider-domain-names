@@ -56,6 +56,8 @@ The following providers are currently implemented:
   - [CentralNic Registry](https://centralnic.support/hc/en-gb/articles/4403312126993-Where-do-I-find-the-Registry-API-documentation-)
   - [CentralNic Reseller](https://kb.centralnicreseller.com/api/api-commands/api-command-reference)
   - [GoDaddy](https://developer.godaddy.com/doc/endpoint/domains)
+  - [Realtime Register](https://dm.realtimeregister.com/docs/api/domains)
+  - [Internet.bs](https://internetbs.net/internet-bs-api.pdf)
 
 ## Functions
 
