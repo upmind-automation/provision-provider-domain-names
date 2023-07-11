@@ -223,7 +223,6 @@ class InternetBSApi
         if (count($nameservers) > 0) {
             foreach ($nameservers as $i => $ns) {
                 $result['ns' . ($i + 1)] = ['host' => (string)$ns];
-
             }
         }
 

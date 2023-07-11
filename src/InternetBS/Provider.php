@@ -72,7 +72,7 @@ class Provider extends DomainNames implements ProviderInterface
         $sld = Utils::normalizeSld($params->sld);
 
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
