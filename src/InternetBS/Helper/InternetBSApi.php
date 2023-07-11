@@ -71,7 +71,7 @@ class InternetBSApi
         }
 
         if ($body) {
-            $requestParams['body'] = json_encode($body);
+            $requestParams['json'] = $body;
         }
 
         $response = $this->client->request($method, $url, $requestParams);
@@ -115,6 +115,8 @@ class InternetBSApi
             } elseif (isset($responseData['product']) && isset($responseData['product'][0]['message'])) {
                 $errorMessage = $responseData['product'][0]['message'];
             }
+
+            $errorMessage = sprintf('Provider API Error: %s', $errorMessage ?? 'Unknown Error');
         }
 
         return $errorMessage ?? null;
