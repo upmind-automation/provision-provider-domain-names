@@ -6,6 +6,8 @@ namespace Upmind\ProvisionProviders\DomainNames\InternetBS\Helper;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Arr;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -47,43 +49,52 @@ class InternetBSApi
             : 'https://api.internet.bs';
     }
 
-    public function makeRequest(
-        string  $command,
-        ?array  $params = null,
-        ?array  $body = null,
-        ?string $method = 'POST'
-    ): ?array
-    {
+    /**
+     * @return Promise<?array>
+     */
+    public function asyncRequest(
+        string $command,
+        ?array $query = null,
+        ?array $body = null,
+        string $method = 'POST'
+    ): Promise {
         $url = sprintf('%s/%s', $this->getApiBaseUrl(), ltrim($command, '/'));
 
-        $params = array_merge($params,
-            [
-                'ApiKey' => $this->configuration->api_key,
-                'Password' => $this->configuration->password,
-                'ResponseFormat' => 'JSON'
-            ]
-        );
+        $query = array_merge($query, [
+            'ApiKey' => $this->configuration->api_key,
+            'Password' => $this->configuration->password,
+            'ResponseFormat' => 'JSON'
+        ]);
 
-        $requestParams = [];
-
-        if ($params) {
-            $requestParams['query'] = $params;
-        }
+        $requestParams = [
+            'query' => $query
+        ];
 
         if ($body) {
             $requestParams['json'] = $body;
         }
 
-        $response = $this->client->request($method, $url, $requestParams);
-        $result = $response->getBody()->getContents();
+        return $this->client->requestAsync($method, $url, $requestParams)
+            ->then(function (Response $response) {
+                $result = $response->getBody()->getContents();
 
-        $response->getBody()->close();
+                $response->getBody()->close();
 
-        if ($result === '') {
-            return null;
-        }
+                if ($result === '') {
+                    return null;
+                }
 
-        return $this->parseResponseData($result);
+                return $this->parseResponseData($result);
+            });
+    }
+
+    public function makeRequest(
+        string $command,
+        ?array $query = null,
+        ?array $body = null,
+        string $method = 'POST'
+    ): ?array {
+        return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
 
     private function parseResponseData(string $result): array
