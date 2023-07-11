@@ -89,7 +89,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         $this->checkRegisterParams($params);
 
-        if (!$this->configuration->sandbox) {
+        if (!$this->configuration->sandbox) { // DAC requests always fail in sandbox
             $checkResult = $this->api()->checkMultipleDomains([$domainName]);
 
             if (count($checkResult) < 1) {
