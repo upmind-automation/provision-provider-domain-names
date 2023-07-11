@@ -58,8 +58,8 @@ class Provider extends DomainNames implements ProviderInterface
     {
         return AboutData::create()
             ->setName('InternetBS')
-            ->setDescription('Registering, hosting, and managing InternetBS domains')
-            ->setLogoUrl('https://api.upmind.io/images/logos/provision/internetbs-logo.png');
+            ->setDescription('Register, transfer, and manage InternetBS domain names')
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/internetbs-logo@2x.png');
     }
 
     public function poll(PollParams $params): PollResult
