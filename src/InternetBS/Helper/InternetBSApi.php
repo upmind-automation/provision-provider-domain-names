@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\InternetBS\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\Utils as PromiseUtils;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Arr;
 use Throwable;
@@ -133,29 +134,39 @@ class InternetBSApi
         return $errorMessage ?? null;
     }
 
+    /**
+     * @param string[] $domains
+     *
+     * @return DacDomain[]
+     */
     public function checkMultipleDomains(array $domains)
     {
-        $dacDomains = [];
+        $promises = array_map(function ($domain) {
+            return $this->asyncRequest('/Domain/Check', ['Domain' => $domain])
+                ->then(function (array $result) {
+                    $canRegister = $result['status'] === 'AVAILABLE';
+                    $canTransfer = $result['status'] === 'UNAVAILABLE';
+                    $description = sprintf(
+                        'Domain is %s to register',
+                        $canRegister ? 'available' : 'not available'
+                    );
 
-        foreach ($domains as $domain) {
-            $result = $this->makeRequest('/Domain/Check', ['Domain' => $domain]);
+                    if ($result['status'] === 'FAILURE') {
+                        $description = $result['message'] ?? 'Domain not available to register or transfer';
+                    }
 
-            $available = $result['status'] == 'AVAILABLE';
+                    return DacDomain::create([
+                        'domain' => $result['domain'],
+                        'description' => $description,
+                        'tld' => Utils::getTld($result['domain']),
+                        'can_register' => $canRegister,
+                        'can_transfer' => $canTransfer,
+                        'is_premium' => false,
+                    ]);
+                });
+        }, $domains);
 
-            $dacDomains[] = DacDomain::create([
-                'domain' => $result['domain'],
-                'description' => sprintf(
-                    'Domain is %s to register',
-                    $available ? 'available' : 'not available'
-                ),
-                'tld' => Utils::getTld($result['domain']),
-                'can_register' => $available,
-                'can_transfer' => !$available,
-                'is_premium' => false,
-            ]);
-        }
-
-        return $dacDomains;
+        return PromiseUtils::all($promises)->wait();
     }
 
     public function getDomainInfo(string $domainName): array
