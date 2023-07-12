@@ -357,7 +357,12 @@ class Provider extends DomainNames implements ProviderInterface
             $phone = '+' . $contactInfo->getPhoneCountryCode() . $contactInfo->getPhone();
         }
 
-        return ContactResult::create(array_map(fn ($value) => $value !== 'n/a' ? $value : null, [
+        $country = $contactInfo->getCountry();
+        if (!preg_match('/^[A-Z]{2}$/', strtoupper($country))) {
+            $country = Utils::countryToCode($country);
+        }
+
+        return ContactResult::create($this->emptyContactValuesToNull([
             'id' => (string)$contactInfo->getId(),
             'name' => trim($contactInfo->getFirstName() . ' ' . $contactInfo->getLastName()),
             'organisation' => $contactInfo->getCompany(),
@@ -367,8 +372,18 @@ class Provider extends DomainNames implements ProviderInterface
             'city' => $contactInfo->getCity(),
             'state' => $contactInfo->getState(),
             'postcode' => $contactInfo->getZipCode(),
-            'country_code' => $contactInfo->getCountry(),
+            'country_code' => Utils::normalizeCountryCode($country),
         ]));
+    }
+
+    protected function emptyContactValuesToNull($data): array
+    {
+        $empty = [
+            '',
+            'n/a',
+        ];
+
+        return array_map(fn ($value) => in_array($value, $empty, true) ? null : $value, $data);
     }
 
     protected function domainInfoToResult(DomainInfo $domainInfo): DomainResult
