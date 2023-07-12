@@ -392,10 +392,16 @@ class Provider extends DomainNames implements ProviderInterface
         $nameservers = collect($domainInfo->getNameServerList()->getString())
             ->mapWithKeys(fn ($host, $i) => ['ns' . ($i + 1) => ['host' => $host]]);
 
+        $statuses = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()])
+            ->map(fn ($status) => ucfirst(strtolower($status)))
+            ->unique()
+            ->values()
+            ->toArray();
+
         return DomainResult::create([
             'id' => (string)$domainInfo->getId(),
             'domain' => $domainInfo->getDomainName(),
-            'statuses' => array_filter([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()]),
+            'statuses' => $statuses,
             'locked' => $domainInfo->getLockStatus(),
             'registrant' => $contacts['registrant'],
             'billing' => $contacts['billing'],
