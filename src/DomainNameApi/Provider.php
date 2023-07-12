@@ -250,9 +250,9 @@ class Provider extends DomainNames implements ProviderInterface
         $request = (new SaveContactsRequest())
             ->setDomainName($domain)
             ->setRegistrantContact($this->contactParamsToSoap($params->contact))
-            ->setAdministrativeContact($this->contactParamsToSoap(new ContactParams($contactResults['admin'])))
-            ->setTechnicalContact($this->contactParamsToSoap(new ContactParams($contactResults['tech'])))
-            ->setBillingContact($this->contactParamsToSoap(new ContactParams($contactResults['billing'])));
+            ->setAdministrativeContact($this->contactParamsToSoap(new ContactParams($contactResults['admin'], false)))
+            ->setTechnicalContact($this->contactParamsToSoap(new ContactParams($contactResults['tech'], false)))
+            ->setBillingContact($this->contactParamsToSoap(new ContactParams($contactResults['billing'], false)));
         $response = $this->api()->SaveContacts(new SaveContacts($request));
         $result = $response->getSaveContactsResult();
 
@@ -437,7 +437,7 @@ class Provider extends DomainNames implements ProviderInterface
             ->setCompany($params->organisation)
             ->setAddressLine1($params->address1)
             ->setCity($params->city)
-            ->setState(strtoupper($params->country_code) === 'US' ? $params->state : null)
+            ->setState(strtoupper($params->country_code ?? '') === 'US' ? $params->state : null)
             ->setZipCode($params->postcode)
             ->setCountry($params->country_code)
             ->setEMail($params->email)
