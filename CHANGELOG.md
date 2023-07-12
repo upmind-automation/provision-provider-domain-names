@@ -2,6 +2,12 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.1) - 2023-07-12
+
+- Update Countries::nameToCode() to match localised + English country names
+- Update DomainNameApi contactInfoToResult() to transform country name to code
+- Fix duplicate statuses in DomainNameApi domainInfoToResult()
+
 ## [v2.8.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.0) - 2023-07-11
 
 - Implement InternetBS provider
