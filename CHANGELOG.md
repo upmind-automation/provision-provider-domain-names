@@ -5,6 +5,7 @@ All notable changes to the package will be documented in this file.
 ## [v2.8.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.2) - 2023-07-12
 
 - Loosen ContactResult validation; allow null `country_code`
+- Fix DomainNameApi updateRegistrantContact() when admin/tech/billing contacts are already invalid
 
 ## [v2.8.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.1) - 2023-07-12
 
