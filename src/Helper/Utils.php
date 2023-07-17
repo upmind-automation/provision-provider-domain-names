@@ -204,6 +204,7 @@ class Utils
             'mx',
             'es',
             'pt',
+            'at',
         ];
 
         return !in_array(static::getRootTld($tld), $unsupported);
