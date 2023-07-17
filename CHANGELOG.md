@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.4) - 2023-07-17
+
+- Update NameSilo register() to use Utils::tldSupportsWhoisPrivacy()
+
 ## [v2.8.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.3) - 2023-07-17
 
 - Add .at to list of TLDs which don't support WHOIS privacy
