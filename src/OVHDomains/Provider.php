@@ -320,10 +320,10 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @throws ProvisionFunctionError
+     * @return no-return
      * @throws Throwable If error is completely unexpected
      *
-     * @return no-return
+     * @throws ProvisionFunctionError
      */
     protected function handleException(Throwable $e): void
     {

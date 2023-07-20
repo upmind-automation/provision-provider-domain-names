@@ -22,7 +22,7 @@ use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterContactParams;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\OVHDomains\Data\Configuration;
-use Ovh\Api as OVHClient;
+use Ovh\Api as BaseOVHClient;
 
 /**
  * OVH Domains API client.
@@ -37,8 +37,8 @@ class OVHDomainsApi
     public const CONTACT_TYPE_ADMIN = 'ADMIN_ACCOUNT';
     public const CONTACT_TYPE_BILLING = 'BILLING_ACCOUNT';
 
-    protected OVHClient $client;
-    protected AsyncRequest $asyncClient;
+    protected BaseOVHClient $client;
+    protected OVHClient $asyncClient;
 
     protected Configuration $configuration;
 
@@ -51,15 +51,15 @@ class OVHDomainsApi
 
     private static function establishConnection(Configuration $configuration, ?bool $async = false)
     {
-        if($async) {
-            return new AsyncRequest(
+        if ($async) {
+            return new OVHClient(
                 $configuration->api_key,
                 $configuration->api_secret,
                 'ovh-eu',
                 $configuration->consumer_key);
         }
 
-        return new OVHClient(
+        return new BaseOVHClient(
             $configuration->api_key,
             $configuration->api_secret,
             'ovh-eu',
@@ -120,7 +120,7 @@ class OVHDomainsApi
         $checkPromises = array_map(function ($domainName): Promise {
             return $this->asyncClient->getAsync("/domain/{$domainName}")
                 ->then(function () use ($domainName): DacDomain {
-                    return  DacDomain::create([
+                    return DacDomain::create([
                         'domain' => $domainName,
                         'description' => 'Domain is not available to register',
                         'tld' => Utils::getTld($domainName),

@@ -12,13 +12,13 @@ use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\Promise;
-use Ovh\Api as OVHClient;
+use Ovh\Api as BaseOVHClient;
 
 /**
- * Class AsyncRequest
+ * Class OVHClient
  * @package Upmind\ProvisionProviders\DomainNames\OVHDomains\Helper
  */
-class AsyncRequest extends OVHClient
+class OVHClient extends BaseOVHClient
 {
     private ?Client $http_client;
     private ?string $application_secret;
@@ -70,7 +70,7 @@ class AsyncRequest extends OVHClient
 
         if ($this->consumer_key != null) {
             $toSign = $this->application_secret . '+' . $this->consumer_key . '+' . $method
-                . '+' . $url. '++' . $now;
+                . '+' . $url . '++' . $now;
             $signature = '$1$' . sha1($toSign);
             $headers['X-Ovh-Consumer'] = $this->consumer_key;
             $headers['X-Ovh-Signature'] = $signature;
