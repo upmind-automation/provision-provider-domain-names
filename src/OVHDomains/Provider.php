@@ -166,15 +166,11 @@ class Provider extends DomainNames implements ProviderInterface
             // domain not active - continue below
         }
 
-        if (!Arr::has($params, 'registrant.register')) {
-            return $this->errorResult('Registrant contact data is required!');
-        }
-
         $contacts = array_filter([
-            OVHDomainsApi::CONTACT_TYPE_REGISTRANT => $params->registrant ?? null,
-            OVHDomainsApi::CONTACT_TYPE_ADMIN => $params->admin ?? null,
-            OVHDomainsApi::CONTACT_TYPE_TECH => $params->tech ?? null,
-            OVHDomainsApi::CONTACT_TYPE_BILLING => $params->billing ?? null,
+            OVHDomainsApi::CONTACT_TYPE_REGISTRANT => $params->registrant,
+            OVHDomainsApi::CONTACT_TYPE_ADMIN => $params->admin,
+            OVHDomainsApi::CONTACT_TYPE_TECH => $params->tech,
+            OVHDomainsApi::CONTACT_TYPE_BILLING => $params->billing,
         ]);
 
         try {

@@ -201,8 +201,6 @@ class OVHDomainsApi
                         'value' => $eppCode
                     )
                 );
-
-                return;
             }
 
             if ($configuration['label'] === 'OWNER_LEGAL_AGE') {
@@ -222,7 +220,17 @@ class OVHDomainsApi
             }
 
             if (in_array($configuration['label'], [self::CONTACT_TYPE_REGISTRANT, self::CONTACT_TYPE_TECH, self::CONTACT_TYPE_BILLING, self::CONTACT_TYPE_ADMIN])) {
-                $contactId = $this->getContactId($contacts[$configuration['label']], $configuration['label']);
+                if(!isset($contacts[$configuration['label']])) {
+                    continue;
+                }
+
+                if ($contacts[$configuration['label']]->id) {
+                    $contactId = $contacts[$configuration['label']]->id;
+                } else {
+                    if ($configuration['label'] === self::CONTACT_TYPE_REGISTRANT) {
+                        $contactId = $this->createContact($this->setContactParams($contacts[$configuration['label']]->register));
+                    }
+                }
 
                 if (isset($contactId) && $contactId != null) {
                     if ($configuration['label'] == self::CONTACT_TYPE_REGISTRANT) {
@@ -238,22 +246,6 @@ class OVHDomainsApi
                         )
                     );
                 }
-            }
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    private function getContactId(RegisterContactParams $contact, string $type): ?string
-    {
-        if ($contact->id) {
-            return $contact->id;
-        } else {
-            if ($type === self::CONTACT_TYPE_REGISTRANT) {
-                return $this->createContact($this->setContactParams($contact->register));
-            } else {
-                return $this->createAccount($this->setAccountParams($contact->register));
             }
         }
     }
@@ -326,15 +318,6 @@ class OVHDomainsApi
 
             throw $e;
         }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    private function createAccount(array $params): ?string
-    {
-        $create = $this->client->post('/newAccount', $params);
-        return $create['ovhIdentifier'] ?? null;
     }
 
     public function getDomainEppCode(string $domainName): string
@@ -477,30 +460,6 @@ class OVHDomainsApi
             'phone' => Utils::internationalPhoneToEpp($contact->phone),
             'language' => $this->setLanguage($countryCode),
             'legalForm' => 'other',
-        );
-    }
-
-    private function setAccountParams(ContactParams $contact): array
-    {
-        $name = $contact->name ?: $contact->organisation;
-        @[$firstName, $lastName] = explode(' ', $name, 2);
-        $countryCode = Utils::normalizeCountryCode($contact->country_code);
-
-        return array(
-            'name' => $name,
-            'firstname' => $firstName,
-            'country' => $countryCode,
-            'city' => $contact->city,
-            'zip' => $contact->postcode,
-            'address' => $contact->address1,
-            'area' => $contact->state ?: '',
-            'phone' => Utils::eppPhoneToInternational($contact->phone),
-            'email' => $contact->email,
-            'organisation' => $contact->organisation ?? '',
-            'ovhCompany' => 'ovh',
-            'ovhSubsidiary' => 'FR',
-            'language' => $this->setLanguage($countryCode),
-            'legalform' => 'other',
         );
     }
 
