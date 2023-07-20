@@ -2,6 +2,39 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.4) - 2023-07-17
+
+- Update NameSilo register() to use Utils::tldSupportsWhoisPrivacy()
+
+## [v2.8.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.3) - 2023-07-17
+
+- Add .at to list of TLDs which don't support WHOIS privacy
+
+## [v2.8.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.2) - 2023-07-12
+
+- Loosen ContactResult validation; allow null `country_code`
+- Fix DomainNameApi updateRegistrantContact() when admin/tech/billing contacts are already invalid
+
+## [v2.8.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.1) - 2023-07-12
+
+- Update Countries::nameToCode() to match localised + English country names
+- Update DomainNameApi contactInfoToResult() to transform country name to code
+- Fix duplicate statuses in DomainNameApi domainInfoToResult()
+
+## [v2.8.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.0) - 2023-07-11
+
+- Implement InternetBS provider
+
+## [v2.7.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.7.1) - 2023-07-04
+
+- Fix RealtimeRegister provider identifier
+- Disable RealtimeRegister `poll()`
+- Add RealtimeRegister logo, update description
+
+## [v2.7.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.7.0) - 2023-07-03
+
+- Implement RealtimeRegister provider
+
 ## [v2.6.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.6.0) - 2023-06-16
 
 - Implement CentralNic reseller provider

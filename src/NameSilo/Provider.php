@@ -201,7 +201,7 @@ class Provider extends DomainNames implements ProviderInterface
         $data = [
             'domain' => $domain,
             'years' => Arr::get($params, 'renew_years'),
-            'private' => 1,
+            'private' => intval(Utils::tldSupportsWhoisPrivacy($params->tld)),
             'auto_renew' => 0,
         ];
 

@@ -115,8 +115,7 @@ class CentralNicResellerApi
         ?RegisterContactParams $adminContact = null,
         ?RegisterContactParams $techContact = null,
         ?RegisterContactParams $billingContact = null
-    ): array
-    {
+    ): array {
         if (!Utils::tldSupportsTransferContacts(Utils::getTld($domain))) {
             $ownerContact = null;
             $adminContact = null;
@@ -137,7 +136,7 @@ class CentralNicResellerApi
         if ($ownerContact) {
             if ($ownerContact->register) {
                 $params['ownercontact0'] = $this->transformContactParams($ownerContact->register);
-            } else if ($ownerContact->id) {
+            } elseif ($ownerContact->id) {
                 $params['ownercontact0'] = $ownerContact->id;
             }
         }
@@ -145,7 +144,7 @@ class CentralNicResellerApi
         if ($adminContact) {
             if ($adminContact->register) {
                 $params['admincontact0'] = $this->transformContactParams($adminContact->register);
-            } else if ($adminContact->id) {
+            } elseif ($adminContact->id) {
                 $params['admincontact0'] = $adminContact->id;
             }
         }
@@ -153,7 +152,7 @@ class CentralNicResellerApi
         if ($techContact) {
             if ($techContact->register) {
                 $params['techcontact0'] = $this->transformContactParams($techContact->register);
-            } else if ($techContact->id) {
+            } elseif ($techContact->id) {
                 $params['techcontact0'] = $techContact->id;
             }
         }
@@ -161,7 +160,7 @@ class CentralNicResellerApi
         if ($billingContact) {
             if ($billingContact->register) {
                 $params['billingcontact0'] = $this->transformContactParams($billingContact->register);
-            } else if ($billingContact->id) {
+            } elseif ($billingContact->id) {
                 $params['billingcontact0'] = $billingContact->id;
             }
         }
@@ -193,7 +192,7 @@ class CentralNicResellerApi
      */
     public function createContact(ContactParams $contact): string
     {
-        $result =  $this->runCommand('AddContact', $this->transformContactParams($contact))->getHash();
+        $result = $this->runCommand('AddContact', $this->transformContactParams($contact))->getHash();
 
         return $result['PROPERTY']['CONTACT'][0];
     }
@@ -206,8 +205,7 @@ class CentralNicResellerApi
         RegisterContactParams $adminContact,
         RegisterContactParams $techContact,
         RegisterContactParams $billingContact
-    ): array
-    {
+    ): array {
         $params = [
             'domain' => $domain,
             'period' => $period
@@ -256,4 +254,3 @@ class CentralNicResellerApi
         return $this->runCommand('ModifyDomain', $params)->getHash();
     }
 }
-

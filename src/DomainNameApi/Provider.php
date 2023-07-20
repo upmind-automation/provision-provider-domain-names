@@ -250,9 +250,9 @@ class Provider extends DomainNames implements ProviderInterface
         $request = (new SaveContactsRequest())
             ->setDomainName($domain)
             ->setRegistrantContact($this->contactParamsToSoap($params->contact))
-            ->setAdministrativeContact($this->contactParamsToSoap(new ContactParams($contactResults['admin'])))
-            ->setTechnicalContact($this->contactParamsToSoap(new ContactParams($contactResults['tech'])))
-            ->setBillingContact($this->contactParamsToSoap(new ContactParams($contactResults['billing'])));
+            ->setAdministrativeContact($this->contactParamsToSoap(new ContactParams($contactResults['admin'], false)))
+            ->setTechnicalContact($this->contactParamsToSoap(new ContactParams($contactResults['tech'], false)))
+            ->setBillingContact($this->contactParamsToSoap(new ContactParams($contactResults['billing'], false)));
         $response = $this->api()->SaveContacts(new SaveContacts($request));
         $result = $response->getSaveContactsResult();
 
@@ -357,7 +357,12 @@ class Provider extends DomainNames implements ProviderInterface
             $phone = '+' . $contactInfo->getPhoneCountryCode() . $contactInfo->getPhone();
         }
 
-        return ContactResult::create(array_map(fn ($value) => $value !== 'n/a' ? $value : null, [
+        $country = $contactInfo->getCountry();
+        if (!preg_match('/^[A-Z]{2}$/', strtoupper($country))) {
+            $country = Utils::countryToCode($country);
+        }
+
+        return ContactResult::create($this->emptyContactValuesToNull([
             'id' => (string)$contactInfo->getId(),
             'name' => trim($contactInfo->getFirstName() . ' ' . $contactInfo->getLastName()),
             'organisation' => $contactInfo->getCompany(),
@@ -367,8 +372,18 @@ class Provider extends DomainNames implements ProviderInterface
             'city' => $contactInfo->getCity(),
             'state' => $contactInfo->getState(),
             'postcode' => $contactInfo->getZipCode(),
-            'country_code' => $contactInfo->getCountry(),
+            'country_code' => Utils::normalizeCountryCode($country),
         ]));
+    }
+
+    protected function emptyContactValuesToNull($data): array
+    {
+        $empty = [
+            '',
+            'n/a',
+        ];
+
+        return array_map(fn ($value) => in_array($value, $empty, true) ? null : $value, $data);
     }
 
     protected function domainInfoToResult(DomainInfo $domainInfo): DomainResult
@@ -377,10 +392,16 @@ class Provider extends DomainNames implements ProviderInterface
         $nameservers = collect($domainInfo->getNameServerList()->getString())
             ->mapWithKeys(fn ($host, $i) => ['ns' . ($i + 1) => ['host' => $host]]);
 
+        $statuses = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()])
+            ->map(fn ($status) => ucfirst(strtolower($status)))
+            ->unique()
+            ->values()
+            ->toArray();
+
         return DomainResult::create([
             'id' => (string)$domainInfo->getId(),
             'domain' => $domainInfo->getDomainName(),
-            'statuses' => array_filter([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()]),
+            'statuses' => $statuses,
             'locked' => $domainInfo->getLockStatus(),
             'registrant' => $contacts['registrant'],
             'billing' => $contacts['billing'],
@@ -416,7 +437,7 @@ class Provider extends DomainNames implements ProviderInterface
             ->setCompany($params->organisation)
             ->setAddressLine1($params->address1)
             ->setCity($params->city)
-            ->setState(strtoupper($params->country_code) === 'US' ? $params->state : null)
+            ->setState(strtoupper($params->country_code ?? '') === 'US' ? $params->state : null)
             ->setZipCode($params->postcode)
             ->setCountry($params->country_code)
             ->setEMail($params->email)
