@@ -312,7 +312,7 @@ class OVHDomainsApi
     {
         try {
             $create = $this->client->post('/domain/contact', $params);
-            return $create['id'] ?? null;
+            return (string) $create['id'] ?? null;
         } catch (RequestException $e) {
             if ($e->getCode() == 400) {
                 if ($e->hasResponse()) {
