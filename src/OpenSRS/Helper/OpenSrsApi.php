@@ -331,7 +331,13 @@ class OpenSrsApi
         }
 
         if ((int)$data['is_success'] === 0 && !in_array($data['response_code'], [200, 212])) {
-            throw static::errorResult('Registrar API Error: ' . $data['response_text'], $data);
+            $errorMessage = 'Registrar API Error: ' . $data['response_text'];
+
+            if ($data['response_code'] == 400) {
+                $errorMessage = 'Registrar API Authentication Error';
+            }
+
+            throw static::errorResult($errorMessage, $data);
         }
 
         return $data;
