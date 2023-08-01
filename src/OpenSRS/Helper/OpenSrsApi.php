@@ -173,7 +173,7 @@ class OpenSrsApi
             self::XML_INDENT . '</body>' . self::CRLF .
             '</OPS_envelope>';
 
-        $response = $this->client->request('POST', self::getApiEndpoint(!!$this->configuration->debug), [
+        $response = $this->client->request('POST', self::getApiEndpoint(!!$this->configuration->sandbox), [
             'body' => $xml,
             'headers' => [
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/OpenSRS',
