@@ -103,7 +103,7 @@ class OpenSrsApi
             foreach ($nameServers as $i => $ns) {
                 $result['ns' . ($i + 1)] = [
                     'host' => $ns['name'],
-                    'ip' => $ns['ipaddress'] // No IP address available
+                    // 'ip' => $ns['ipaddress'] // No IP address available
                 ];
             }
         }
@@ -123,19 +123,23 @@ class OpenSrsApi
 
         $rawContactData = $rawContactData[$type];
 
-        return ContactData::create([
+        return ContactData::create(array_map(fn ($data) => empty($data) ? null : $data, [
             // 'id' => $type,
-            'name' => sprintf('%s %s', (string) $rawContactData['first_name'], (string) $rawContactData['last_name']),
-            'email' => (string) $rawContactData['email'],
-            'phone' => (string) $rawContactData['phone'],
-            'organisation' => (string) $rawContactData['org_name'],
-            'address1' => (string) $rawContactData['address1'],
-            'city' => (string) $rawContactData['city'],
-            'state' => $rawContactData['state'],
-            'postcode' => (string) $rawContactData['postal_code'],
-            'country_code' => (string) $rawContactData['country'],
+            'name' => trim(sprintf(
+                '%s %s',
+                $rawContactData['first_name'] ?? null,
+                $rawContactData['last_name'] ?? null
+            )),
+            'email' => strval($rawContactData['email'] ?? null),
+            'phone' => strval($rawContactData['phone'] ?? null),
+            'organisation' => strval($rawContactData['org_name'] ?? null),
+            'address1' => strval($rawContactData['address1'] ?? null),
+            'city' => strval($rawContactData['city'] ?? null),
+            'state' => strval($rawContactData['state'] ?? null),
+            'postcode' => strval($rawContactData['postal_code'] ?? null),
+            'country_code' => strval($rawContactData['country'] ?? null),
             'type' => $type,
-        ]);
+        ]));
     }
 
     /**
