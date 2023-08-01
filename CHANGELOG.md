@@ -2,6 +2,13 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.5) - 2023-08-01
+
+- Fix OpenSRS debug/sandbox requests
+- Improve OpenSRS improve auth error message
+- Fix OpenSRS GetInfo where contact values are missing
+- Fix OpenSRS empty string IPs returned for nameservers
+
 ## [v2.8.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.4) - 2023-07-17
 
 - Update NameSilo register() to use Utils::tldSupportsWhoisPrivacy()
