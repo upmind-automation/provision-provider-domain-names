@@ -540,4 +540,13 @@ class RealtimeRegisterApi
 
         return $type ?? null;
     }
+
+    public function getDomainStatus(string $domainName): string
+    {
+        $command = "/v2/domains/{$domainName}/transfer";
+
+        $response = $this->makeRequest($command);
+
+        return (string)$response['status'];
+    }
 }

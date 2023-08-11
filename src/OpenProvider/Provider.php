@@ -25,6 +25,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
@@ -208,9 +210,18 @@ class Provider extends DomainNames implements ProviderInterface
             $customerId = $this->_handleCustomer($tld, Arr::get($params, 'registrant'), 'registrant');
         }
 
-        $initiate = $this->initiateTransfer($customerId, $tld, $sld, $eppCode);
+        $initiate = $this->initiateTransferOld($customerId, $tld, $sld, $eppCode);
 
         throw $this->errorResult('Domain transfer initiated', [], ['transfer_order' => $initiate]);
+    }
+
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
+        throw $this->errorResult('Operation not supported');
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult{
+        throw $this->errorResult('Operation not supported');
     }
 
     public function renew(RenewParams $params): DomainResult
@@ -787,7 +798,7 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_callApi($data, 'customers', 'POST')['data']['handle'];
     }
 
-    private function initiateTransfer(string $customerId, string $tld, string $sld, $eppCode): array
+    private function initiateTransferOld(string $customerId, string $tld, string $sld, $eppCode): array
     {
         $params = [];
         $params['domain'] = [

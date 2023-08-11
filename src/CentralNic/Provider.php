@@ -22,6 +22,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
@@ -230,6 +232,16 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function transfer(TransferParams $params): DomainResult
     {
+        throw $this->errorResult('Operation not supported');
+    }
+
+    /**
+     * @param TransferParams $params
+     *
+     * @return InitiateTransferResult
+     */
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
         $domainName = Utils::getDomain(
             Utils::normalizeSld($params->sld),
             Utils::normalizeTld($params->tld)
@@ -238,15 +250,49 @@ class Provider extends DomainNames implements ProviderInterface
         $eppCode = $params->epp_code ?: null;
 
         try {
-            return $this->_getInfo($domainName, 'Domain active in registrar account');
-        } catch (eppException $e) {
+            $domain = $this->_getInfo($domainName, '');
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'complete',
+                'domain_info' => $domain,
+            ])->setMessage('Domain active in registrar account');
+        } catch (\Throwable $e) {
             // continue on to initiate transfer
         }
 
         try {
-            $transferId = $this->api()->initiateTransfer($domainName, $eppCode, intval($params->renew_years));
+            $this->api()->initiateTransfer($domainName, $eppCode, intval($params->renew_years));
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'in_progress'
+            ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
+        } catch (eppException $e) {
+            $this->_eppExceptionHandler($e, $params->toArray());
+        }
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult
+    {
+        $sld = Utils::normalizeSld($params->sld);
+        $tld = Utils::normalizeTld($params->tld);
+
+        $domainName = Utils::getDomain($sld, $tld);
+
+        try {
+            return $this->_getInfo($domainName, 'Domain active in registrar account');
+        } catch (\Throwable $e) {
+            // continue on to initiate transfer
+        }
+        try {
+            $status = $this->api()->getTransferInfo($domainName);
+
+            throw $this->errorResult(
+                sprintf('Transfer order status for %s: %s', $domainName, $status),
+                [],
+                $params
+            );
         } catch (eppException $e) {
             $this->_eppExceptionHandler($e, $params->toArray());
         }

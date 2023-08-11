@@ -29,6 +29,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
@@ -175,6 +177,15 @@ class Provider extends DomainNames implements ProviderInterface
         $transferResponse = $this->_initiateTransfer($customerId, $domainName, $eppCode);
 
         throw $this->errorResult('Domain transfer initiated', [], ['response_data' => $transferResponse]);
+    }
+
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
+        throw $this->errorResult('Operation not supported');
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult{
+        throw $this->errorResult('Operation not supported');
     }
 
     public function renew(RenewParams $params): DomainResult
