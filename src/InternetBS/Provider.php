@@ -203,9 +203,12 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            return $this->_getInfo($domainName, 'Domain active in registrar account');
+            $domain = $this->_getInfo($domainName, '');
+            if ($domain->statuses[0] !== 'PENDING TRANSFER') {
+                return $domain;
+            }
         } catch (\Throwable $e) {
-            // continue on to initiate transfer
+            // domain not active - continue below
         }
 
         try {
