@@ -236,12 +236,82 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function initiateTransfer(TransferParams $params): InitiateTransferResult
     {
-        throw $this->errorResult('Operation not supported');
+        $domainName = Utils::getDomain(
+            Utils::normalizeSld($params->sld),
+            Utils::normalizeTld($params->tld)
+        );
+
+        $eppCode = $params->epp_code ?: null;
+
+        try {
+            $domain = $this->_getInfo($domainName, '');
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'complete',
+                'domain_info' => $domain,
+            ])->setMessage('Domain active in registrar account');
+        } catch (eppException $e) {
+            // initiate transfer ...
+        }
+
+        if (!$params->registrant) {
+            throw $this->errorResult('Registrant contact is required!', $params);
+        }
+
+        if (!$params->tech) {
+            throw $this->errorResult('Tech contact is required!', $params);
+        }
+
+        $contactParams = [
+            'registrant' => $params->registrant,
+            'tech' => $params->tech,
+            'billing' => $params->billing,
+        ];
+
+        try {
+            $contactsId = $this->getContactsId($contactParams);
+
+            $transferId = $this->epp()->initiateTransfer(
+                $domainName,
+                intval($params->renew_years),
+                $eppCode,
+                $contactsId
+            );
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'in_progress',
+                'transfer_order_id' => $transferId
+            ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
+        } catch (eppException $e) {
+            $this->_eppExceptionHandler($e);
+        }
     }
 
     public function finishTransfer(FinishTransferParams $params): DomainResult
     {
-        throw $this->errorResult('Operation not supported');
+        $domainName = Utils::getDomain(
+            Utils::normalizeSld($params->sld),
+            Utils::normalizeTld($params->tld)
+        );
+
+        try {
+            return $this->_getInfo($domainName, 'Domain active in registrar account');
+        } catch (eppException $e) {
+        }
+
+        try {
+            $status = $this->epp()->getTransferInfo($domainName);
+
+            throw $this->errorResult(
+                sprintf('Transfer order status for %s: %s', $domainName, $status),
+                [],
+                $params
+            );
+        } catch (eppException $e) {
+            $this->_eppExceptionHandler($e);
+        }
     }
 
     public function renew(RenewParams $params): DomainResult
