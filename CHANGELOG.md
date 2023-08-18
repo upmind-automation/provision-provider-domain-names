@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.6) - TBC
+
+- Update OpenSrsApi include more detail in error messages
+
 ## [v2.8.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.5) - 2023-08-01
 
 - Fix OpenSRS debug/sandbox requests
