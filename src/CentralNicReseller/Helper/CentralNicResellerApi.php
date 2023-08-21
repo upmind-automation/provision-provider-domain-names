@@ -115,7 +115,7 @@ class CentralNicResellerApi
         ?RegisterContactParams $adminContact = null,
         ?RegisterContactParams $techContact = null,
         ?RegisterContactParams $billingContact = null
-    ): array {
+    ): string {
         if (!Utils::tldSupportsTransferContacts(Utils::getTld($domain))) {
             $ownerContact = null;
             $adminContact = null;
@@ -165,7 +165,9 @@ class CentralNicResellerApi
             }
         }
 
-        return $this->runCommand('TransferDomain', $params)->getHash();
+        $response = $this->runCommand('TransferDomain', $params)->getHash();
+
+        return (string)$response['PROPERTY']['JOBID'][0];
     }
 
     private function transformContactParams(ContactParams $contact): array

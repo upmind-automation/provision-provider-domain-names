@@ -368,4 +368,15 @@ class InternetBSApi
 
         return (string)$response['transactid'];
     }
+
+    public function getDomainStatus(string $domainName): string
+    {
+        $params = [
+            'Domain' => $domainName,
+        ];
+
+        $response = $this->makeRequest('/Domain/Transfer/History', $params);
+
+        return (string)end($response['history'])['statusmessage'];
+    }
 }

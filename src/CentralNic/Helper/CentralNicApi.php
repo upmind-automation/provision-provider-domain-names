@@ -234,6 +234,18 @@ class CentralNicApi
         return $this->connection->request($transferRequest);
     }
 
+    public function getTransferInfo(string $domainName): string
+    {
+        $domain = new eppDomain($domainName);
+
+        $transferRequest = new eppTransferRequest(eppTransferRequest::OPERATION_QUERY, $domain);
+
+        /** @var eppTransferResponse */
+        $response = $this->connection->request($transferRequest);
+
+        return (string)$response->getTransferStatus();
+    }
+
     public function renew(string $domainName, int $period): void
     {
         $domainData = new eppDomain($domainName);
@@ -258,6 +270,10 @@ class CentralNicApi
 
         /** @var eppInfoDomainResponse */
         $response = $this->connection->request($info);
+
+        if ($response->getDomainClientId() !== $this->configuration->registrar_handle_id){
+            throw ProvisionFunctionError::create(sprintf('Domain %s does not belong to the user', $domainName));
+        }
 
         $registrantId = $response->getDomainRegistrant();
         $billingId = $response->getDomainContact(eppContactHandle::CONTACT_TYPE_BILLING);

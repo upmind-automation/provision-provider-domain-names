@@ -161,6 +161,10 @@ class GoDaddyApi
         $command = "/v1/domains/{$domainName}";
         $response = $this->makeRequest($command);
 
+        if($response['status'] !== 'ACTIVE') {
+            throw ProvisionFunctionError::create(sprintf('Domain %s does not active', $domainName));
+        }
+
         return [
             'id' => (string)$response['domainId'],
             'domain' => (string)$response['domain'],
@@ -367,5 +371,13 @@ class GoDaddyApi
         }
 
         return $errorMessage ?? null;
+    }
+
+    public function getDomainStatus(string $domainName): string
+    {
+        $command = "/v1/domains/{$domainName}";
+        $response = $this->makeRequest($command);
+
+        return $response['status'];
     }
 }

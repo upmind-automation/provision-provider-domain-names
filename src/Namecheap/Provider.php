@@ -25,6 +25,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
@@ -230,12 +232,17 @@ class Provider extends DomainNames implements ProviderInterface
         return $nameServers;
     }
 
+    public function transfer(TransferParams $params): DomainResult
+    {
+        throw $this->errorResult('Operation not supported');
+    }
+
     /**
      * @param  TransferParams  $params
      *
-     * @return DomainResult
+     * @return InitiateTransferResult
      */
-    public function transfer(TransferParams $params): DomainResult
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
     {
         $sld = Utils::normalizeSld($params->sld);
         $tld = Utils::normalizeTld($params->tld);
@@ -245,8 +252,14 @@ class Provider extends DomainNames implements ProviderInterface
         $eppCode = $params->epp_code ?: '0000';
 
         try {
-            return $this->_getInfo($domainName, 'Domain active in registrar account');
-        } catch (Throwable $e) {
+            $domain = $this->_getInfo($domainName, '');
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'complete',
+                'domain_info' => $domain,
+            ])->setMessage('Domain active in registrar account');
+        } catch (\Throwable $e) {
             // domain not active - continue below
         }
 
@@ -256,10 +269,48 @@ class Provider extends DomainNames implements ProviderInterface
             if (is_null($prevOrder)) {
                 $transferId = $this->api()->initiateTransfer($domainName, $eppCode);
 
-                throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+                return InitiateTransferResult::create([
+                    'domain' => $domainName,
+                    'transfer_status' => 'in_progress',
+                    'transfer_order_id' => $transferId
+                ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
             } else {
                 throw $this->errorResult(
                     sprintf('Transfer order(s) for %s already exists!', $domainName),
+                    $prevOrder,
+                    $params
+                );
+            }
+        } catch (\Throwable $e) {
+            $this->handleException($e, $params);
+        }
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult
+    {
+        $sld = Utils::normalizeSld($params->sld);
+        $tld = Utils::normalizeTld($params->tld);
+
+        $domainName = Utils::getDomain($sld, $tld);
+
+        try {
+            return $this->_getInfo($domainName, 'Domain active in registrar account');
+        } catch (\Throwable $e) {
+            // domain not active - continue below
+        }
+
+        try {
+            $prevOrder = $this->api()->getDomainTransferOrders($domainName);
+
+            if (is_null($prevOrder)) {
+                throw $this->errorResult(
+                    sprintf('Transfer for %s not initiated', $domainName),
+                    [],
+                    $params
+                );
+            } else {
+                throw $this->errorResult(
+                    sprintf('Transfer order status for %s: %s', $domainName, $prevOrder['status']),
                     $prevOrder,
                     $params
                 );

@@ -226,10 +226,10 @@ class EppHelper
             'domain' => $response->getDomainName(),
             'statuses' => $response->getDomainStatuses() ?? [],
             'locked' => boolval(array_intersect($this->lockedStatuses, $response->getDomainStatuses() ?? [])),
-            'registrant' => $registrantId ? $this->getContactInfo($registrantId) : null,
-            'billing' => $billingId ? $this->getContactInfo($billingId) : null,
-            'tech' => $techId ? $this->getContactInfo($techId) : null,
-            'admin' => $adminId ? $this->getContactInfo($adminId) : null,
+            'registrant' => $registrantId ? $this->getContactInfo($registrantId) ?? $registrantId : null,
+            'billing' => $billingId ? $this->getContactInfo($billingId) ?? $billingId : null,
+            'tech' => $techId ? $this->getContactInfo($techId) ?? $techId : null,
+            'admin' => $adminId ? $this->getContactInfo($adminId) ?? $adminId : null,
             'ns' => $this->parseNameServers($response->getDomainNameservers() ?? []),
             'created_at' => Utils::formatDate($response->getDomainCreateDate()),
             'updated_at' => Utils::formatDate($response->getDomainUpdateDate() ?: $response->getDomainCreateDate()),
@@ -256,6 +256,18 @@ class EppHelper
         return $this->connection->request($transferRequest);
     }
 
+    public function getTransferInfo(string $domainName): string
+    {
+        $domain = new eppDomain($domainName);
+
+        $transferRequest = new eppTransferRequest(eppTransferRequest::OPERATION_QUERY, $domain);
+
+        /** @var eppTransferResponse */
+        $response = $this->connection->request($transferRequest);
+
+        return (string)$response->getTransferStatus();
+    }
+
     public function renew(string $domainName, int $period): void
     {
         $domainData = new eppDomain($domainName);
@@ -273,11 +285,18 @@ class EppHelper
         $this->connection->request($renewRequest);
     }
 
-    public function getContactInfo(string $contactId): ContactData
+    public function getContactInfo(string $contactId): ?ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
-        /** @var eppInfoContactResponse */
-        $response = $this->connection->request($request);
+
+        try {
+            /** @var eppInfoContactResponse */
+            $response = $this->connection->request($request);
+        } catch (eppException $e) {
+            if($e->getCode() === 2303) {
+                return null;
+            }
+        }
 
         return ContactData::create([
             'id' => $contactId,

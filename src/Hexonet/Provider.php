@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppContactHandle;
 use Metaregistrar\EPP\eppException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\Helper\EppHelper;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -481,6 +483,15 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
+        throw $this->errorResult('Operation not supported');
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult{
+        throw $this->errorResult('Operation not supported');
+    }
     /**
      * Renew a domain
      *

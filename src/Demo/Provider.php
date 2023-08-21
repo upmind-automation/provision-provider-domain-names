@@ -30,6 +30,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
 use Upmind\ProvisionProviders\DomainNames\Demo\Data\Configuration;
@@ -138,6 +140,15 @@ class Provider extends DomainNames implements ProviderInterface
             ->setBilling($params->billing->register ?? null)
             ->setUpdatedAt(Carbon::now())
             ->setExpiresAt($expires->addYears($params->renew_years));
+    }
+
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
+        throw $this->errorResult('Not implemented');
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult{
+        throw $this->errorResult('Not implemented');
     }
 
     /**

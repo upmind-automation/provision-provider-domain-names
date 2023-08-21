@@ -346,23 +346,18 @@ class NamecheapApi
         ];
 
         $response = $this->makeRequest($params);
+
         $orderCount = (int) $response->Paging->TotalItems;
-
-        $orders = [];
-
         if ($orderCount > 0) {
-            foreach ($response->TransferGetListResult->children() as $order) {
-                $orders[] = [
-                    'orderId' => (string) $order->attributes()->OrderID,
-                    'status' => (string) $order->attributes()->Status,
-                    'statusId' => (int) $order->attributes()->StatusID,
-                    'date' => Utils::formatDate((string) $order->attributes()->StatusDate),
-                ];
-            }
 
-            if (count($orders) > 0) {
-                return $orders;
-            }
+            $order = $response->TransferGetListResult->Transfer[$orderCount - 1];
+
+            return [
+                'orderId' => (string)$order->attributes()->ID,
+                'status' => (string)$order->attributes()->Status,
+                'statusId' => (int)$order->attributes()->StatusID,
+                'date' => Utils::formatDate((string)$order->attributes()->StatusDate)
+            ];
         }
 
         return null;
