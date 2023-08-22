@@ -22,6 +22,8 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
+use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
@@ -30,8 +32,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
-use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
-use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
@@ -158,7 +158,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
-        $eppCode = $params->epp_code ?: '0000';
+        $eppCode = $params->epp_code ?: '';
 
         try {
             return $this->_getInfo($domainName, 'Domain active in registrar account');
@@ -185,6 +185,89 @@ class Provider extends DomainNames implements ProviderInterface
                 sprintf('Transfer for %s domain successfully created!', $domainName),
                 ['url' => $url]
             );
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+
+    /**
+     * @param  TransferParams  $params
+     *
+     * @return InitiateTransferResult
+     */
+    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+    {
+        $domainName = Utils::getDomain($params->sld, $params->tld);
+
+        $eppCode = $params->epp_code ?: '';
+
+        try {
+            $domain = $this->_getInfo($domainName, '');
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'complete',
+                'domain_info' => $domain,
+            ])->setMessage('Domain active in registrar account');
+        } catch (Throwable $e) {
+            // domain not active - continue below
+        }
+
+        $contacts = array_filter([
+            OVHDomainsApi::CONTACT_TYPE_REGISTRANT => $params->registrant,
+            OVHDomainsApi::CONTACT_TYPE_ADMIN => $params->admin,
+            OVHDomainsApi::CONTACT_TYPE_TECH => $params->tech,
+            OVHDomainsApi::CONTACT_TYPE_BILLING => $params->billing,
+        ]);
+
+        try {
+            $url = $this->api()->initiateTransfer(
+                $domainName,
+                $eppCode,
+                $contacts,
+                intval($params->renew_years)
+            );
+
+            return InitiateTransferResult::create([
+                'domain' => $domainName,
+                'transfer_status' => 'in_progress',
+                'transfer_order_id' => $url
+            ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+
+    public function finishTransfer(FinishTransferParams $params): DomainResult
+    {
+        $domainName = Utils::getDomain($params->sld, $params->tld);
+
+        try {
+            return $this->_getInfo($domainName, 'Domain active in registrar account');
+        } catch (Throwable $e) {
+            // domain not active - continue below
+        }
+
+        if (!$params->transfer_order_id) {
+            throw $this->errorResult('Transfer order ID is required!');
+        }
+
+        try {
+            $info = $this->api()->getTransferInfo($params->transfer_order_id);
+
+            if ($info) {
+                throw $this->errorResult(
+                    sprintf('Domain transfer in progress'),
+                    [],
+                    $params
+                );
+            } else {
+                throw $this->errorResult(
+                    sprintf('Transfer order does not exist'),
+                    [],
+                    $params
+                );
+            }
         } catch (\Throwable $e) {
             $this->handleException($e);
         }

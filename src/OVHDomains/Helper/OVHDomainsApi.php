@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\OVHDomains\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\Utils as PromiseUtils;
@@ -193,16 +194,16 @@ class OVHDomainsApi
     {
         $requiredConfigurations = $this->client->get("/order/cart/{$cartId}/item/{$itemId}/requiredConfiguration");
 
-        foreach ($requiredConfigurations as $configuration) {
-            if ($eppCode) {
-                $this->client->post("/order/cart/{$cartId}/item/{$itemId}/configuration",
-                    array(
-                        'label' => 'AUTH_INFO',
-                        'value' => $eppCode
-                    )
-                );
-            }
+        if ($eppCode) {
+            $this->client->post("/order/cart/{$cartId}/item/{$itemId}/configuration",
+                array(
+                    'label' => 'AUTH_INFO',
+                    'value' => $eppCode
+                )
+            );
+        }
 
+        foreach ($requiredConfigurations as $configuration) {
             if ($configuration['label'] === 'OWNER_LEGAL_AGE') {
                 $this->client->post("/order/cart/{$cartId}/item/{$itemId}/configuration",
                     array(
@@ -583,6 +584,21 @@ class OVHDomainsApi
             )
         );
 
-        return $checkout['url'];
+        return (string)$checkout['orderId'];
+    }
+
+    public function getTransferInfo(string $orderId): ?array
+    {
+        $details = $this->client->get("/me/order/{$orderId}/details");
+
+        foreach ($details as $detailId) {
+            $response = $this->client->get("/me/order/{$orderId}/details/{$detailId}");
+
+            if (Str::contains($response['description'], 'transfer request')) {
+                return $response;
+            }
+        }
+
+        return null;
     }
 }
