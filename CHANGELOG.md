@@ -4,7 +4,7 @@ All notable changes to the package will be documented in this file.
 
 ## [v2.8.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.6) - 2023-08-23
 
-- Remove min length rules from RealtimeRegsiter configuration
+- Remove min length rules from RealtimeRegister configuration
 
 ## [v2.8.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.5) - 2023-08-01
 
