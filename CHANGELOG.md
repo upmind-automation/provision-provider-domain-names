@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.8](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.8) - 2023-09-11
+
+- Update LogicBoxes error message formatting; fix truncation issue where input string contains a period
+
 ## [v2.8.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.7) - 2023-08-29
 
 - Fix DacParams sld validation
