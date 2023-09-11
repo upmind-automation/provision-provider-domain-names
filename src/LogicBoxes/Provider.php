@@ -757,7 +757,6 @@ class Provider extends DomainNames implements ProviderInterface
 
                     throw $this->errorResult(
                         sprintf('Provider API %s: %s', $status, $errorMessage),
-                        [],
                         ['response_data' => $responseData],
                     );
                 }
@@ -871,8 +870,8 @@ class Provider extends DomainNames implements ProviderInterface
 
                 throw $this->errorResult(
                     sprintf('Provider API %s: %s', ucfirst($status), $errorMessage),
-                    [],
                     ['response_data' => $responseData],
+                    [],
                     $e
                 );
             }
