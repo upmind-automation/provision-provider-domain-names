@@ -482,9 +482,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $connection->setUsername($this->configuration->username);
                 $connection->setPassword($this->configuration->password);
 
-                $cert = $this->configuration->certificate
-                    ? $this->getCertificatePath($this->configuration->certificate)
-                    : __DIR__ . '/cert.pem';
+                $cert = $this->getCertificatePath($this->configuration->certificate);
 
                 $connection->enableCertification($cert, null);
 
