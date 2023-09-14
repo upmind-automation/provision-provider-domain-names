@@ -757,7 +757,6 @@ class Provider extends DomainNames implements ProviderInterface
 
                     throw $this->errorResult(
                         sprintf('Provider API %s: %s', $status, $errorMessage),
-                        [],
                         ['response_data' => $responseData],
                     );
                 }
@@ -795,7 +794,7 @@ class Provider extends DomainNames implements ProviderInterface
         $errorMessage = trim($responseData['message'] ?? $responseData['error'] ?? 'unknown error');
 
         // only return the first sentence of the error message
-        $errorMessage = preg_replace('/\. .+$/', '', $errorMessage);
+        // $errorMessage = preg_replace('/\. .+$/', '', $errorMessage); // problematic if input string contains a .
 
         // neaten up validation errors
         if (preg_match('/^\{\w+=([^}]+)\}$/', $errorMessage)) {
@@ -871,8 +870,8 @@ class Provider extends DomainNames implements ProviderInterface
 
                 throw $this->errorResult(
                     sprintf('Provider API %s: %s', ucfirst($status), $errorMessage),
-                    [],
                     ['response_data' => $responseData],
+                    [],
                     $e
                 );
             }

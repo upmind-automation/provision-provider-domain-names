@@ -20,8 +20,8 @@ class Configuration extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
-            'customer' => ['required', 'string', 'min:6'],
-            'api_key' => ['required', 'string', 'min:6'],
+            'customer' => ['required', 'string'],
+            'api_key' => ['required', 'string'],
             'sandbox' => ['nullable', 'boolean'],
             'debug' => ['nullable', 'boolean'],
         ]);
