@@ -859,13 +859,6 @@ class Provider extends DomainNames implements ProviderInterface
      */
     protected function _timestampToDateTime($timestamp): string
     {
-        $timestamp = strval($timestamp);
-
-        // for some reason timestamps come back with trailing 0s ?!
-        if (strlen($timestamp) > 10 && Str::endsWith($timestamp, '0')) {
-            $timestamp = rtrim($timestamp, '0');
-        }
-
-        return Carbon::parse(intval($timestamp))->format('Y-m-d H:i:s');
+        return Carbon::parse(intval($timestamp / 1000))->format('Y-m-d H:i:s');
     }
 }
