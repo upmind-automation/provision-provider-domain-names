@@ -216,9 +216,9 @@ class Provider extends DomainNames implements ProviderInterface
 
         $contactParams = [
             'registrant' => $params->registrant,
-            'tech' => $params->tech,
             'admin' => $params->admin,
-            'billing' => $params->billing,
+            'tech' => $params->tech ?? $params->admin,
+            'billing' => $params->billing ?? $params->admin,
         ];
 
         try {

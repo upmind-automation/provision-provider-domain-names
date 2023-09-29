@@ -467,6 +467,10 @@ class RealtimeRegisterApi
             'authcode' => $eppCode,
         ];
 
+        if (!$this->domainAllowsTransferPeriod($domainName)) {
+            unset($body['period']);
+        }
+
         $response = $this->makeRequest($command, null, $body, "POST");
 
         return (string)$response['processId'];
@@ -539,5 +543,12 @@ class RealtimeRegisterApi
         }
 
         return $type ?? null;
+    }
+
+    private function domainAllowsTransferPeriod(string $domain): bool
+    {
+        return !in_array(Utils::getRootTld($domain), [
+            'nl',
+        ]);
     }
 }
