@@ -232,7 +232,16 @@ class Provider extends DomainNames implements ProviderInterface
 
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, $contacts);
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+            try {
+                return $this->_getInfo($domainName, 'Domain active in registrar account');
+            } catch (\Throwable $e) {
+                throw $this->errorResult(
+                    sprintf('Transfer for %s domain successfully created!', $domainName),
+                    ['transfer_id' => $transferId],
+                    [],
+                    $e
+                );
+            }
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
