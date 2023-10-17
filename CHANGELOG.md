@@ -2,11 +2,16 @@
 
 All notable changes to the package will be documented in this file.
 
-# [v2.8.11](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.11) - 2023-10-02
+## [v2.8.12](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.12) - 2023-10-17
+
+- Update RealtimeRegister transfer() to check if domain is active immediately after initiating transfer,
+  necessary for TLDs that can transfer instantly
+
+## [v2.8.11](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.11) - 2023-10-02
 
 - Fix RealtimeRegister transfer() for .nu
 
-# [v2.8.10](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.10) - 2023-09-29
+## [v2.8.10](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.10) - 2023-09-29
 
 - Update RealtimeRegister transfer()
   - Fix .nl transfers (omit period)
