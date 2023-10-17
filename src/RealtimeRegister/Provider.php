@@ -236,7 +236,7 @@ class Provider extends DomainNames implements ProviderInterface
                 return $this->_getInfo($domainName, 'Domain active in registrar account');
             } catch (\Throwable $e) {
                 throw $this->errorResult(
-                    sprintf('Transfer for %s domain successfully created!', $domainName),
+                    sprintf('Domain transfer initiated and now in progress', $domainName),
                     ['transfer_id' => $transferId],
                     [],
                     $e
