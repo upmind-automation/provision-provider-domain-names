@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.13](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.13) - 2023-10-19
+
+- Add more root TLDs to the unsupported list for WHOIS privacy
+
 ## [v2.8.12](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.12) - 2023-10-17
 
 - Update RealtimeRegister transfer() to check if domain is active immediately after initiating transfer,
