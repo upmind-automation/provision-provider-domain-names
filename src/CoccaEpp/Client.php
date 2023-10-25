@@ -167,7 +167,10 @@ class Client extends EPPClient
                 );
             }
 
-            throw $e;
+            throw $this->error('Unknown registry connection error', $e, [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+            ]);
         }
     }
 
