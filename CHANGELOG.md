@@ -4,7 +4,7 @@ All notable changes to the package will be documented in this file.
 
 ## [v2.8.14](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.14) - 2023-10-25
 
-- Update CoccEpp\\Client handle unknown connection errors with a better error message
+- Update CoccaEpp\\Client handle unknown connection errors with a better error message
 
 ## [v2.8.13](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.13) - 2023-10-19
 
