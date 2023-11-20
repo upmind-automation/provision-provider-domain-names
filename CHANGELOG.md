@@ -2,6 +2,33 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.8.14](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.14) - 2023-10-25
+
+- Update CoccaEpp\\Client handle unknown connection errors with a better error message
+
+## [v2.8.13](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.13) - 2023-10-19
+
+- Add more root TLDs to the unsupported list for WHOIS privacy
+
+## [v2.8.12](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.12) - 2023-10-17
+
+- Update RealtimeRegister transfer() to check if domain is active immediately after initiating transfer,
+  necessary for TLDs that can transfer instantly
+
+## [v2.8.11](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.11) - 2023-10-02
+
+- Fix RealtimeRegister transfer() for .nu
+
+## [v2.8.10](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.10) - 2023-09-29
+
+- Update RealtimeRegister transfer()
+  - Fix .nl transfers (omit period)
+  - Default to admin contact for tech/billing, if missing
+
+## [v2.8.9](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.9) - 2023-09-22
+
+- Fix ConnectReseller _timestampToDateTime()
+
 ## [v2.8.8](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.8) - 2023-09-11
 
 - Update LogicBoxes error message formatting; fix truncation issue where input string contains a period

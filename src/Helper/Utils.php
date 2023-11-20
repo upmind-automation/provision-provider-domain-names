@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionProviders\DomainNames\Helper\Tlds\WhoisPrivacy;
 
 class Utils
 {
@@ -200,14 +201,7 @@ class Utils
      */
     public static function tldSupportsWhoisPrivacy(string $tld): bool
     {
-        $unsupported = [
-            'mx',
-            'es',
-            'pt',
-            'at',
-        ];
-
-        return !in_array(static::getRootTld($tld), $unsupported);
+        return WhoisPrivacy::tldIsSupported($tld);
     }
 
     /**

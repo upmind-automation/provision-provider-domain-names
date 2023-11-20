@@ -216,9 +216,9 @@ class Provider extends DomainNames implements ProviderInterface
 
         $contactParams = [
             'registrant' => $params->registrant,
-            'tech' => $params->tech,
             'admin' => $params->admin,
-            'billing' => $params->billing,
+            'tech' => $params->tech ?? $params->admin,
+            'billing' => $params->billing ?? $params->admin,
         ];
 
         try {
@@ -232,7 +232,16 @@ class Provider extends DomainNames implements ProviderInterface
 
             $transferId = $this->api()->initiateTransfer($domainName, $eppCode, $contacts);
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully created!', $domainName), ['transfer_id' => $transferId]);
+            try {
+                return $this->_getInfo($domainName, 'Domain active in registrar account');
+            } catch (\Throwable $e) {
+                throw $this->errorResult(
+                    sprintf('Domain transfer initiated and now in progress', $domainName),
+                    ['transfer_id' => $transferId],
+                    [],
+                    $e
+                );
+            }
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
