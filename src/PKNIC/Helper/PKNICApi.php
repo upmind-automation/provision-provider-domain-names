@@ -237,8 +237,8 @@ class PKNICApi
 
         $this->makeRequest("/v0.3/domains", null, $body, "POST");
 
-        $this->setContact($domainName, $contacts[PKNICApi::CONTACT_TYPE_BILLING]);
-        $this->setContact($domainName, $contacts[PKNICApi::CONTACT_TYPE_TECH]);
+        $this->setContact($domainName, (int)$contacts[PKNICApi::CONTACT_TYPE_BILLING]);
+        $this->setContact($domainName, (int)$contacts[PKNICApi::CONTACT_TYPE_TECH]);
         $this->setNameservers($domainName, $nsId);
     }
 

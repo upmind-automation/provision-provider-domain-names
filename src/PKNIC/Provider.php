@@ -153,6 +153,10 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function renew(RenewParams $params): DomainResult
     {
+        if ($params->renew_years != 2) {
+            throw $this->errorResult('Only 2 year renewal supported');
+        }
+
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
