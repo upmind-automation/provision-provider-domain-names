@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.0) - 2023-12-05
+
+- Add HRS provider
+
 ## [v2.8.14](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.8.14) - 2023-10-25
 
 - Update CoccaEpp\\Client handle unknown connection errors with a better error message
