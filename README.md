@@ -37,6 +37,7 @@ Alternatively you can start using it for your business immediately with [Upmind.
 
 The following providers are currently implemented:
   - [OpenSRS](https://domains.opensrs.guide/docs/quickstart)
+  - [HRS](https://domains.opensrs.guide/docs/quickstart)
   - [Hexonet](https://wiki.hexonet.net/wiki/Domain_API)
   - [Nominet](https://registrars.nominet.uk/uk-namespace/registration-and-domain-management/registration-systems/epp/epp-commands/)
   - [NameSilo](https://www.namesilo.com/api-reference#domains/register-domain)

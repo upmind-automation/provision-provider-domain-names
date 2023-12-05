@@ -54,7 +54,11 @@ class OpenSrsApi
     private const CRLF = "\n";
 
     protected Client $client;
-    protected OpenSrsConfiguration $configuration;
+
+    /**
+     * @var OpenSrsConfiguration
+     */
+    protected $configuration;
 
     public function __construct(Client $client, OpenSrsConfiguration $configuration)
     {
@@ -145,12 +149,13 @@ class OpenSrsApi
     /**
      * Get the correct endpoint, depending on the environment
      *
-     * @param bool $sandbox
      * @return string
      */
-    private static function getApiEndpoint(bool $sandbox = false): string
+    protected function getApiEndpoint(): string
     {
-        return $sandbox ? 'https://horizon.opensrs.net:55443' : 'https://rr-n1-tor.opensrs.net:55443';
+        return $this->configuration->sandbox
+            ? 'https://horizon.opensrs.net:55443'
+            : 'https://rr-n1-tor.opensrs.net:55443';
     }
 
     /**
@@ -177,7 +182,7 @@ class OpenSrsApi
             self::XML_INDENT . '</body>' . self::CRLF .
             '</OPS_envelope>';
 
-        $response = $this->client->request('POST', self::getApiEndpoint(!!$this->configuration->sandbox), [
+        $response = $this->client->request('POST', $this->getApiEndpoint(), [
             'body' => $xml,
             'headers' => [
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/OpenSRS',
