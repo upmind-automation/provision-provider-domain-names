@@ -753,7 +753,7 @@ class Provider extends DomainNames implements ProviderInterface
             if (isset($responseData['status'])) {
                 $status = strtolower($responseData['status']);
                 if ($status === 'error') {
-                    $errorMessage = $this->getResponseErrorMessage($responseData);
+                    $errorMessage = $this->getResponseErrorMessage($response, $responseData);
 
                     throw $this->errorResult(
                         sprintf('Provider API %s: %s', $status, $errorMessage),
@@ -789,7 +789,7 @@ class Provider extends DomainNames implements ProviderInterface
      *
      * @return string
      */
-    protected function getResponseErrorMessage($responseData): string
+    protected function getResponseErrorMessage(Response $response, $responseData): string
     {
         $errorMessage = trim($responseData['message'] ?? $responseData['error'] ?? 'unknown error');
 
@@ -820,6 +820,11 @@ class Provider extends DomainNames implements ProviderInterface
         // override "not registered" error message
         if (Str::contains($errorMessage, 'is currently available for Registration')) {
             $errorMessage = 'Domain is not registered';
+        }
+
+        // cloudflare response?
+        if (empty($responseData) && $response->getStatusCode() === 403) {
+            $errorMessage = 'Forbidden - check IP whitelisting';
         }
 
         return $errorMessage;
@@ -866,7 +871,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $responseData = $this->getResponseData($response);
 
                 $status = strtolower($responseData['status'] ?? 'error');
-                $errorMessage = $this->getResponseErrorMessage($responseData);
+                $errorMessage = $this->getResponseErrorMessage($response, $responseData);
 
                 throw $this->errorResult(
                     sprintf('Provider API %s: %s', ucfirst($status), $errorMessage),
