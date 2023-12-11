@@ -2,6 +2,13 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.1) - 2023-12-11
+
+- Add LogicBoxes debug logging flag
+- Update LogicBoxes API error handling
+  - Catch 403 cloudflare responses
+  - Throw errors for failed actions which don't have status 'error'
+
 ## [v2.9.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.0) - 2023-12-05
 
 - Add HRS provider
