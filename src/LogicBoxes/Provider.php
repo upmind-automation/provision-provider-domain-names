@@ -723,7 +723,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'Content-Type' => 'multipart/form-data',
             ],
             'http_errors' => true,
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->sandbox)),
+            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
         ]);
 
         $query = array_merge(
