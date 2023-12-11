@@ -752,7 +752,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             if (isset($responseData['status'])) {
                 $status = strtolower($responseData['status']);
-                if ($status === 'error') {
+                if (in_array($status, ['error', 'failed'])) {
                     $errorMessage = $this->getResponseErrorMessage($response, $responseData);
 
                     throw $this->errorResult(
@@ -792,6 +792,13 @@ class Provider extends DomainNames implements ProviderInterface
     protected function getResponseErrorMessage(Response $response, $responseData): string
     {
         $errorMessage = trim($responseData['message'] ?? $responseData['error'] ?? 'unknown error');
+
+        // sometimes failed actions arent returned like other errors
+        if (!empty($responseData['actionstatus']) && !empty($responseData['actionstatusdesc'])) {
+            if ($responseData['actionstatus'] === 'Failed') {
+                $errorMessage = $responseData['actionstatusdesc'];
+            }
+        }
 
         // only return the first sentence of the error message
         // $errorMessage = preg_replace('/\. .+$/', '', $errorMessage); // problematic if input string contains a .
