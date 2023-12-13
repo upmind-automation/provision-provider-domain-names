@@ -20,7 +20,7 @@ Follow the below steps to create a new provider, using Namecheap as an example:
 
 1. Install the [Upmind Provision Workbench](https://github.com/upmind-automation/provision-workbench#readme)
 2. Fork [this repository](https://github.com/upmind-automation/provision-provider-domain-names)
-3. Clone your fork into the `local/` directory where you have installed the provision workbench and run `composer install upmind/provision-provider-domain-names:@dev` - it will install from your fork in local/
+3. Clone your fork into the `local/` directory where you have installed the provision workbench and run `composer require upmind/provision-provider-domain-names:@dev` - it will install from your fork in local/
 4. In your fork of upmind/provision-provider-domain-names copy the `src/Example` directory to create `src/Namecheap` and update the namespace on files under `src/Namecheap`
 5. Update the sample Configuration class for Namecheap API credentials (api_key, sandbox, debug)
 6. Bind your new provider to the provision registry in `src/LaravelServiceProvider.php`
