@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.2) - 2023-12-22
+
+- Update OpenProvider OTE/sandbox API URL
+
 ## [v2.9.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.1) - 2023-12-11
 
 - Add LogicBoxes debug logging flag
