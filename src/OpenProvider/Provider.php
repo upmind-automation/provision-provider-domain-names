@@ -78,7 +78,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $this->configuration = $configuration;
         $this->baseUrl = $configuration->test_mode
-            ? 'https://api.cte.openprovider.eu/v1beta/'
+            ? 'http://api.sandbox.openprovider.nl:8480/v1beta/'
             : 'https://api.openprovider.eu/v1beta/';
     }
 
