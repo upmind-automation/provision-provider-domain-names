@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.3) - 2024-01-05
+
+- Add .cloud to list of TLDs which don't support WHOIS privacy
+
 ## [v2.9.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.2) - 2023-12-22
 
 - Update OpenProvider OTE/sandbox API URL
