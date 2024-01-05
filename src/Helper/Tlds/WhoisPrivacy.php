@@ -39,6 +39,7 @@ class WhoisPrivacy
         'cd',
         'ch',
         'cl',
+        'cloud',
         'cm',
         'cologne',
         'coop',
