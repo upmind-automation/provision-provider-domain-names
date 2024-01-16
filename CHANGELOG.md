@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.4) - 2024-01-16
+
+- Update Register + Transfer params sld validation rules to forbid underscores
+
 ## [v2.9.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.3) - 2024-01-05
 
 - Add .cloud to list of TLDs which don't support WHOIS privacy
