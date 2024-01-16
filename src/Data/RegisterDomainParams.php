@@ -24,7 +24,7 @@ class RegisterDomainParams extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
-            'sld' => ['required', 'alpha-dash'],
+            'sld' => ['required', 'alpha-dash', 'regex:/^[^\_]+$/'],
             'tld' => ['required', 'alpha-dash-dot'],
             'renew_years' => ['required', 'integer', 'max:10'],
             'registrant' => ['required', RegisterContactParams::class],
