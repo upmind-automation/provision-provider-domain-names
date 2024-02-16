@@ -251,13 +251,17 @@ class CentralNicApi
         $this->connection->request($renewRequest);
     }
 
-    public function getDomainInfo(string $domainName): array
+    public function getDomainInfo(string $domainName, bool $checkRegistrar = true): array
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
         /** @var eppInfoDomainResponse */
         $response = $this->connection->request($info);
+
+        if ($checkRegistrar && $response->getDomainClientId() !== $this->configuration->registrar_handle_id) {
+            throw new ProvisionFunctionError('Domain not owned by registrar account');
+        }
 
         $registrantId = $response->getDomainRegistrant();
         $billingId = $response->getDomainContact(eppContactHandle::CONTACT_TYPE_BILLING);

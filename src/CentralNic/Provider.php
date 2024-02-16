@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppContactHandle;
+use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -240,6 +241,12 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             return $this->_getInfo($domainName, 'Domain active in registrar account');
         } catch (eppException $e) {
+            return $this->_eppExceptionHandler($e, $params->toArray());
+        } catch (ProvisionFunctionError $e) {
+            if ($e->getMessage() !== 'Domain not owned by registrar account') {
+                throw $e;
+            }
+
             // continue on to initiate transfer
         }
 
