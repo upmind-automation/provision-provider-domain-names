@@ -319,12 +319,12 @@ class Provider extends DomainNames implements ProviderInterface
 
         foreach ($contactData as $type => $contactParams) {
             /** @var ContactParams $contactParams */
-            $nameParts = OpenSrsApi::getNameParts($contactParams->name ?? $contactParams->organisation);
+            $nameParts = OpenSrsApi::getNameParts($contactParams->name ?: $contactParams->organisation);
 
             $contacts[$type] = [
                 'country' => Utils::normalizeCountryCode($contactParams->country_code),
                 'state' => Utils::stateNameToCode($contactParams->country_code, $contactParams->state),
-                'org_name' => $contactParams->organisation,
+                'org_name' => $contactParams->organisation ?: $contactParams->name,
                 'phone' => Utils::internationalPhoneToEpp($contactParams->phone),
                 'postal_code' => $contactParams->postcode,
                 'city' => $contactParams->city,
