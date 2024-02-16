@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.6) - 2024-02-16
+
+- Update CentralNic getInfo() and transfer() to not return successful if domain belongs to another registrar
+
 ## [v2.9.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.5) - 2024-02-16
 
 - Update OpenSRS transfer() to pass contact name as org_name if organisation is empty
