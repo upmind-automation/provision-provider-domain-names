@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.5) - 2024-02-16
+
+- Update OpenSRS transfer() to pass contact name as org_name if organisation is empty
+
 ## [v2.9.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.4) - 2024-01-16
 
 - Update Register + Transfer params sld validation rules to forbid underscores
