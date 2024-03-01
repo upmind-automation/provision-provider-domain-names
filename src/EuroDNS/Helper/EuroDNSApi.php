@@ -445,69 +445,92 @@ class EuroDNSApi
         $nameAdmin= $this->splitName($adminDetails['name']);
         $nameTech = $this->splitName($techDetails['name']);
 
+
+
+
+
         // Build the XML for contact details
         $contact = "
             <contact:{$action}>
                 <contact:type>billing</contact:type>
-                <contact:firstname>{$nameBilling['first_name']}</contact:firstname>
-                <contact:lastname>{$nameBilling['last_name']}</contact:lastname>
-                <contact:company>{$billingDetails['organisation']}</contact:company>
-                <contact:address1>{$billingDetails['address1']}</contact:address1>
-                <contact:address2>{$billingDetails['state']}</contact:address2>
-                <contact:city>{$billingDetails['city']}</contact:city>
-                <contact:zipcode>{$billingDetails['postcode']}</contact:zipcode>
-                <contact:country_code>{$billingDetails['country_code']}</contact:country_code>
-                <contact:email>{$billingDetails['email']}</contact:email>
+                <contact:firstname>".htmlspecialchars($nameBilling['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
+                <contact:lastname>".htmlspecialchars($nameBilling['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
+                <contact:company>".htmlspecialchars($billingDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
+                <contact:address1>".htmlspecialchars($billingDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
+                <contact:address2>".htmlspecialchars($billingDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
+                <contact:city>".htmlspecialchars($billingDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
+                <contact:zipcode>".htmlspecialchars($billingDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
+                <contact:country_code>".htmlspecialchars($billingDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
+                <contact:email>".htmlspecialchars($billingDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
                 <contact:phone>{$billingPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>org</contact:type>
-                <contact:firstname>{$nameContact['first_name']}</contact:firstname>
-                <contact:lastname>{$nameContact['last_name']}</contact:lastname>
-                <contact:company>{$registrantDetails['organisation']}</contact:company>
-                <contact:address1>{$registrantDetails['address1']}</contact:address1>
-                <contact:address2>{$registrantDetails['state']}</contact:address2>
-                <contact:city>{$registrantDetails['city']}</contact:city>
-                <contact:zipcode>{$registrantDetails['postcode']}</contact:zipcode>
-                <contact:country_code>{$registrantDetails['country_code']}</contact:country_code>
-                <contact:email>{$registrantDetails['email']}</contact:email>
+                <contact:firstname>".htmlspecialchars($nameContact['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
+                <contact:lastname>".htmlspecialchars($nameContact['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
+                <contact:company>".htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
+                <contact:address1>".htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
+                <contact:address2>".htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
+                <contact:city>".htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
+                <contact:zipcode>".htmlspecialchars($registrantDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
+                <contact:country_code>".htmlspecialchars($registrantDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
+                <contact:email>".htmlspecialchars($registrantDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
                 <contact:phone>{$contactPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>admin</contact:type>
-                <contact:firstname>{$nameAdmin['first_name']}</contact:firstname>
-                <contact:lastname>{$nameAdmin['last_name']}</contact:lastname>
-                <contact:company>{$adminDetails['organisation']}</contact:company>
-                <contact:address1>{$adminDetails['address1']}</contact:address1>
-                <contact:address2>{$adminDetails['state']}</contact:address2>
-                <contact:city>{$adminDetails['city']}</contact:city>
-                <contact:zipcode>{$adminDetails['postcode']}</contact:zipcode>
-                <contact:country_code>{$adminDetails['country_code']}</contact:country_code>
-                <contact:email>{$adminDetails['email']}</contact:email>
+                <contact:firstname>".htmlspecialchars($nameAdmin['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
+                <contact:lastname>".htmlspecialchars($nameAdmin['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
+                <contact:company>".htmlspecialchars($adminDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
+                <contact:address1>".htmlspecialchars($adminDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
+                <contact:address2>".htmlspecialchars($adminDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
+                <contact:city>".htmlspecialchars($adminDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
+                <contact:zipcode>".htmlspecialchars($adminDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
+                <contact:country_code>".htmlspecialchars($adminDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
+                <contact:email>".htmlspecialchars($adminDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
                 <contact:phone>{$adminPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>tech</contact:type>
-                <contact:firstname>{$nameTech['first_name']}</contact:firstname>
-                <contact:lastname>{$nameTech['last_name']}</contact:lastname>
-                <contact:company>{$techDetails['organisation']}</contact:company>
-                <contact:address1>{$techDetails['address1']}</contact:address1>
-                <contact:address2>{$techDetails['state']}</contact:address2>
-                <contact:city>{$techDetails['city']}</contact:city>
-                <contact:zipcode>{$techDetails['postcode']}</contact:zipcode>
-                <contact:country_code>{$techDetails['country_code']}</contact:country_code>
-                <contact:email>{$techDetails['email']}</contact:email>
+                <contact:firstname>".htmlspecialchars($nameTech['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
+                <contact:lastname>".htmlspecialchars($nameTech['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
+                <contact:company>".htmlspecialchars($techDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
+                <contact:address1>".htmlspecialchars($techDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
+                <contact:address2>".htmlspecialchars($techDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
+                <contact:city>".htmlspecialchars($techDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
+                <contact:zipcode>".htmlspecialchars($techDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
+                <contact:country_code>".htmlspecialchars($techDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
+                <contact:email>".htmlspecialchars($techDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
                 <contact:phone>{$techPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>";
 
+
         return $contact;
+    }
+
+    /**
+     *
+     */
+
+    private function sanitizeData($data) {
+        $sanitizedData = [];
+        foreach ($data as $key => $value) {
+            // Check if the value is an array itself and recursively sanitize
+            if (is_array($value)) {
+                $sanitizedData[$key] = $this->sanitizeData($value);
+            } else {
+                // Sanitize the value
+                $sanitizedData[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+            }
+        }
+        return $sanitizedData;
     }
 
 
@@ -541,15 +564,15 @@ class EuroDNSApi
         $contact = '
         <contact:' . $action . '>
             <contact:type>org</contact:type>
-            <contact:firstname>' . $name['first_name'] . '</contact:firstname>
-            <contact:lastname>' . $name['last_name'] . '</contact:lastname>
-            <contact:company>' . $registrantDetails['organisation'] . '</contact:company>
-            <contact:address1>' . $registrantDetails['address1'] . '</contact:address1>
-            <contact:address2>' . $registrantDetails['state'] . '</contact:address2>
-            <contact:city>' . $registrantDetails['city'] . '</contact:city>
-            <contact:zipcode>' . $registrantDetails['postcode'] . '</contact:zipcode>
-            <contact:country_code>' . $registrantDetails['country_code'] . '</contact:country_code>
-            <contact:email>' . $registrantDetails['email'] . '</contact:email>
+            <contact:firstname>' .htmlspecialchars($name['first_name'], ENT_QUOTES, 'UTF-8'). '</contact:firstname>
+            <contact:lastname>' . htmlspecialchars($name['last_name'], ENT_QUOTES, 'UTF-8') . '</contact:lastname>
+            <contact:company>' . htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8') . '</contact:company>
+            <contact:address1>' . htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8') . '</contact:address1>
+            <contact:address2>' . htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8') . '</contact:address2>
+            <contact:city>' . htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8') . '</contact:city>
+            <contact:zipcode>' . htmlspecialchars($registrantDetails['postcode'], ENT_QUOTES, 'UTF-8') . '</contact:zipcode>
+            <contact:country_code>' . htmlspecialchars($registrantDetails['country_code'], ENT_QUOTES, 'UTF-8') . '</contact:country_code>
+            <contact:email>' . htmlspecialchars($registrantDetails['email'], ENT_QUOTES, 'UTF-8') . '</contact:email>
             <contact:phone>' . $contactPhone . '</contact:phone>
             <contact:fax></contact:fax>
         </contact:' . $action . '>';
