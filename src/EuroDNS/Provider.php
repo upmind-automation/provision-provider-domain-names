@@ -80,7 +80,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if there is an error in the poll response
         if(isset($poll['error'])){
             // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$poll['msg']));
+            throw $this->errorResult(sprintf((string)$poll['msg']),['response' => $poll]);
         }
 
         // Create a PollResult object from the poll response
@@ -108,7 +108,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if there is an error in the domains response
         if(isset($domainsResponse['error'])){
               // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$domainsResponse['msg']));
+            throw $this->errorResult(sprintf((string)$domainsResponse['msg']),['response' => $domainsResponse]);
         }
 
         // Create a DacResult object with the domain availability information
@@ -158,7 +158,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         }else{
             // Throw an exception with the error message if domain registration fails
-            throw $this->errorResult(sprintf($registerDomain['msg']));
+            throw $this->errorResult(sprintf($registerDomain['msg']),['response' => $registerDomain]);
         }
 
     }
@@ -206,7 +206,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf('Transfer for %s domain successfully created! Scheduled for transfer!', $domainName));
         }else{
             // Throw an exception with the error message if domain transfer initiation fails
-            throw $this->errorResult(sprintf($registerDomain['msg']));
+            throw $this->errorResult(sprintf($registerDomain['msg']),['response' => $registerDomain]);
         }
 
     }
@@ -231,7 +231,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
         }else{
             // Throw an exception with the error message if domain renewal fails
-            throw $this->errorResult(sprintf($renew['msg']));
+            throw $this->errorResult(sprintf($renew['msg']),['response' => $renew]);
         }
 
     }
@@ -269,7 +269,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if the API response contains an error
         if(isset($domainInfo['error'])){
             // Throw an exception with the error message
-            throw $this->errorResult($domainInfo['msg']);
+            throw $this->errorResult($domainInfo['msg'],['response' => $domainInfo]);
         }
         // Remove sensitive information (e.g., authCode) before creating the DomainResult
         unset($domainInfo['authCode']);
@@ -297,7 +297,7 @@ class Provider extends DomainNames implements ProviderInterface
             return ContactResult::create($updateContact['msg']);
         }else{
             // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateContact['msg']));
+            throw $this->errorResult(sprintf($updateContact['msg']),['response' => $updateContact]);
         }
 
     }
@@ -331,7 +331,7 @@ class Provider extends DomainNames implements ProviderInterface
                                     ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
         }else{
             // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateNS['msg']));
+            throw $this->errorResult(sprintf($updateNS['msg']),['response' => $updateNS]);
         }
 
     }
@@ -362,7 +362,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
         } else {
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult($responseLock['msg']);
+            throw $this->errorResult($responseLock['msg'],['response' => $responseLock]);
         }
     }
 
@@ -387,7 +387,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf('Auto-renew mode  for %s domain was updated!', $domainName));
         }else{
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($setAuto['msg']));
+            throw $this->errorResult(sprintf($setAuto['msg']),['response' => $setAuto]);
         }
 
 
@@ -414,7 +414,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
         else{
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($eppCode['msg']));
+            throw $this->errorResult(sprintf($eppCode['msg']),['response' => $eppCode]);
         }
 
     }

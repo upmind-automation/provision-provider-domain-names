@@ -174,7 +174,7 @@ class EuroDNSApi
 
 
             return [
-                'error' => false,
+                'error' => true,
                 'msg' => $this->error,
             ];
         } else {
