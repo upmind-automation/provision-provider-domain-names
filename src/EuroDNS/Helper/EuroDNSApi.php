@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\EuroDNS\Helper;
 
+use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Throwable;
-use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
+use Psr\Log\LoggerInterface;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -20,7 +19,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
-use Psr\Log\LoggerInterface;
 
 /**
  * EuroDNS Domains API .
@@ -48,7 +46,7 @@ class EuroDNSApi
     public function __construct( Configuration $configuration, LoggerInterface $logger = null)
     {
         $this->configuration = $configuration;
-        $this->logger =  $this->getDefaultLogger();
+        $this->logger =  $logger;
     }
 
     /**
@@ -82,8 +80,7 @@ class EuroDNSApi
         // Check for errors in the request
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
 
@@ -142,8 +139,7 @@ class EuroDNSApi
         // Check for errors in the request
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg']   = $this->error;
         } else {
@@ -176,8 +172,7 @@ class EuroDNSApi
         // Check for errors in the request
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             return [
                 'error' => false,
                 'msg' => $this->error,
@@ -252,8 +247,7 @@ class EuroDNSApi
 
         // Check for errors in the request
         if (!empty($this->error)) {
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -664,8 +658,6 @@ class EuroDNSApi
             return false;
         }
 
-         //logging the request json
-         $this->logger->info('API request json', ['request' => $request]);
 
         // Initialize cURL session
         $cUrl = curl_init();
@@ -697,8 +689,6 @@ class EuroDNSApi
         // Close cURL session and return the response
         curl_close($cUrl);
 
-        //logging the response
-        $this->logger->info('API Response ', ['request' => $response]);
 
         return $response;
     }
@@ -1054,8 +1044,6 @@ class EuroDNSApi
 
         // Check for errors and set the result accordingly
         if (!empty($this->error)) {
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1138,8 +1126,7 @@ class EuroDNSApi
         // Check for errors and set the result accordingly
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1169,8 +1156,7 @@ class EuroDNSApi
         // Check for errors during domain information retrieval
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } elseif (empty($data['authCode'])) {
@@ -1257,8 +1243,7 @@ class EuroDNSApi
         // Check for errors and process the response
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1307,8 +1292,7 @@ class EuroDNSApi
         // Check for errors and process the response
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1493,8 +1477,7 @@ class EuroDNSApi
         // Check for errors in the response
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg']   = $this->error;
         } else {
@@ -1537,8 +1520,7 @@ class EuroDNSApi
         // Process the response
         if (!empty($this->error)) {
 
-            //logging the error
-            $this->logger->error('API error ', ['request' => $this->error]);
+
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1757,20 +1739,5 @@ class EuroDNSApi
                     </request>
                 XML;
     }
-
-    /**
-     * this function is used to get the logger file path
-     * and load the log file .
-     *  Set a PSR-3 logger.
-     */
-
-    private function getDefaultLogger(): LoggerInterface
-    {
-        // Create a default logger with a log file path
-        $logFilePath = '/dev/null';
-        return new SimpleLogger($logFilePath);
-    }
-
-
 
 }
