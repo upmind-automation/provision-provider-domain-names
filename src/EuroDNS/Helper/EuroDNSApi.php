@@ -28,6 +28,9 @@ use Psr\Log\LoggerInterface;
  */
 class EuroDNSApi
 {
+
+    public const URL_SANDBOX = 'https://secure.tryout-eurodns.com:20015/v2/';
+    public const URL_PRODUCTION = 'https://secure.api-eurodns.com:20015/v2/';
     protected Configuration $configuration;
     private $error;
     private $errorCode;
@@ -40,6 +43,8 @@ class EuroDNSApi
     private $contactAdminId;
     private $nameServers;
     private $logger;
+
+
 
     public function __construct( Configuration $configuration, LoggerInterface $logger = null)
     {
@@ -657,20 +662,17 @@ class EuroDNSApi
      */
     private function connect(string $request)
     {
+
         // Check if URL, USERNAME, and PASSWORD constants are defined
         if (!defined('URL')) {
 
-            // Load configuration from a file
-            $configFile = __DIR__ . '/../Data/config.json';
-            $config = json_decode(file_get_contents($configFile));
-
             // Check the sandbox option is set or not
             if ($this->configuration->sandbox) {
-                define('URL', $config->url_sandbox);
+                define('URL', self::URL_SANDBOX);
                 define('USERNAME', str_replace('_prod_', '_test_', $this->configuration->username));
                 define('PASSWORD', 'MD5' . md5($this->configuration->password));
             } else {
-                define('URL', $config->url_production);
+                define('URL', self::URL_PRODUCTION);
                 define('USERNAME', $this->configuration->username);
                 define('PASSWORD', 'MD5' . md5($this->configuration->password));
             }
