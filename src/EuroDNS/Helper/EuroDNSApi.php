@@ -16,7 +16,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\EuroDNS\Data\Configuration;
-use Upmind\ProvisionProviders\DomainNames\EuroDNS\Data\CountryCodeList;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
@@ -522,8 +521,7 @@ class EuroDNSApi
      */
     private function setContactUpdate($action)
     {
-        // Create an instance of CountryCodeList for phone code information
-        $ccl = new CountryCodeList();
+
 
         // Retrieve registrant details from the provided contact parameters
         $registrantDetails = $this->contactParams;
@@ -531,7 +529,7 @@ class EuroDNSApi
         // Check if the phone number starts with '+'
         if (!$this->startsWith($registrantDetails['phone'], '+')) {
             // Get the formatted phone number with the correct extension
-            $contactPhone = $this->getPhoneExtension($registrantDetails['country_code'], $ccl->getCountryPhoneCodeByCountryCode($registrantDetails['country_code']), $registrantDetails['phone']);
+            $contactPhone = Utils::localPhoneToInternational($registrantDetails['phone'],$registrantDetails['country_code']);
         } else {
             // Use the provided phone number if it already starts with '+'
             $contactPhone = $registrantDetails['phone'];
@@ -610,46 +608,6 @@ class EuroDNSApi
         // Use the traditional substr method for older PHP versions
         return substr($haystack, 0, strlen($needle)) === $needle;
     }
-
-    /**
-     * Get the formatted phone number with the correct extension based on the country code.
-     *
-     * @param string $code              The country code.
-     * @param array  $countryCodeArray  The array containing the country code information.
-     * @param string $phoneNumber       The original phone number.
-     *
-     * @return string The formatted phone number with the correct extension.
-     */
-    private function getPhoneExtension($code, $countryCodeArray, $phoneNumber)
-    {
-        // Initialize the result with the original phone number
-        $res = $phoneNumber;
-
-        // Check if the phone number starts with '00' followed by the country code
-        if ($this->startsWith($res, '00' . $countryCodeArray['code'])) {
-            // Calculate the length of '00' followed by the country code
-            $length = strlen('00' . $countryCodeArray['code']);
-
-            // Return the formatted phone number with the correct extension
-            return '+' . $countryCodeArray['code'] . substr($res, $length);
-        }
-
-        // Special case for Germany (DE)
-        if ('DE' === $code) {
-            // Check if the phone number starts with '0'
-            if ($this->startsWith($res, '0')) {
-                // Return the formatted phone number with the correct extension
-                return '+' . $countryCodeArray['code'] . substr($res, 1);
-            }
-
-            // Return the formatted phone number with the correct extension
-            return '+' . $countryCodeArray['code'] . $res;
-        }
-
-        // For other countries, return the formatted phone number with the correct extension
-        return '+' . $countryCodeArray['code'] . $res;
-    }
-
 
 
     /**
