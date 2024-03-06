@@ -566,6 +566,10 @@ class EnomApi
 
         if ($orderCount > 0) {
             foreach ($result->children() as $key => $childData) {
+                if ((string) $childData->loginid !== $this->configuration->username) {
+                    continue; // skip transfer orders belonging to different registrars (?!)
+                }
+
                 if ((string) $key == 'TransferOrder') {
                     $orders[] = [
                         'orderId' => (int) $childData->transferorderid,
@@ -582,6 +586,28 @@ class EnomApi
         }
 
         return null;
+    }
+
+    /**
+     * @param string $orderId
+     * @return array|null
+     */
+    public function getOrderDetails(string $orderId): ?array
+    {
+        // Command Params
+        $params = [
+            // 'command' => 'TP_GetOrderDetail',
+            // 'TransferOrderDetailID' => $orderId,
+            'command' => 'TP_GetOrder',
+            'TransferOrderID' => $orderId,
+        ];
+
+        $result = $this->makeRequest($params);
+
+        $order = (array)$result->transferorder;
+        $order['transferorderdetail'] = (array)$order['transferorderdetail'];
+
+        return $order;
     }
 
     /**

@@ -206,11 +206,6 @@ class Provider extends DomainNames implements ProviderInterface
         $sld = $params->sld;
         $tld = $params->tld;
 
-        // TODO: `renew_years` (period) is not needed here.
-        //$period = Arr::get($params, 'renew_years', 1);
-        // TODO: In development, `epp_code` is not needed as well, but required when sending the requests, so we may just send a random string
-        $eppCode = $params->epp_code ?: '1234';
-
         try {
             return $this->_getInfo($sld, $tld, 'Domain is active in registrar account');
         } catch (\Throwable $e) {
@@ -221,17 +216,40 @@ class Provider extends DomainNames implements ProviderInterface
             // Check for previous order first
             if ($prevOrders = $this->api()->getDomainTransferOrders($sld, $tld)) {
                 $prevOrder = collect($prevOrders)->sortByDesc('date')->first();
-                throw $this->errorResult(
-                    sprintf('Transfer order in progress since %s', $prevOrder['date']),
-                    $prevOrders,
-                    $params
-                );
+                $prevOrderData = $this->api()->getOrderDetails((string)$prevOrder['orderId']);
+                $transferOrderStatus = (int)$prevOrderData['transferorderdetail']['statusid'];
+
+                if ($this->orderDetailStatusIsInProgress($transferOrderStatus)) {
+                    // throw error result containing order data
+                    throw $this->errorResult(
+                        sprintf('Transfer order in progress since %s', $prevOrder['date']),
+                        ['order' => $prevOrderData]
+                    );
+                }
+
+                if ($this->orderDetailStatusRequiresEppCode($transferOrderStatus)) {
+                    if (empty($params->epp_code)) {
+                        // throw error explaining that EPP code is required
+                        throw $this->errorResult(
+                            'Transfer order requires EPP code to be re-initiated',
+                            ['order' => $prevOrderData]
+                        );
+                    }
+                }
+
+                // otherwise, initiate a new transfer order
             }
 
             // Attempt to create a new transfer order.
-            $this->api()->initiateTransfer($sld, $tld, $eppCode);
+            $this->api()->initiateTransfer($sld, $tld, $params->epp_code ?: '1234');
 
-            throw $this->errorResult('Domain transfer order initiated');
+            throw $this->errorResult(
+                sprintf(
+                    'Domain transfer order %s',
+                    !isset($prevOrder) ? 'initiated' : 're-initiated due to previous order status'
+                ),
+                ['previous_order' => $prevOrderData ?? null]
+            );
         } catch (\Throwable $e) {
             throw $this->handleException($e, $params);
         }
@@ -454,6 +472,45 @@ class Provider extends DomainNames implements ProviderInterface
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
         }
+    }
+
+    /**
+     * Returns true if the order detail status indicates the transfer is in progress,
+     * otherwise the order should probably be re-initiated.
+     *
+     * @link https://api.enom.com/docs/tp-get-order#notes
+     */
+    protected function orderDetailStatusIsInProgress(int $statusId): bool
+    {
+        return in_array($statusId, [
+            0, // Transfer request created - awaiting fax
+            1, // WhoIs information matches
+            3, // Pending due to domain status
+            5, // Transferred and paid successfully
+            6, // Transfer incomplete - charge problem
+            9, // Awaiting auto verification of transfer request (no longer used due to GDPR)
+            11, // Auto verification of transfer request initiated (no longer used due to GDPR)
+            12, // Awaiting for auto transfer string validation
+            13, // Domain awaiting transfer initiation
+            14, // Domain transfer initiated and awaiting approval
+            28, // Fax received - awaiting registrant verification
+            29, // Awaiting manual fax verification
+            35, // Transfer request not yet submitted
+            100, // Pending consent - The transfer order is waiting for GDPR consent to be given.
+        ]);
+    }
+
+    /**
+     * Returns true if the order detail status indicates the transfer failed due
+     * to an issue with the EPP code.
+     *
+     * @link https://api.enom.com/docs/tp-get-order#notes
+     */
+    protected function orderDetailStatusRequiresEppCode(int $statusId): bool
+    {
+        return in_array($statusId, [
+            32, // Canceled - Invalid EPP/authorization key - Please contact current registrar to obtain correct key
+        ]);
     }
 
     /**
