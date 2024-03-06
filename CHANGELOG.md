@@ -2,6 +2,12 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.7) - 2024-03-06
+
+- Fix Enom transfer() issues with 'stuck' orders
+  - Exclude transfer orders belonging to other registrars
+  - Make additional call to get order data and check transferorderdetail status
+
 ## [v2.9.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.6) - 2024-02-16
 
 - Update CentralNic getInfo() and transfer() to not return successful if domain belongs to another registrar
