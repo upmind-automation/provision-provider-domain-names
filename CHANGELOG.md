@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.9.8](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.8) - 2024-03-15
+
+- Add `disable_whois_privacy` to OpenProvider configuration to disable WHOIS privacy
+  for new registrations
+
 ## [v2.9.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.7) - 2024-03-06
 
 - Fix Enom transfer() issues with 'stuck' orders

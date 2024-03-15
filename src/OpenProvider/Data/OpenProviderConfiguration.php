@@ -13,6 +13,7 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $username username of the account
  * @property-read string $password password of the account
  * @property-read bool|null $test_mode Whether or not to connect to the CTE
+ * @property-read bool|null $disable_whois_privacy Whether or not to disable whois privacy for new registrations
  * @property-read bool|null $debug Whether or not to debug log
  */
 class OpenProviderConfiguration extends DataSet
@@ -23,6 +24,7 @@ class OpenProviderConfiguration extends DataSet
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
             'test_mode' => ['boolean'],
+            'disable_whois_privacy' => ['boolean'],
             'debug' => ['boolean'],
         ]);
     }

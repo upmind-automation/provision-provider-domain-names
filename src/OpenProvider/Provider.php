@@ -152,7 +152,9 @@ class Provider extends DomainNames implements ProviderInterface
         $data['period'] = Arr::get($params, 'renew_years', 1);
         $data['unit'] = 'y';
         $data['autorenew'] = 'off';
-        $data['is_private_whois_enabled'] = Utils::tldSupportsWhoisPrivacy($tld);
+        $data['is_private_whois_enabled'] = $this->configuration->disable_whois_privacy
+            ? false
+            : Utils::tldSupportsWhoisPrivacy($tld);
 
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'nameservers.ns' . $i)) {
