@@ -690,6 +690,10 @@ class EuroDNSApi
         $response = utf8_encode($response);
         $this->response = $response;
 
+        if (isset($this->logger)) {
+            $this->logger->debug('EuroDNS Response:' . $response);
+        }
+
         // Check for errors or empty response
         if (!empty($this->error) || 0 != curl_errno($cUrl)) {
             return false;
@@ -697,11 +701,6 @@ class EuroDNSApi
 
         // Close cURL session and return the response
         curl_close($cUrl);
-
-        if (isset($this->logger)) {
-            $this->logger->debug('EuroDNS Response:' . $response);
-        }
-
 
         return $response;
     }
