@@ -59,6 +59,7 @@ The following providers are currently implemented:
   - [GoDaddy](https://developer.godaddy.com/doc/endpoint/domains)
   - [Realtime Register](https://dm.realtimeregister.com/docs/api/domains)
   - [Internet.bs](https://internetbs.net/internet-bs-api.pdf)
+  - [EuroDNS](https://whois.eurodns.com/doc/domain/info)
 
 ## Functions
 
@@ -92,6 +93,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
  - [Ivaylo Georgiev](https://github.com/Georgiev-Ivaylo)
  - [Nikolai Arsov](https://github.com/nikiarsov777)
  - [Codeline](https://codeline.fi/)
+ - [PEWEO](https://www.peweo.com/)
  - [All Contributors](../../contributors)
 
 ## License
