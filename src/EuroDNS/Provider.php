@@ -43,7 +43,6 @@ class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-
     /**
      * @var EuroDNSApi
      */
@@ -63,7 +62,6 @@ class Provider extends DomainNames implements ProviderInterface
             ->setName('EuroDNS')
             ->setLogoUrl('https://www.eurodns.com/assets/images/logos-companies/eurodns-logo-blue.svg')
             ->setDescription('Register, transfer, renew and manage EuroDNS domains');
-
     }
 
     /**
@@ -78,14 +76,13 @@ class Provider extends DomainNames implements ProviderInterface
         $poll = $this->api()->getPollMessages(intval($params->limit), $since);
 
         // Check if there is an error in the poll response
-        if(isset($poll['error'])){
+        if(isset($poll['error'])) {
             // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$poll['msg']),['response' => $poll]);
+            throw $this->errorResult(sprintf((string)$poll['msg']), ['response' => $poll]);
         }
 
         // Create a PollResult object from the poll response
         return PollResult::create($poll);
-
     }
 
     /**
@@ -106,16 +103,15 @@ class Provider extends DomainNames implements ProviderInterface
         $domainsResponse = $this->api()->checkDomains($domains);
 
         // Check if there is an error in the domains response
-        if(isset($domainsResponse['error'])){
-              // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$domainsResponse['msg']),['response' => $domainsResponse]);
+        if(isset($domainsResponse['error'])) {
+            // Throw an exception with the error message
+            throw $this->errorResult(sprintf((string)$domainsResponse['msg']), ['response' => $domainsResponse]);
         }
 
         // Create a DacResult object with the domain availability information
         return DacResult::create([
             'domains' => $domainsResponse,
         ]);
-
     }
 
     /**
@@ -130,9 +126,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         $logger = $this->configuration->debug ? $this->getLogger() : null;
         return $this->api = new EuroDNSApi($this->configuration, $logger);
-
     }
-
 
     /**
      * @inheritDoc
@@ -149,25 +143,23 @@ class Provider extends DomainNames implements ProviderInterface
         $registerDomain = $this->api()->register($params);
 
         // Check if there is no error during domain registration
-        if(!$registerDomain['error']){
+        if(!$registerDomain['error']) {
             //sometime   take  time to get domain info of newly added domain .So, we put a delay in the process
             sleep(3);
 
             // Retrieve and return domain information after successful registration
-           return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
-
-        }else{
+            return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
+        } else {
             // Throw an exception with the error message if domain registration fails
-            throw $this->errorResult(sprintf($registerDomain['msg']),['response' => $registerDomain]);
+            throw $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
         }
-
     }
 
     /**
      * Function to check  all the contact details are given while registration
      */
 
-    private function checkRegisterParams( $params): void
+    private function checkRegisterParams($params): void
     {
         if (!Arr::has($params, 'registrant.register')) {
             throw $this->errorResult('Registrant contact data is required!');
@@ -198,17 +190,16 @@ class Provider extends DomainNames implements ProviderInterface
         $this->checkRegisterParams($params);
 
         // Call the API to initiate the domain transfer
-        $registerDomain = $this->api()->initiateTransfer($domainName,$params);
+        $registerDomain = $this->api()->initiateTransfer($domainName, $params);
 
         // Check if there is no error during domain transfer initiation
         if (!$registerDomain['error']) {
             // Throw an exception indicating that the transfer for the domain was successfully created
             return $this->_getInfo($domainName, sprintf('Transfer for %s domain successfully created! Scheduled for transfer!', $domainName));
-        }else{
+        } else {
             // Throw an exception with the error message if domain transfer initiation fails
-            throw $this->errorResult(sprintf($registerDomain['msg']),['response' => $registerDomain]);
+            throw $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
         }
-
     }
 
     /**
@@ -229,11 +220,10 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$renew['error']) {
             // If renewal is successful, return domain information
             return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
-        }else{
+        } else {
             // Throw an exception with the error message if domain renewal fails
-            throw $this->errorResult(sprintf($renew['msg']),['response' => $renew]);
+            throw $this->errorResult(sprintf($renew['msg']), ['response' => $renew]);
         }
-
     }
 
     /**
@@ -246,8 +236,6 @@ class Provider extends DomainNames implements ProviderInterface
 
         // Call the private method to get detailed information about the domain
         return $this->_getInfo($domainName, 'Domain data obtained');
-
-
     }
 
     /**
@@ -267,9 +255,9 @@ class Provider extends DomainNames implements ProviderInterface
         $domainInfo = $this->api()->getDomainInfo($domainName);
 
         // Check if the API response contains an error
-        if(isset($domainInfo['error'])){
+        if(isset($domainInfo['error'])) {
             // Throw an exception with the error message
-            throw $this->errorResult($domainInfo['msg'],['response' => $domainInfo]);
+            throw $this->errorResult($domainInfo['msg'], ['response' => $domainInfo]);
         }
         // Remove sensitive information (e.g., authCode) before creating the DomainResult
         unset($domainInfo['authCode']);
@@ -277,8 +265,6 @@ class Provider extends DomainNames implements ProviderInterface
         // Create a DomainResult instance and set the message
         return DomainResult::create($domainInfo)->setMessage($message);
     }
-
-
 
     /**
      * @inheritDoc
@@ -295,11 +281,10 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$updateContact['error']) {
             // Create a ContactResult instance with the success message
             return ContactResult::create($updateContact['msg']);
-        }else{
+        } else {
             // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateContact['msg']),['response' => $updateContact]);
+            throw $this->errorResult(sprintf($updateContact['msg']), ['response' => $updateContact]);
         }
-
     }
 
     /**
@@ -317,11 +302,8 @@ class Provider extends DomainNames implements ProviderInterface
         // Extract nameservers from the parameters
         $nameServers = $params->pluckHosts();
 
-
         // Call the API to update nameservers
-        $updateNS = $this->api()->updateNameservers($domainName ,$nameServers ,$params);
-
-
+        $updateNS = $this->api()->updateNameservers($domainName, $nameServers, $params);
 
         // Check if the API response indicates success
         if (!$updateNS['error']) {
@@ -329,11 +311,10 @@ class Provider extends DomainNames implements ProviderInterface
 
             return NameserversResult::create()
                                     ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
-        }else{
+        } else {
             // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateNS['msg']),['response' => $updateNS]);
+            throw $this->errorResult(sprintf($updateNS['msg']), ['response' => $updateNS]);
         }
-
     }
 
     /**
@@ -362,10 +343,9 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
         } else {
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult($responseLock['msg'],['response' => $responseLock]);
+            throw $this->errorResult($responseLock['msg'], ['response' => $responseLock]);
         }
     }
-
 
     /**
      * @inheritDoc
@@ -385,12 +365,10 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$setAuto['error']) {
             // Create a DomainResult instance with a success message
             return $this->_getInfo($domainName, sprintf('Auto-renew mode  for %s domain was updated!', $domainName));
-        }else{
+        } else {
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($setAuto['msg']),['response' => $setAuto]);
+            throw $this->errorResult(sprintf($setAuto['msg']), ['response' => $setAuto]);
         }
-
-
     }
 
     /**
@@ -398,7 +376,6 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
-
         // Generate the full domain name
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
@@ -411,12 +388,10 @@ class Provider extends DomainNames implements ProviderInterface
             return EppCodeResult::create([
                 'epp_code' => $eppCode['authCode'],
             ])->setMessage('EPP/Auth code obtained');
-        }
-        else{
+        } else {
             // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($eppCode['msg']),['response' => $eppCode]);
+            throw $this->errorResult(sprintf($eppCode['msg']), ['response' => $eppCode]);
         }
-
     }
 
     /**
@@ -426,6 +401,4 @@ class Provider extends DomainNames implements ProviderInterface
     {
         throw $this->errorResult('Not Available on this module');
     }
-
-
 }

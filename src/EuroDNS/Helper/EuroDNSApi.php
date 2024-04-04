@@ -25,7 +25,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
  */
 class EuroDNSApi
 {
-
     protected $urlSandbox = 'https://secure.tryout-eurodns.com:20015/v2/';
     protected $urlProduction = 'https://secure.api-eurodns.com:20015/v2/';
     protected $username;
@@ -44,12 +43,10 @@ class EuroDNSApi
     private $nameServers;
     private $logger;
 
-
-
-    public function __construct( Configuration $configuration, LoggerInterface $logger = null)
+    public function __construct(Configuration $configuration, LoggerInterface $logger = null)
     {
         $this->configuration = $configuration;
-        $this->logger =  $logger;
+        $this->logger = $logger;
         $this->initializeCredentials();
     }
     /**
@@ -84,23 +81,17 @@ class EuroDNSApi
 
         $request = $this->buildDomainCheckRequest($domainList);
 
-
-
         // Set the request property for reference
         $this->request = $request;
 
         // Make the request to EuroDNS API
         $response = $this->connect($request);
 
-
-
         // Initialize the result array
         $result = [];
 
         // Check for errors in the request
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
 
@@ -158,14 +149,12 @@ class EuroDNSApi
 
         // Check for errors in the request
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
-            $result['msg']   = $this->error;
+            $result['msg'] = $this->error;
         } else {
             // Process the API response
             $result['error'] = false;
-            $result['msg']   = $this->processResponse($response);
+            $result['msg'] = $this->processResponse($response);
         }
 
         return $result;
@@ -181,7 +170,7 @@ class EuroDNSApi
     public function getDomainInfo(string $domainName): array
     {
         // Construct XML request for domain info
-        $request =  $this->generateDomainInfoRequest($domainName);
+        $request = $this->generateDomainInfoRequest($domainName);
 
         // Set the request property for reference
         $this->request = $request;
@@ -191,8 +180,6 @@ class EuroDNSApi
 
         // Check for errors in the request
         if (!empty($this->error)) {
-
-
             return [
                 'error' => true,
                 'msg' => $this->error,
@@ -202,7 +189,7 @@ class EuroDNSApi
             $processedData = $this->processResponse($response, 'info');
 
             $lockedStatus = ($processedData['locked'] == 'locked') ? true : false; // Locked status;
-            $nameServerObj =  NameserversResult::create((array) $processedData['ns']); // Nameservers information .Create the NameseversResult object
+            $nameServerObj = NameserversResult::create((array) $processedData['ns']); // Nameservers information .Create the NameseversResult object
 
             $registrantContact = isset($processedData['registrant']) ? $this->parseContact($processedData['registrant']) : null; // Registrant contact details
             $billingContact = isset($processedData['billing']) ? $this->parseContact($processedData['billing']) : null; // Billing contact details
@@ -219,10 +206,10 @@ class EuroDNSApi
                 'id' => $processedData['id'], // Domain ID
                 'domain' => (string) $processedData['domain'], // Domain name
                 'statuses' => [$processedData['statuses']], // domain status
-                'locked' =>  $lockedStatus,
+                'locked' => $lockedStatus,
                 'registrant' => $registrantContact,
                 'billing' => $billingContact,
-                'tech' =>  $techContact,
+                'tech' => $techContact,
                 'admin' => $adminContact,
                 'ns' => $nameServerObj,
                 'created_at' => $createdDate,
@@ -240,7 +227,6 @@ class EuroDNSApi
             Utils::formatDate((string) $date) :
             Utils::formatDate((string) Carbon::now());
     }
-
 
     /**
      * Function to update registrant contact details in EuroDNS.
@@ -267,7 +253,6 @@ class EuroDNSApi
 
         // Check for errors in the request
         if (!empty($this->error)) {
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -282,7 +267,6 @@ class EuroDNSApi
         // Return the result array
         return $result;
     }
-
 
     /**
      * Function to retrieve poll messages from EuroDNS.
@@ -387,8 +371,6 @@ class EuroDNSApi
         ];
     }
 
-
-
     /**
      * Set name servers for the specified action.
      *
@@ -411,8 +393,7 @@ class EuroDNSApi
 
         // Loop through name servers and generate XML
         foreach ($nameserversArray as $key => $val) {
-
-            $host = isset($val['host'])? $val['host']: $val;
+            $host = isset($val['host']) ? $val['host'] : $val;
 
             // Check if the host is not empty
             if (!empty($host)) {
@@ -430,7 +411,6 @@ class EuroDNSApi
 
         return $ns;
     }
-
 
     /**
      * Set contact details for the specified action.
@@ -456,75 +436,70 @@ class EuroDNSApi
         //find firstname and last name from the given name
         $nameBilling = $this->splitName($billingDetails['name']);
         $nameContact = $this->splitName($registrantDetails['name']);
-        $nameAdmin= $this->splitName($adminDetails['name']);
+        $nameAdmin = $this->splitName($adminDetails['name']);
         $nameTech = $this->splitName($techDetails['name']);
-
-
-
-
 
         // Build the XML for contact details
         $contact = "
             <contact:{$action}>
                 <contact:type>billing</contact:type>
-                <contact:firstname>".htmlspecialchars($nameBilling['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
-                <contact:lastname>".htmlspecialchars($nameBilling['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
-                <contact:company>".htmlspecialchars($billingDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
-                <contact:address1>".htmlspecialchars($billingDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
-                <contact:address2>".htmlspecialchars($billingDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
-                <contact:city>".htmlspecialchars($billingDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
-                <contact:zipcode>".htmlspecialchars($billingDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
-                <contact:country_code>".htmlspecialchars($billingDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
-                <contact:email>".htmlspecialchars($billingDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
+                <contact:firstname>" . htmlspecialchars($nameBilling['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
+                <contact:lastname>" . htmlspecialchars($nameBilling['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
+                <contact:company>" . htmlspecialchars($billingDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:address1>" . htmlspecialchars($billingDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
+                <contact:address2>" . htmlspecialchars($billingDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
+                <contact:city>" . htmlspecialchars($billingDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
+                <contact:zipcode>" . htmlspecialchars($billingDetails['postcode'], ENT_QUOTES, 'UTF-8') . "</contact:zipcode>
+                <contact:country_code>" . htmlspecialchars($billingDetails['country_code'], ENT_QUOTES, 'UTF-8') . "</contact:country_code>
+                <contact:email>" . htmlspecialchars($billingDetails['email'], ENT_QUOTES, 'UTF-8') . "</contact:email>
                 <contact:phone>{$billingPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>org</contact:type>
-                <contact:firstname>".htmlspecialchars($nameContact['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
-                <contact:lastname>".htmlspecialchars($nameContact['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
-                <contact:company>".htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
-                <contact:address1>".htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
-                <contact:address2>".htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
-                <contact:city>".htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
-                <contact:zipcode>".htmlspecialchars($registrantDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
-                <contact:country_code>".htmlspecialchars($registrantDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
-                <contact:email>".htmlspecialchars($registrantDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
+                <contact:firstname>" . htmlspecialchars($nameContact['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
+                <contact:lastname>" . htmlspecialchars($nameContact['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
+                <contact:company>" . htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:address1>" . htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
+                <contact:address2>" . htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
+                <contact:city>" . htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
+                <contact:zipcode>" . htmlspecialchars($registrantDetails['postcode'], ENT_QUOTES, 'UTF-8') . "</contact:zipcode>
+                <contact:country_code>" . htmlspecialchars($registrantDetails['country_code'], ENT_QUOTES, 'UTF-8') . "</contact:country_code>
+                <contact:email>" . htmlspecialchars($registrantDetails['email'], ENT_QUOTES, 'UTF-8') . "</contact:email>
                 <contact:phone>{$contactPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>admin</contact:type>
-                <contact:firstname>".htmlspecialchars($nameAdmin['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
-                <contact:lastname>".htmlspecialchars($nameAdmin['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
-                <contact:company>".htmlspecialchars($adminDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
-                <contact:address1>".htmlspecialchars($adminDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
-                <contact:address2>".htmlspecialchars($adminDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
-                <contact:city>".htmlspecialchars($adminDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
-                <contact:zipcode>".htmlspecialchars($adminDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
-                <contact:country_code>".htmlspecialchars($adminDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
-                <contact:email>".htmlspecialchars($adminDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
+                <contact:firstname>" . htmlspecialchars($nameAdmin['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
+                <contact:lastname>" . htmlspecialchars($nameAdmin['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
+                <contact:company>" . htmlspecialchars($adminDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:address1>" . htmlspecialchars($adminDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
+                <contact:address2>" . htmlspecialchars($adminDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
+                <contact:city>" . htmlspecialchars($adminDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
+                <contact:zipcode>" . htmlspecialchars($adminDetails['postcode'], ENT_QUOTES, 'UTF-8') . "</contact:zipcode>
+                <contact:country_code>" . htmlspecialchars($adminDetails['country_code'], ENT_QUOTES, 'UTF-8') . "</contact:country_code>
+                <contact:email>" . htmlspecialchars($adminDetails['email'], ENT_QUOTES, 'UTF-8') . "</contact:email>
                 <contact:phone>{$adminPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>
 
             <contact:{$action}>
                 <contact:type>tech</contact:type>
-                <contact:firstname>".htmlspecialchars($nameTech['first_name'], ENT_QUOTES, 'UTF-8')."</contact:firstname>
-                <contact:lastname>".htmlspecialchars($nameTech['last_name'], ENT_QUOTES, 'UTF-8')."</contact:lastname>
-                <contact:company>".htmlspecialchars($techDetails['organisation'], ENT_QUOTES, 'UTF-8')."</contact:company>
-                <contact:address1>".htmlspecialchars($techDetails['address1'], ENT_QUOTES, 'UTF-8')."</contact:address1>
-                <contact:address2>".htmlspecialchars($techDetails['state'], ENT_QUOTES, 'UTF-8')."</contact:address2>
-                <contact:city>".htmlspecialchars($techDetails['city'], ENT_QUOTES, 'UTF-8')."</contact:city>
-                <contact:zipcode>".htmlspecialchars($techDetails['postcode'], ENT_QUOTES, 'UTF-8')."</contact:zipcode>
-                <contact:country_code>".htmlspecialchars($techDetails['country_code'], ENT_QUOTES, 'UTF-8')."</contact:country_code>
-                <contact:email>".htmlspecialchars($techDetails['email'], ENT_QUOTES, 'UTF-8')."</contact:email>
+                <contact:firstname>" . htmlspecialchars($nameTech['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
+                <contact:lastname>" . htmlspecialchars($nameTech['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
+                <contact:company>" . htmlspecialchars($techDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:address1>" . htmlspecialchars($techDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
+                <contact:address2>" . htmlspecialchars($techDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
+                <contact:city>" . htmlspecialchars($techDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
+                <contact:zipcode>" . htmlspecialchars($techDetails['postcode'], ENT_QUOTES, 'UTF-8') . "</contact:zipcode>
+                <contact:country_code>" . htmlspecialchars($techDetails['country_code'], ENT_QUOTES, 'UTF-8') . "</contact:country_code>
+                <contact:email>" . htmlspecialchars($techDetails['email'], ENT_QUOTES, 'UTF-8') . "</contact:email>
                 <contact:phone>{$techPhone}</contact:phone>
                 <contact:fax></contact:fax>
             </contact:{$action}>";
-
 
         return $contact;
     }
@@ -533,7 +508,8 @@ class EuroDNSApi
      *
      */
 
-    private function sanitizeData($data) {
+    private function sanitizeData($data)
+    {
         $sanitizedData = [];
         foreach ($data as $key => $value) {
             // Check if the value is an array itself and recursively sanitize
@@ -547,7 +523,6 @@ class EuroDNSApi
         return $sanitizedData;
     }
 
-
    /**
      * FUNCTION setContactUpdate
      * Set contact details for update action from the provided parameters.
@@ -558,15 +533,13 @@ class EuroDNSApi
      */
     private function setContactUpdate($action)
     {
-
-
         // Retrieve registrant details from the provided contact parameters
         $registrantDetails = $this->contactParams;
 
         // Check if the phone number starts with '+'
         if (!$this->startsWith($registrantDetails['phone'], '+')) {
             // Get the formatted phone number with the correct extension
-            $contactPhone = Utils::localPhoneToInternational($registrantDetails['phone'],$registrantDetails['country_code']);
+            $contactPhone = Utils::localPhoneToInternational($registrantDetails['phone'], $registrantDetails['country_code']);
         } else {
             // Use the provided phone number if it already starts with '+'
             $contactPhone = $registrantDetails['phone'];
@@ -599,41 +572,39 @@ class EuroDNSApi
      * if there is no speration then take firstname and last name as same
      */
 
-     private function splitName($fullName) {
-
-          // Check if the full name is empty
+     private function splitName($fullName)
+     {
+         // Check if the full name is empty
          if (empty($fullName)) {
-                return array(
-                    'first_name' => '',
-                    'last_name' => ''
-                );
-        }
-        // Explode the name by space
-        $nameParts = explode(' ', $fullName);
+             return [
+                 'first_name' => '',
+                 'last_name' => ''
+             ];
+         }
+         // Explode the name by space
+         $nameParts = explode(' ', $fullName);
 
-        // Set first name and last name
-        $firstName = isset($nameParts[0]) ? $nameParts[0] : '';
-        $lastName = isset($nameParts[1]) ? $nameParts[1] : $nameParts[0]; // If space is not there, use the whole name as the last name
+         // Set first name and last name
+         $firstName = isset($nameParts[0]) ? $nameParts[0] : '';
+         $lastName = isset($nameParts[1]) ? $nameParts[1] : $nameParts[0]; // If space is not there, use the whole name as the last name
 
-        // Create an array with first name and last name
-        $nameArray = array(
-            'first_name' => $firstName,
-            'last_name' => $lastName
-        );
+         // Create an array with first name and last name
+         $nameArray = [
+             'first_name' => $firstName,
+             'last_name' => $lastName
+         ];
 
-        return $nameArray;
-    }
-
-
+         return $nameArray;
+     }
 
     /**
-     * Check if a string starts with a specific substring.
-     *
-     * @param string $haystack The string to search in.
-     * @param string $needle   The substring to check for at the beginning.
-     *
-     * @return bool Whether the string starts with the specified substring.
-     */
+      * Check if a string starts with a specific substring.
+      *
+      * @param string $haystack The string to search in.
+      * @param string $needle   The substring to check for at the beginning.
+      *
+      * @return bool Whether the string starts with the specified substring.
+      */
     public function startsWith($haystack, $needle)
     {
         // Check if the PHP version is 8 or above to use the built-in function
@@ -645,7 +616,6 @@ class EuroDNSApi
         // Use the traditional substr method for older PHP versions
         return substr($haystack, 0, strlen($needle)) === $needle;
     }
-
 
     /**
      * FUNCTION connect
@@ -678,8 +648,6 @@ class EuroDNSApi
         curl_setopt($cUrl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($cUrl, CURLOPT_POST, 1);
         curl_setopt($cUrl, CURLOPT_POSTFIELDS, 'xml=' . urlencode(urlencode($request)));
-
-
 
         // Execute cURL request
         $response = curl_exec($cUrl);
@@ -715,16 +683,16 @@ class EuroDNSApi
      * @return mixed $resdataArray An array containing relevant details based on the response type.
      */
 
-    private function processResponse($response,$type="")
+    private function processResponse($response, $type = "")
     {
-        $dom = new \DOMDocument;
+        $dom = new \DOMDocument();
         $dom->loadXML($response);
         $xpath = new \DOMXPath($dom);
         $xpath->registerNamespace('domain', 'http://www.eurodns.com/domain');
         $resdataArray = [];
 
         if ($type == "create") {
-             // Processing create response
+            // Processing create response
 
             $cdNodes = $xpath->query('//domain:create');
 
@@ -736,11 +704,8 @@ class EuroDNSApi
                     'domain-name' => $domainName,
                     'domain-roid' => $domainRoid,
                 ];
-
             }
-
-
-        }elseif($type == 'poll'){
+        } elseif($type == 'poll') {
             // Processing poll response
 
             $xpath->registerNamespace('eurodns', 'http://www.eurodns.com/poll');
@@ -750,7 +715,7 @@ class EuroDNSApi
                 //getting the poll count from xml response
                 $pollCount = $this->getNodeValueIfExists($xpath, './poll:data/poll:numMessages', $childNode);
                 //if poll count is less than 1 then return the array with the poll count
-                if($pollCount < 1){
+                if($pollCount < 1) {
                     $resdataArray[] = [
                         'pollCount' => $pollCount,
                         'id' => '',
@@ -759,7 +724,7 @@ class EuroDNSApi
                         'data' => '',
                         'domain' => '',
                     ] ;
-                  break;
+                    break;
                 }
                 //other wise extract deatils from the response and then assign to the return array
                 $msgId = $this->getNodeValueIfExists($xpath, './poll:message/message:id', $childNode);
@@ -779,22 +744,18 @@ class EuroDNSApi
             }
 
             return $resdataArray[0];
-
-
-        }elseif ($type == 'info') {
+        } elseif ($type == 'info') {
             // Processing info response
             // Query for resData element
             $resDataNode = $xpath->query('/response/resData');
 
             // Process the children of resData
             foreach ($resDataNode as $childNode) {
-
                 $pendingStatus = $xpath->query('./domain:pending[@status="yes"]', $childNode);
-                if(count($pendingStatus) > 0){
-
-                    if (!empty($xpath->query("/response/resData/domain:pending[@status='yes']", $childNode)) && empty($xpath->query("/response/resData/domain:pending/domain:crdate", $childNode)) ){
+                if(count($pendingStatus) > 0) {
+                    if (!empty($xpath->query("/response/resData/domain:pending[@status='yes']", $childNode)) && empty($xpath->query("/response/resData/domain:pending/domain:crdate", $childNode))) {
                         $this->pendingMessage = (string) $xpath->query('/response/resData/domain:pending/domain:pendingAction', $childNode)->item(0)->nodeValue;
-                    }else{
+                    } else {
                         $this->pendingMessage = "Domain Registration is pending on server side";
                     }
 
@@ -815,15 +776,15 @@ class EuroDNSApi
                 $authCode = $this->getNodeValueIfExists($xpath, './domain:authCode', $childNode);
 
                 $resdataArray[] = [
-                    'id'       => $domainRoid,
-                    'domain'   => $domainName,
+                    'id' => $domainRoid,
+                    'domain' => $domainName,
                     'statuses' => $status,
-                    'locked'   => $lockStatus,
-                    'created_at'   => $createdDate,
-                    'updated_at'   => $updatedDate,
-                    'expires_at'   => $expDate,
-                    'ns'           => '',
-                    'authCode'     => $authCode
+                    'locked' => $lockStatus,
+                    'created_at' => $createdDate,
+                    'updated_at' => $updatedDate,
+                    'expires_at' => $expDate,
+                    'ns' => '',
+                    'authCode' => $authCode
                 ];
             }
 
@@ -837,7 +798,7 @@ class EuroDNSApi
                 $nsDataArray[] = $nsNode->nodeValue;
             }
             //create the nameserver array
-            $resdataArray[0]['ns'] =  $this->parseNameservers($nsDataArray);
+            $resdataArray[0]['ns'] = $this->parseNameservers($nsDataArray);
             //get the contact deatils by passing the contact id that get from the info response
             $resdataArray[0]['registrant'] = $this->getContact($this->contactOrgId);
             $resdataArray[0]['billing'] = $this->getContact($this->contactBillingId);
@@ -845,14 +806,12 @@ class EuroDNSApi
             $resdataArray[0]['admin'] = $this->getContact($this->contactAdminId);
 
             return $resdataArray[0];
-
-        }elseif($type == 'contact'){
+        } elseif($type == 'contact') {
             //processing the contact response
             $resDataNode = $xpath->query('/response/resData');
 
             // Process the children of resData
             foreach ($resDataNode as $childNode) {
-
                 $company = $this->getNodeValueIfExists($xpath, './contact:entity', $childNode);
                 $name = $this->getNodeValueIfExists($xpath, './contact:postalInfo/contact:name', $childNode);
                 $org = $this->getNodeValueIfExists($xpath, './contact:postalInfo/contact:org', $childNode);
@@ -867,22 +826,17 @@ class EuroDNSApi
                     'organization' => $org,
                     'name' => $name,
                     'address1' => $street,
-                    'city'  => $city,
+                    'city' => $city,
                     'state' => $city,
                     'postcode' => $pin,
                     'country_code' => $cc,
                     'email' => $email,
                     'phone' => $phone
                 ];
-
-
             }
 
             return $contactDetails;
-
-
-        }
-        elseif($type == 'check') {
+        } elseif($type == 'check') {
             //processing the check response
             $cdNodes = $xpath->query('//domain:check/domain:cd');
 
@@ -903,8 +857,7 @@ class EuroDNSApi
                     ],
                 ];
             }
-
-        }else{
+        } else {
             //process common responses
             $xpath->registerNamespace('eurodns', 'http://www.eurodns.com/');
 
@@ -913,17 +866,14 @@ class EuroDNSApi
 
             $codeNode = $xpath->query('/eurodns:response/eurodns:result/@code')->item(0);
 
-
             // Get the value of the msg element
             $msgValue = $msgNode ? $msgNode->nodeValue : null;
             $codeValue = $codeNode ? $codeNode->nodeValue : null;
-
 
             return ['msg' => $msgValue , 'code' => $codeValue ];
         }
 
         return $resdataArray;
-
     }
 
    /**
@@ -960,7 +910,7 @@ class EuroDNSApi
     private function getContact($contactId): array
     {
         // Constructing the XML request to get contact details
-        $request =  <<<XML
+        $request = <<<XML
                     <?xml version="1.0" encoding="UTF-8"?>
                     <request xmlns:contact="http://www.eurodns.com/contact">
                         <contact:info>
@@ -975,7 +925,6 @@ class EuroDNSApi
         // Processing the XML response to extract contact details
         return $this->processResponse($response, 'contact');
     }
-
 
     /**
      * FUNCTION getCode
@@ -1027,8 +976,6 @@ class EuroDNSApi
         return '0';
     }
 
-
-
    /**
      * Function to initiate domain transfer in EuroDNS.
      *
@@ -1071,19 +1018,18 @@ class EuroDNSApi
      *  upmind not providing any options to give nameserver deatils at transfer
      */
 
-    function setManualNS($type,$domainName){
-
+    public function setManualNS($type, $domainName)
+    {
         //check for there is any lookup nameservers available for this domain name
         $nameserversArray = Utils::lookupNameservers($domainName);
 
         $ns = null;
 
         //if yes then generate xml with the  nameservers array
-        $i= 1;
-            // Loop through name servers and generate XML
+        $i = 1;
+        // Loop through name servers and generate XML
         foreach ($nameserversArray as $key => $val) {
-
-            $host = isset($val['host'])? $val['host']: $val;
+            $host = isset($val['host']) ? $val['host'] : $val;
 
             // Check if the host is not empty
             if (!empty($host)) {
@@ -1099,11 +1045,8 @@ class EuroDNSApi
             $i++;
         }
 
-
-
         return $ns;
     }
-
 
     /**
      * Function to renew a domain in EuroDNS.
@@ -1116,7 +1059,7 @@ class EuroDNSApi
     public function renew(string $domainName, int $period): array
     {
         // Build XML request for domain renewal
-        $request =  <<<XML
+        $request = <<<XML
                     <?xml version="1.0" encoding="UTF-8"?>
                     <request xmlns:domain="http://www.eurodns.com/domain">
                     <domain:renew>
@@ -1137,8 +1080,6 @@ class EuroDNSApi
 
         // Check for errors and set the result accordingly
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1148,7 +1089,6 @@ class EuroDNSApi
 
         return $result;
     }
-
 
     /**
      * Function to retrieve the EPP code for a domain.
@@ -1167,8 +1107,6 @@ class EuroDNSApi
 
         // Check for errors during domain information retrieval
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } elseif (empty($data['authCode'])) {
@@ -1192,8 +1130,6 @@ class EuroDNSApi
 
         return $result;
     }
-
-
 
     /**
      * FUNCTION Transfer out to get EPP code
@@ -1220,7 +1156,6 @@ class EuroDNSApi
 
         return $response;
     }
-
 
     /**
      * Function to set the renewal mode for a domain in EuroDNS.
@@ -1254,8 +1189,6 @@ class EuroDNSApi
 
         // Check for errors and process the response
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1265,8 +1198,6 @@ class EuroDNSApi
 
         return $result;
     }
-
-
 
     /**
      * Function to update name servers for a domain in EuroDNS.
@@ -1303,8 +1234,6 @@ class EuroDNSApi
 
         // Check for errors and process the response
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1314,7 +1243,6 @@ class EuroDNSApi
 
         return $result;
     }
-
 
     /**
      * Function to extract first and last names from a full name.
@@ -1337,7 +1265,6 @@ class EuroDNSApi
         // Return an associative array with first and last names
         return compact('firstName', 'lastName');
     }
-
 
     /**
      * Function to set contact parameter details based on ContactParams and type.
@@ -1454,9 +1381,6 @@ class EuroDNSApi
         return $result;
     }
 
-
-
-
     /**
      * Function to set registrar lock status for a domain in EuroDNS.
      *
@@ -1488,14 +1412,12 @@ class EuroDNSApi
 
         // Check for errors in the response
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
-            $result['msg']   = $this->error;
+            $result['msg'] = $this->error;
         } else {
             // If no errors, set success status in the result array
             $result['error'] = false;
-            $result['msg']   = $this->processResponse($response);
+            $result['msg'] = $this->processResponse($response);
         }
 
         // Return the result array
@@ -1531,8 +1453,6 @@ class EuroDNSApi
 
         // Process the response
         if (!empty($this->error)) {
-
-
             $result['error'] = true;
             $result['msg'] = $this->error;
         } else {
@@ -1542,8 +1462,6 @@ class EuroDNSApi
 
         return $result;
     }
-
-
 
     /**
      * FUNCTION setAdditionalInformation
@@ -1623,7 +1541,6 @@ class EuroDNSApi
         return $extension;
     }
 
-
     /**
      * Concatenate domain names into the XML request.
      *
@@ -1636,9 +1553,9 @@ class EuroDNSApi
         $xmlRequest = '<?xml version="1.0" encoding="UTF-8"?>
                         <request xmlns:domain="http://www.eurodns.com/domain">
                             <domain:check>';
-                                foreach ($domainList as $domain) {
-                                    $xmlRequest .= '<domain:name>' . $domain . '</domain:name>';
-                                }
+        foreach ($domainList as $domain) {
+            $xmlRequest .= '<domain:name>' . $domain . '</domain:name>';
+        }
         $xmlRequest .= '</domain:check></request>';
 
         return $xmlRequest;
@@ -1687,7 +1604,6 @@ class EuroDNSApi
      */
     private function generateDomainTransferRequest(string $domainName): string
     {
-
         return <<<XML
                     <?xml version="1.0" encoding="UTF-8"?>
                     <request
@@ -1700,11 +1616,10 @@ class EuroDNSApi
                             <domain:authcode>{$this->params['epp_code']}</domain:authcode>
                         </domain:transfer>
                         {$this->setContact('create')}
-                        {$this->setManualNS('create',$domainName)}
+                        {$this->setManualNS('create', $domainName)}
                         {$this->setAdditionalInformation('create')}
                     </request>
                 XML;
-
     }
 
     /**
@@ -1751,5 +1666,4 @@ class EuroDNSApi
                     </request>
                 XML;
     }
-
 }
