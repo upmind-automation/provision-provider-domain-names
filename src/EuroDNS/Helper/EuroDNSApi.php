@@ -578,11 +578,11 @@ class EuroDNSApi
         $contact = '
         <contact:' . $action . '>
             <contact:type>org</contact:type>
-            <contact:firstname>' .htmlspecialchars($name['first_name'], ENT_QUOTES, 'UTF-8'). '</contact:firstname>
-            <contact:lastname>' . htmlspecialchars($name['last_name'], ENT_QUOTES, 'UTF-8') . '</contact:lastname>
-            <contact:company>' . htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8') . '</contact:company>
+            <contact:firstname>' . htmlspecialchars($name['first_name'] ?? '', ENT_QUOTES, 'UTF-8') . '</contact:firstname>
+            <contact:lastname>' . htmlspecialchars($name['last_name'] ?? '', ENT_QUOTES, 'UTF-8') . '</contact:lastname>
+            <contact:company>' . htmlspecialchars($registrantDetails['organisation'] ?? '', ENT_QUOTES, 'UTF-8') . '</contact:company>
             <contact:address1>' . htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8') . '</contact:address1>
-            <contact:address2>' . htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8') . '</contact:address2>
+            <contact:address2>' . htmlspecialchars($registrantDetails['state'] ?? '', ENT_QUOTES, 'UTF-8') . '</contact:address2>
             <contact:city>' . htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8') . '</contact:city>
             <contact:zipcode>' . htmlspecialchars($registrantDetails['postcode'], ENT_QUOTES, 'UTF-8') . '</contact:zipcode>
             <contact:country_code>' . htmlspecialchars($registrantDetails['country_code'], ENT_QUOTES, 'UTF-8') . '</contact:country_code>
