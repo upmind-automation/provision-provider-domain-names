@@ -26,8 +26,11 @@ use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
 class EuroDNSApi
 {
 
-    public const URL_SANDBOX = 'https://secure.tryout-eurodns.com:20015/v2/';
-    public const URL_PRODUCTION = 'https://secure.api-eurodns.com:20015/v2/';
+    protected $urlSandbox = 'https://secure.tryout-eurodns.com:20015/v2/';
+    protected $urlProduction = 'https://secure.api-eurodns.com:20015/v2/';
+    protected $username;
+    protected $password;
+    protected $url;
     protected Configuration $configuration;
     private $error;
     private $errorCode;
@@ -47,6 +50,23 @@ class EuroDNSApi
     {
         $this->configuration = $configuration;
         $this->logger =  $logger;
+        $this->initializeCredentials();
+    }
+    /**
+     * Function to initialize the eurodns credentials
+     */
+    private function initializeCredentials()
+    {
+        // Check the sandbox option is set or not
+        if ($this->configuration->sandbox) {
+            $this->url = $this->urlSandbox;
+            $this->username = str_replace('_prod_', '_test_', $this->configuration->username);
+            $this->password = 'MD5' . md5($this->configuration->password);
+        } else {
+            $this->url = $this->urlProduction;
+            $this->username = $this->configuration->username;
+            $this->password = 'MD5' . md5($this->configuration->password);
+        }
     }
 
     /**
@@ -637,40 +657,29 @@ class EuroDNSApi
      */
     private function connect(string $request)
     {
-
-        // Check if URL, USERNAME, and PASSWORD constants are defined
-        if (!defined('URL')) {
-
-            // Check the sandbox option is set or not
-            if ($this->configuration->sandbox) {
-                define('URL', self::URL_SANDBOX);
-                define('USERNAME', str_replace('_prod_', '_test_', $this->configuration->username));
-                define('PASSWORD', 'MD5' . md5($this->configuration->password));
-            } else {
-                define('URL', self::URL_PRODUCTION);
-                define('USERNAME', $this->configuration->username);
-                define('PASSWORD', 'MD5' . md5($this->configuration->password));
-            }
-        }
-
         // Check if USERNAME and PASSWORD are not empty
-        if (empty(USERNAME) || empty(PASSWORD)) {
+        if (empty($this->username) || empty($this->password)) {
             return false;
         }
 
+        if (isset($this->logger)) {
+            $this->logger->debug('EuroDNS Request:' . $request);
+        }
 
         // Initialize cURL session
         $cUrl = curl_init();
 
         // Set cURL options
-        curl_setopt($cUrl, CURLOPT_USERPWD, USERNAME . ':' . PASSWORD);
-        curl_setopt($cUrl, CURLOPT_URL, URL);
+        curl_setopt($cUrl, CURLOPT_USERPWD, $this->username . ':' . $this->password);
+        curl_setopt($cUrl, CURLOPT_URL, $this->url);
         curl_setopt($cUrl, CURLOPT_SSL_VERIFYPEER, 1);
         curl_setopt($cUrl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($cUrl, CURLOPT_VERBOSE, 0);
         curl_setopt($cUrl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($cUrl, CURLOPT_POST, 1);
         curl_setopt($cUrl, CURLOPT_POSTFIELDS, 'xml=' . urlencode(urlencode($request)));
+
+
 
         // Execute cURL request
         $response = curl_exec($cUrl);
@@ -688,6 +697,10 @@ class EuroDNSApi
 
         // Close cURL session and return the response
         curl_close($cUrl);
+
+        if (isset($this->logger)) {
+            $this->logger->debug('EuroDNS Response:' . $response);
+        }
 
 
         return $response;
