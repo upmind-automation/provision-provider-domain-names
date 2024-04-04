@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.10.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.0) - 2024-04-04
+
+- Add EuroDNS provider
+
 ## [v2.9.8](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.9.8) - 2024-03-15
 
 - Add `disable_whois_privacy` to OpenProvider configuration to disable WHOIS privacy
