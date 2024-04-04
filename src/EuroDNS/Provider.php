@@ -328,6 +328,14 @@ class Provider extends DomainNames implements ProviderInterface
         // Determine if the lock should be enabled or disabled
         $lock = !!$params->lock;
 
+        $domainResult = $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
+
+        if ($lock == $domainResult->locked) {
+            return $domainResult->setMessage(
+                sprintf('Domain %s is already %s', $domainName, $lock ? 'locked' : 'unlocked')
+            );
+        }
+
         // Perform the appropriate action based on the lock status
         if ($lock) {
             // Call the API to enable the registrar lock
@@ -340,7 +348,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if the API response indicates success
         if (!$responseLock['error']) {
             // Create a DomainResult instance with a success message
-            return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
+            return $domainResult->setLocked($lock);
         } else {
             // Throw an exception with the error message if the action fails
             throw $this->errorResult($responseLock['msg'], ['response' => $responseLock]);
