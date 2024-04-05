@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.10.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.2) - 2024-04-05
+
+- Update ConnectReseller and OpenSRS providers to only set organisation on contacts when necessary
+
 ## [v2.10.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.1) - 2024-04-05
 
 - Update CoccaEPP createContact() and updateContact() to only set organisation when necessary
