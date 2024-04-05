@@ -715,8 +715,12 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame->appendCity('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:city', $contact->city);
         $infoFrame->appendEmail('contact:chg/contact:email', $contact->email);
         $infoFrame->appendCountryCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:cc', Utils::normalizeCountryCode($contact->country_code));
-        $infoFrame->appendName('contact:chg/contact:postalInfo[@type=\'%s\']/contact:name', $contact->name);
-        $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation ?? $contact->name);
+        $infoFrame->appendName('contact:chg/contact:postalInfo[@type=\'%s\']/contact:name', $contact->name ?? '');
+        if (!$contact->name) {
+            $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation);
+        } else {
+            $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation ?? '');
+        }
         $infoFrame->appendPostalCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:pc', $contact->postcode);
         $infoFrame->appendProvince('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:sp', Utils::stateNameToCode($contact->country_code, $contact->state));
         $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
@@ -806,6 +810,9 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame->setName($contact->name ?? $contact->organisation);
         $infoFrame->setCountryCode(Utils::normalizeCountryCode($contact->country_code));
         $infoFrame->setEmail($contact->email);
+        if ($contact->organisation || !$contact->name) {
+            $infoFrame->setOrganization($contact->organisation ?? $contact->name);
+        }
         $infoFrame->setOrganization($contact->organisation ?? $contact->name);
         $infoFrame->setPostalCode($contact->postcode);
         $infoFrame->addStreet($contact->address1);
