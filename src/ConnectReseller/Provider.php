@@ -317,7 +317,7 @@ class Provider extends DomainNames implements ProviderInterface
         $ns = [];
 
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
-            if (isset($domainData['nameserver' . $i])) {
+            if (!empty($domainData['nameserver' . $i])) {
                 $ns['ns' . $i] = [
                     'host' => $domainData['nameserver' . $i],
                 ];
