@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.10.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.3) - 2024-04-08
+
+- Fix ConnectReseller empty nameserver host DomainResult error
+
 ## [v2.10.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.2) - 2024-04-05
 
 - Update ConnectReseller and OpenSRS providers to only set organisation on contacts when necessary
