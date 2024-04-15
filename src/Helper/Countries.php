@@ -729,8 +729,10 @@ class Countries
         }
 
         switch ($countryCode) {
-            case 'UK':
+            case 'UK': // https://www.iso.org/obp/ui/#iso:code:3166:UK
                 return 'GB';
+            case 'FX': // https://www.iso.org/obp/ui/#iso:code:3166:FX
+                return 'FR';
             default:
                 return $countryCode;
         }

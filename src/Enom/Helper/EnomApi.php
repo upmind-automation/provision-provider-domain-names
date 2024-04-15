@@ -642,7 +642,7 @@ class EnomApi
             'address1' => (string) $rawContactData->{$type . 'Address1'},
             'city' => (string) $rawContactData->{$type . 'City'},
             'postcode' => (string) $rawContactData->{$type . 'PostalCode'},
-            'country_code' => (string) $rawContactData->{$type . 'Country'},
+            'country_code' => Utils::normalizeCountryCode((string) $rawContactData->{$type . 'Country'}),
             'type' => $type,
         ]);
     }
