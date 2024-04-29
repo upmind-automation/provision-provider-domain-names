@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.10.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.5) - 2024-04-15
+
+- Update EnomApi::parseContact() map country code FX to FR
+
 ## [v2.10.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.4) - 2024-04-11
 
 - Revert "OpenSRS providers to only set organisation on contacts when necessary" [v2.10.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.10.2)
