@@ -60,6 +60,7 @@ The following providers are currently implemented:
   - [Realtime Register](https://dm.realtimeregister.com/docs/api/domains)
   - [Internet.bs](https://internetbs.net/internet-bs-api.pdf)
   - [EuroDNS](https://whois.eurodns.com/doc/domain/info)
+  - [InternetX](https://help.internetx.com/display/APIXMLEN/Domain+tasks)
 
 ## Functions
 
