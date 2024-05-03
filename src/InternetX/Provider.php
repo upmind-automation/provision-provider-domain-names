@@ -58,7 +58,7 @@ class Provider extends DomainNames implements ProviderInterface
         return AboutData::create()
             ->setName('InternetX')
             ->setDescription('Register, transfer, and manage InternetX domain names')
-            ->setLogoUrl('https://api.upmind.io/images/logos/provision/internetx-logo@2x.png');
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/internetx-logo.svg');
     }
 
     public function poll(PollParams $params): PollResult
