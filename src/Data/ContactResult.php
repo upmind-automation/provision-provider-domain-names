@@ -42,4 +42,94 @@ class ContactResult extends ResultData
             'id' => ['nullable'],
         ]);
     }
+
+    /**
+     * @return $this
+     */
+    public function setName(?string $name): ContactResult
+    {
+        $this->setValue('name', $name);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setOrganisation(?string $organisation): ContactResult
+    {
+        $this->setValue('organisation', $organisation);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setEmail(string $email): ContactResult
+    {
+        $this->setValue('email', $email);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setPhone(?string $phone): ContactResult
+    {
+        $this->setValue('phone', $phone);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setAddress1(string $address1): ContactResult
+    {
+        $this->setValue('address1', $address1);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setCity(string $city): ContactResult
+    {
+        $this->setValue('city', $city);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setState(?string $state): ContactResult
+    {
+        $this->setValue('state', $state);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setPostcode(?string $postcode): ContactResult
+    {
+        $this->setValue('postcode', $postcode);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setCountryCode(?string $countryCode): ContactResult
+    {
+        $this->setValue('country_code', $countryCode);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setId(?string $id): ContactResult
+    {
+        $this->setValue('id', $id);
+        return $this;
+    }
 }
