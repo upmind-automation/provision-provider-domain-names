@@ -304,20 +304,6 @@ class InternetXApi
 
     /**
      * @param string $domainName
-     * @param bool $autoRenew
-     * @return void
-     */
-    public function setRenewalMode(string $domainName, bool $autoRenew)
-    {
-        $response = $this->makeRequest("/domain/{$domainName}");
-        $response['autoRenewStatus'] = $autoRenew ? "TRUE" : "FALSE";
-
-        $body = $response;
-        $this->makeRequest("/domain/{$domainName}", null, $body, "PUT");
-    }
-
-    /**
-     * @param string $domainName
      * @return bool
      */
     public function getRegistrarLockStatus(string $domainName): bool
@@ -343,9 +329,8 @@ class InternetXApi
     /**
      * @param string $domainName
      * @param array $nameServers
-     * @return NameserversResult
      */
-    public function updateNameservers(string $domainName, array $nameServers): NameserversResult
+    public function updateNameservers(string $domainName, array $nameServers): void
     {
         $ns = [];
         foreach ($nameServers as $n) {
@@ -357,16 +342,13 @@ class InternetXApi
         ];
 
         $this->makeRequest("/domain/{$domainName}", null, $body, "PUT");
-
-        return $this->getDomainInfo($domainName)['ns'];
     }
 
     /**
      * @param string $domainName
      * @param ContactParams $contactParams
-     * @return ContactData
      */
-    public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
+    public function updateRegistrantContact(string $domainName, ContactParams $contactParams): void
     {
         $contactData = $this->setContactParams($contactParams);
         $body = [
@@ -375,8 +357,6 @@ class InternetXApi
         ];
 
         $this->makeRequest("/domain/{$domainName}", null, $body, "PUT");
-
-        return $this->getDomainInfo($domainName)['registrant'];
     }
 
     /**
@@ -470,7 +450,7 @@ class InternetXApi
             $message = $pollResponse['messages'][0]['text'] ?: 'Domain Notification';
             $domain = $data['name'];
             $messageDateTime = isset($pollResponse['job']['created'])
-                ? Utils::formatDate((string)$pollResponse['job']['created'])
+                ? Carbon::parse(Utils::formatDate((string)$pollResponse['job']['created']))
                 : null;
 
             $this->makeRequest("/poll{$messageId}", null,null, 'PUT');

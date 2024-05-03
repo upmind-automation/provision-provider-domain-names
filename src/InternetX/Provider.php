@@ -100,7 +100,15 @@ class Provider extends DomainNames implements ProviderInterface
                 $params->nameservers->pluckHosts(),
             );
 
-            throw $this->errorResult("Domain registration was started successfully.", $params);
+            return DomainResult::create()
+                ->setId('N/A')
+                ->setMessage(sprintf('Domain %s registration in progress!', $domainName))
+                ->setDomain($domainName)
+                ->setStatuses(['in_progress'])
+                ->setNs([])
+                ->setCreatedAt(null)
+                ->setUpdatedAt(null)
+                ->setExpiresAt(null);
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -202,10 +210,16 @@ class Provider extends DomainNames implements ProviderInterface
     public function renew(RenewParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
+        $info = $this->_getInfo($domainName);
+
+        $years = intval($params->renew_years);
+        $expiry = Carbon::parse($info->expires_at);
 
         try {
-            $this->api()->renew($domainName, intval($params->renew_years));
-            return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
+            $this->api()->renew($domainName, $years);
+
+            return $info->setMessage(sprintf('Renewal for %s domain was successful!', $domainName))
+                ->setExpiresAt($expiry->addYears($years));
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -222,7 +236,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
-    private function _getInfo(string $domainName, string $message): DomainResult
+    private function _getInfo(string $domainName, string $message = 'Domain info obtained successfully'): DomainResult
     {
         $domainInfo = $this->api()->getDomainInfo($domainName);
 
@@ -234,9 +248,19 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            $contact = $this->api()->updateRegistrantContact($domainName, $params->contact);
+            $this->api()->updateRegistrantContact($domainName, $params->contact);
 
-            return ContactResult::create($contact);
+            return ContactResult::create()
+                ->setMessage(sprintf('Registrant contact for %s domain was updated!', $domainName))
+                ->setName($params->contact->name)
+                ->setOrganisation($params->contact->organisation)
+                ->setEmail($params->contact->email)
+                ->setPhone($params->contact->phone)
+                ->setAddress1($params->contact->address1)
+                ->setCity($params->contact->city)
+                ->setState($params->contact->state)
+                ->setPostcode($params->contact->postcode)
+                ->setCountryCode($params->contact->country_code);
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -247,13 +271,18 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            $result = $this->api()->updateNameservers(
+            $this->api()->updateNameservers(
                 $domainName,
                 $params->pluckHosts(),
             );
 
-            return $result
-                ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
+            return NameserversResult::create()
+                ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName))
+                ->setNs1($params->ns1)
+                ->setNs2($params->ns2)
+                ->setNs3($params->ns3)
+                ->setNs4($params->ns4)
+                ->setNs5($params->ns5);
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -285,17 +314,6 @@ class Provider extends DomainNames implements ProviderInterface
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
         throw $this->errorResult('Operation not supported');
-
-        $domainName = Utils::getDomain($params->sld, $params->tld);
-
-        $autoRenew = !!$params->auto_renew;
-
-        try {
-            $this->api()->setRenewalMode($domainName, $autoRenew);
-            return $this->_getInfo($domainName, 'Auto-renew mode updated');
-        } catch (\Throwable $e) {
-            $this->handleException($e);
-        }
     }
 
     public function getEppCode(EppParams $params): EppCodeResult
