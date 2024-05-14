@@ -42,7 +42,7 @@ class EppConnection extends BaseEppConnection
         parent::useExtension('authInfo-1.1' );
         parent::useExtension('poll-1.2');
         parent::useExtension('contact-ext-1.3');
-        parent::useExtension('domain-ext-2.3');
+        parent::addExtension('domain-ext-2.5', 'http://www.eurid.eu/xml/epp/domain-ext-2.5');
 
         parent::addCommandResponse(eppInfoDomainRequest::class, euridEppInfoDomainResponse::class);
     }
