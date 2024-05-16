@@ -31,7 +31,6 @@ use Metaregistrar\EPP\eppTransferRequest;
 </epp>
  */
 
-
 class euridEppTransferDomainRequest extends eppTransferRequest
 {
     public function __construct($operation, eppDomain $domain)

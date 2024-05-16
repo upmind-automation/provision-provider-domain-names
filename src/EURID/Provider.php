@@ -86,7 +86,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
@@ -327,7 +327,7 @@ class Provider extends DomainNames implements ProviderInterface
             $this->epp()->updateNameservers($domainName, $nameservers);
 
             $result = collect($nameservers)
-                ->mapWithKeys(fn($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
+                ->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
 
             return NameserversResult::create($result)
                 ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));

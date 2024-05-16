@@ -26,7 +26,7 @@ class EppConnection extends BaseEppConnection
      */
     protected LoggerInterface $logger;
 
-    protected $objuri = array('urn:ietf:params:xml:ns:domain-1.0' => 'domain', 'urn:ietf:params:xml:ns:contact-1.0' => 'contact');
+    protected $objuri = ['urn:ietf:params:xml:ns:domain-1.0' => 'domain', 'urn:ietf:params:xml:ns:contact-1.0' => 'contact'];
 
     /**
      * EppConnection constructor.
@@ -40,7 +40,7 @@ class EppConnection extends BaseEppConnection
 
         parent::setServices($this->objuri);
 
-        parent::useExtension('authInfo-1.1' );
+        parent::useExtension('authInfo-1.1');
         parent::useExtension('poll-1.2');
         parent::useExtension('contact-ext-1.3');
         parent::addExtension('domain-ext-2.5', 'http://www.eurid.eu/xml/epp/domain-ext-2.5');

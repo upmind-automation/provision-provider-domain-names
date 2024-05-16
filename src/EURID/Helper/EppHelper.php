@@ -405,8 +405,7 @@ class EppHelper
         int    $period,
         array  $nameServers,
         array  $contacts
-    ): array
-    {
+    ): array {
         $domain = new eppDomain($domainName, $contacts['registrant'], [
             new eppContactHandle($contacts['tech'], eppContactHandle::CONTACT_TYPE_TECH),
             new eppContactHandle($contacts['billing'], eppContactHandle::CONTACT_TYPE_BILLING)
@@ -471,7 +470,6 @@ class EppHelper
 
         $contact = new euridEppCreateContactRequest($contactInfo);
 
-
         /** @var eppCreateContactResponse $response */
         $response = $this->connection->request($contact);
 
@@ -483,8 +481,7 @@ class EppHelper
         int $renewYears,
         ?string $eppCode,
         array $contacts
-    ): eppTransferResponse
-    {
+    ): eppTransferResponse {
         $contactHandle = [];
 
         if ($contacts['tech']) {
