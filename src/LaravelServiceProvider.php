@@ -65,12 +65,9 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'centralnic-reseller', CentralNicReseller::class);
         $this->bindProvider('domain-names', 'realtime-register', RealtimeRegister::class);
         $this->bindProvider('domain-names', 'internetbs', InternetBS::class);
-<<<<<<< HEAD
         $this->bindProvider('domain-names', 'hrs', HRS\Provider::class);
         $this->bindProvider('domain-names', 'eurodns', EuroDNS::class);
         $this->bindProvider('domain-names', 'internetx', InternetX::class);
-=======
         $this->bindProvider('domain-names', 'eurid', EURID::class);
->>>>>>> feature/EURID
     }
 }
