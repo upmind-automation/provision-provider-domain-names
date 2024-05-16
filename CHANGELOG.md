@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.0) - 2024-05-16
+
+- Implement InternetX provider
+
 ## [v2.11.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.11.0) - 2024-05-03
 
 - Implement InternetX provider
