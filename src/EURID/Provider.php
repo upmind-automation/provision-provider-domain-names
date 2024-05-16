@@ -6,11 +6,8 @@ namespace Upmind\ProvisionProviders\DomainNames\EURID;
 
 use Carbon\Carbon;
 use ErrorException;
-use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppException;
-use Metaregistrar\EPP\eppContactHandle;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -33,8 +30,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
-use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
-use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
@@ -70,7 +65,7 @@ class Provider extends DomainNames implements ProviderInterface
             ->setName('EURID')
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/eurid-logo.png')
             ->setDescription(
-                'Register, transfer, renew and manage EURID domains'
+                'Register, transfer, renew and manage .eu domains with EURID'
             );
     }
 
@@ -120,71 +115,32 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         if (!$checkResult[0]->can_register) {
+            if (!$checkResult[0]->can_transfer) {
+                throw $this->errorResult('This domain is not supported');
+            }
+
             throw $this->errorResult('This domain is not available to register');
         }
 
-        $contactParams = [
-            'registrant' => $params->registrant,
-            'tech' => $params->tech,
-            'billing' => $params->billing,
-        ];
-
         try {
-            $contactsId = $this->getContactsId($contactParams);
+            $contactIds = [
+                'registrant' => $params->registrant->id
+                    ?? $this->epp()->createContact($params->registrant->register, 'registrant'),
+                'tech' => $this->configuration->tech_contact_id,
+                'billing' => $this->configuration->billing_contact_id
+            ];
 
             $this->epp()->register(
                 $domainName,
                 intval($params->renew_years),
                 $params->nameservers->pluckHosts(),
-                $contactsId,
+                $contactIds,
             );
 
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
         } catch (eppException $e) {
             return $this->_eppExceptionHandler($e);
         }
-    }
-
-    /**
-     * @return array<string,int>|string[]
-     */
-    private function getContactsId(array $params): array
-    {
-        if (Arr::has($params, 'billing.id')) {
-            $billingId = $params['billing']['id'];
-
-            if (!$this->epp()->getContactInfo($billingId)) {
-                throw $this->errorResult("Invalid billing ID provided!", $params);
-            }
-        } else {
-            throw $this->errorResult('Billing contact ID is required!', $params);
-        }
-
-        if (Arr::has($params, 'tech.id')) {
-            $techId = $params['tech']['id'];
-
-            if (!$this->epp()->getContactInfo($techId)) {
-                throw $this->errorResult("Invalid tech ID provided!", $params);
-            }
-        } else if (Arr::has($params, 'tech.register')) {
-            $techId = $this->epp()->createContact($params['tech']['register'], 'tech');
-        }
-
-        if (Arr::has($params, 'registrant.id')) {
-            $registrantId = $params['registrant']['id'];
-
-            if (!$this->epp()->getContactInfo($registrantId)) {
-                throw $this->errorResult("Invalid registrant ID provided!", $params);
-            }
-        } else if (Arr::has($params, 'registrant.register')) {
-            $registrantId = $this->epp()->createContact($params['registrant']['register'], 'registrant');
-        }
-
-        return array(
-            'registrant' => $registrantId ?? null,
-            'tech' => $techId ?? null,
-            'billing' => $billingId ?? null,
-        );
     }
 
     public function transfer(TransferParams $params): DomainResult
@@ -206,24 +162,19 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult('Registrant contact is required!', $params);
         }
 
-        if (!$params->tech) {
-            throw $this->errorResult('Tech contact is required!', $params);
-        }
-
-        $contactParams = [
-            'registrant' => $params->registrant,
-            'tech' => $params->tech,
-            'billing' => $params->billing,
-        ];
-
         try {
-            $contactsId = $this->getContactsId($contactParams);
+            $contactIds = [
+                'registrant' => $params->registrant->id
+                    ?? $this->epp()->createContact($params->registrant->register, 'registrant'),
+                'tech' => $this->configuration->tech_contact_id,
+                'billing' => $this->configuration->billing_contact_id
+            ];
 
             $transferId = $this->epp()->initiateTransfer(
                 $domainName,
                 intval($params->renew_years),
                 $eppCode,
-                $contactsId
+                $contactIds
             );
 
             throw $this->errorResult(sprintf('Transfer for %s domain successfully initiated!', $domainName), [
@@ -259,24 +210,19 @@ class Provider extends DomainNames implements ProviderInterface
             throw $this->errorResult('Registrant contact is required!', $params);
         }
 
-        if (!$params->tech) {
-            throw $this->errorResult('Tech contact is required!', $params);
-        }
-
-        $contactParams = [
-            'registrant' => $params->registrant,
-            'tech' => $params->tech,
-            'billing' => $params->billing,
-        ];
-
         try {
-            $contactsId = $this->getContactsId($contactParams);
+            $contactIds = [
+                'registrant' => $params->registrant->id
+                    ?? $this->epp()->createContact($params->registrant->register, 'registrant'),
+                'tech' => $this->configuration->tech_contact_id,
+                'billing' => $this->configuration->billing_contact_id
+            ];
 
             $transferId = $this->epp()->initiateTransfer(
                 $domainName,
                 intval($params->renew_years),
                 $eppCode,
-                $contactsId
+                $contactIds
             );
 
             return InitiateTransferResult::create([
@@ -471,6 +417,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->connection;
         } catch (eppException $e) {
             switch ($e->getCode()) {
+                case 2501:
                 case 2200:
                 case 2001:
                     $errorMessage = 'Authentication error; check credentials';
@@ -488,7 +435,9 @@ class Provider extends DomainNames implements ProviderInterface
                 $errorMessage = 'Unexpected provider connection error';
             }
 
-            throw $this->errorResult($errorMessage, [], [], $e);
+            throw $this->errorResult($errorMessage, [
+                'connection_error' => $e->getMessage(),
+            ], [], $e);
         }
     }
 

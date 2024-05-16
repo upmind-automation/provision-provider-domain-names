@@ -52,13 +52,13 @@ use Metaregistrar\EPP\eppUpdateResponse;
 use Metaregistrar\EPP\eppResponse;
 use Metaregistrar\EPP\euridEppContact;
 use Metaregistrar\EPP\euridEppCreateContactRequest;
-use Metaregistrar\EPP\euridEppTransferDomainRequest;
 use Metaregistrar\EPP\euridEppPollRequest;
 use Metaregistrar\EPP\euridEppPollResponse;
 use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\Requests\EppUpdateAuthInfoRequest;
 use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\EURID\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
+use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\euridEppTransferDomainRequest;
 
 /**
  * Class EppHelper
@@ -162,6 +162,9 @@ class EppHelper
             );
 
             $canTransfer = !$available;
+            if (!$available && strtolower($check['reason']) === 'invalid domain name') {
+                $canTransfer = false;
+            }
 
             $result[] = DacDomain::create([
                 'domain' => $check['domainname'],
@@ -495,9 +498,7 @@ class EppHelper
         $domain = new eppDomain($domainName, $contacts['registrant'], $contactHandle);
 
         // Set EPP Code
-        if ($eppCode != null) {
-            $domain->setAuthorisationCode($eppCode);
-        }
+        $domain->setAuthorisationCode($eppCode ?? '1234');
 
         $domain->setPeriod($renewYears);
         $domain->setPeriodUnit('y');

@@ -13,6 +13,7 @@ use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\Requests\EppUpdateA
 use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\euridEppInfoDomainResponse;
 use Metaregistrar\EPP\eppInfoDomainRequest;
+use Metaregistrar\EPP\eppTransferResponse;
 
 /**
  * Class EppConnection
@@ -45,6 +46,7 @@ class EppConnection extends BaseEppConnection
         parent::addExtension('domain-ext-2.5', 'http://www.eurid.eu/xml/epp/domain-ext-2.5');
 
         parent::addCommandResponse(eppInfoDomainRequest::class, euridEppInfoDomainResponse::class);
+        parent::addCommandResponse(euridEppTransferDomainRequest::class, eppTransferResponse::class);
     }
 
     /**
