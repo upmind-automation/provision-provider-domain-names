@@ -50,8 +50,7 @@ class InternetXApi
         ?array $query = null,
         ?array $body = null,
         string $method = 'POST'
-    ): Promise
-    {
+    ): Promise {
         $requestParams = [];
         if ($query) {
             $requestParams = ['query' => $query];
@@ -83,8 +82,7 @@ class InternetXApi
         ?array $query = null,
         ?array $body = null,
         string $method = 'GET'
-    ): ?array
-    {
+    ): ?array {
         return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
 
@@ -127,7 +125,6 @@ class InternetXApi
             $errorMessage = sprintf('Provider API Error: %s', $errorMessage ?? 'Unknown Error');
         }
 
-
         return $errorMessage ?? null;
     }
 
@@ -166,7 +163,6 @@ class InternetXApi
                 : null,
         ];
     }
-
 
     /**
      * @param  int  $id
@@ -252,7 +248,6 @@ class InternetXApi
 
         $this->makeRequest("/domain", null, $body, "POST");
     }
-
 
     /**
      * @param ContactParams $contactParams
@@ -431,7 +426,7 @@ class InternetXApi
         while (count($notifications) < $limit && (time() - $startTime) < $timeLimit) {
             $pollResponse = $this->makeRequest("/poll");
 
-            if($pollResponse['messages'][0]['text'] == "Polling is not activated."){
+            if($pollResponse['messages'][0]['text'] == "Polling is not activated.") {
                 throw ProvisionFunctionError::create("Polling is not activated.")
                     ->withData([
                         'response' => $pollResponse,
@@ -453,7 +448,7 @@ class InternetXApi
                 ? Carbon::parse(Utils::formatDate((string)$pollResponse['job']['created']))
                 : null;
 
-            $this->makeRequest("/poll{$messageId}", null,null, 'PUT');
+            $this->makeRequest("/poll{$messageId}", null, null, 'PUT');
 
             $type = "";
             switch ($data['action']) {

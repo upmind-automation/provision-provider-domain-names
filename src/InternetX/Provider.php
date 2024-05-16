@@ -125,7 +125,7 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContactInfo((int)$techId)) {
                 throw $this->errorResult("Invalid tech ID provided!", $params);
             }
-        } else if (Arr::has($params, 'tech.register')) {
+        } elseif (Arr::has($params, 'tech.register')) {
             $techId = $this->api()->createContact($params['tech']['register']);
         }
 
@@ -135,7 +135,7 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContactInfo((int)$registrantId)) {
                 throw $this->errorResult("Invalid registrant ID provided!", $params);
             }
-        } else if (Arr::has($params, 'registrant.register')) {
+        } elseif (Arr::has($params, 'registrant.register')) {
             $registrantId = $this->api()->createContact($params['registrant']['register']);
         }
 
@@ -145,15 +145,15 @@ class Provider extends DomainNames implements ProviderInterface
             if (!$this->api()->getContactInfo((int)$adminId)) {
                 throw $this->errorResult("Invalid admin ID provided!", $params);
             }
-        } else if (Arr::has($params, 'admin.register')) {
+        } elseif (Arr::has($params, 'admin.register')) {
             $adminId = $this->api()->createContact($params['admin']['register']);
         }
 
-        return array(
+        return [
             InternetXApi::CONTACT_TYPE_REGISTRANT => $registrantId ?? null,
             InternetXApi::CONTACT_TYPE_ADMIN => $adminId ?? null,
             InternetXApi::CONTACT_TYPE_TECH => $techId ?? null,
-        );
+        ];
     }
 
     private function checkRegisterParams(RegisterDomainParams $params): void
@@ -351,7 +351,6 @@ class Provider extends DomainNames implements ProviderInterface
 
                 $responseBody = $response->getBody()->__toString();
                 $responseData = json_decode($responseBody, true);
-
 
                 $errorMessage = $responseData['messages'][0]['text'] ?? null;
 
