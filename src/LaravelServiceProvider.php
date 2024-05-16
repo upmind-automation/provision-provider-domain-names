@@ -32,6 +32,7 @@ use Upmind\ProvisionProviders\DomainNames\RealtimeRegister\Provider as RealtimeR
 use Upmind\ProvisionProviders\DomainNames\InternetBS\Provider as InternetBS;
 use Upmind\ProvisionProviders\DomainNames\EuroDNS\Provider as EuroDNS;
 use Upmind\ProvisionProviders\DomainNames\InternetX\Provider as InternetX;
+use Upmind\ProvisionProviders\DomainNames\EURID\Provider as EURID;
 
 class LaravelServiceProvider extends ProvisionServiceProvider
 {
@@ -64,8 +65,12 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'centralnic-reseller', CentralNicReseller::class);
         $this->bindProvider('domain-names', 'realtime-register', RealtimeRegister::class);
         $this->bindProvider('domain-names', 'internetbs', InternetBS::class);
+<<<<<<< HEAD
         $this->bindProvider('domain-names', 'hrs', HRS\Provider::class);
         $this->bindProvider('domain-names', 'eurodns', EuroDNS::class);
         $this->bindProvider('domain-names', 'internetx', InternetX::class);
+=======
+        $this->bindProvider('domain-names', 'eurid', EURID::class);
+>>>>>>> feature/EURID
     }
 }
