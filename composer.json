@@ -32,7 +32,8 @@
         "africc/php-epp2": "^1.0",
         "upmind/domainnameapi-sdk": "^1.0",
         "fakerphp/faker": "^1.0",
-        "centralnic-reseller/php-sdk": "^8.0"
+        "centralnic-reseller/php-sdk": "^8.0",
+        "ext-dom": "*"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10"

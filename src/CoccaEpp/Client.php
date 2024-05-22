@@ -77,12 +77,15 @@ class Client extends EPPClient
         ], $additionalConfig));
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function sendFrame(FrameInterface $frame)
     {
         try {
             return parent::sendFrame($frame);
         } catch (Exception $e) {
-            throw $this->error(
+            $this->error(
                 'Unexpected Registry Network Error',
                 $e,
                 ['frame' => get_class($frame)],
@@ -128,16 +131,13 @@ class Client extends EPPClient
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     protected function generateClientTransactionId()
     {
         return mt_rand() . mt_rand();
     }
 
     /**
-     * @inheritDoc
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function login($newPassword = false)
     {
@@ -145,7 +145,7 @@ class Client extends EPPClient
             parent::login();
             $this->loggedIn = true;
         } catch (Exception $e) {
-            throw $this->error(
+            $this->error(
                 sprintf(
                     'Registry Auth Error: %s',
                     trim(Str::replaceFirst('Authentication error;', '', $e->getMessage()))
@@ -155,19 +155,22 @@ class Client extends EPPClient
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function connect()
     {
         try {
             return parent::connect();
         } catch (Exception $e) {
             if (Str::contains($e->getMessage(), ['Timeout', 'timeout', 'timed out'])) {
-                throw $this->error(
+                $this->error(
                     sprintf('Registry Connection Error: %s', $e->getMessage()),
                     $e
                 );
             }
 
-            throw $this->error('Unknown registry connection error', $e, [
+            $this->error('Unknown registry connection error', $e, [
                 'error_message' => $e->getMessage(),
                 'error_code' => $e->getCode(),
             ]);
@@ -176,6 +179,8 @@ class Client extends EPPClient
 
     /**
      * @inheritDoc
+     *
+     * @return bool
      */
     public function close()
     {
@@ -192,7 +197,7 @@ class Client extends EPPClient
     }
 
     /**
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      *
      * @return no-return
      */
