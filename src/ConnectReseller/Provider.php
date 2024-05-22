@@ -864,9 +864,9 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Get the international dialling code and local number as a 2-tuple.
      *
-     * @param  string  $phone  International phone number
+     * @param string $phone International phone number
      *
-     * @return string[] E.g., ['44', '1234567890']
+     * @return array<int, string|null> E.g., ['44', '1234567890']
      *
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
