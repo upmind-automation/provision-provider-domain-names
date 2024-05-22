@@ -18,6 +18,8 @@ class Utils
      *
      * @param string|null $date
      * @param string|null $format
+     * @param string|null $adjustHours
+     *
      * @return string|null Formatted date, or null
      */
     public static function formatDate(?string $date, ?string $format = null, ?string $adjustHours = null): ?string
