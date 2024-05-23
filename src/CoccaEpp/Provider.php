@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\CoccaEpp;
 
 use AfriCC\EPP\Frame\Response;
-use AfriCC\EPP\Frame\Response\MessageQueue;
-use Carbon\Carbon;
-use DOMDocument;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils as PromiseUtils;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
 use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
-use Upmind\ProvisionProviders\DomainNames\CoccaEpp\CustomRequest;
 use Upmind\ProvisionProviders\DomainNames\CoccaEpp\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\CoccaEpp\Helper\EppHelper;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
@@ -27,7 +21,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\DacParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacResult;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppCodeResult;
 use Upmind\ProvisionProviders\DomainNames\Data\EppParams;
@@ -51,7 +44,7 @@ class Provider extends DomainNames implements ProviderInterface
     public const MAX_CUSTOM_NAMESERVERS = 5;
 
     /**
-     * @var \Upmind\ProvisionProviders\DomainNames\CoccaEpp\Client
+     * @var \Upmind\ProvisionProviders\DomainNames\CoccaEpp\Client|null
      */
     protected $client;
 
@@ -87,6 +80,9 @@ class Provider extends DomainNames implements ProviderInterface
         );
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function getClient(): Client
     {
         if (isset($this->client)) {
@@ -108,8 +104,9 @@ class Provider extends DomainNames implements ProviderInterface
     {
         // Get supported TLDs from configuration
 
-        $tlds = collect(explode(',', $this->configuration->supported_tlds ?? ''))
-            ->map(function ($tld) {
+        /** @var \IlluminateAgnostic\Arr\Support\Collection $tldsCollection */
+        $tldsCollection = collect(explode(',', $this->configuration->supported_tlds ?? ''));
+        $tlds = $tldsCollection->map(function ($tld) {
                 return Utils::normalizeTld(trim($tld));
             })
             ->filter()
@@ -134,6 +131,10 @@ class Provider extends DomainNames implements ProviderInterface
         return [Arr::last(explode('.', $this->configuration->hostname))];
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
         $dacDomains = [];
@@ -161,7 +162,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         if ($sendRequest) {
-            /** @var MessageQueue $xmlResult */
+            /** @var \AfriCC\EPP\Frame\Response\MessageQueue $xmlResult */
             $xmlResult = $this->getClient()->request($checkRequest);
 
             $this->checkResponse($xmlResult);
@@ -198,63 +199,18 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param PollParams $params
-     * @return PollResult
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Operation not currently supported');
-
-        $since = $params->after_date ? Carbon::parse($params->after_date) : null;
-        $notifications = [];
-        $countRemaining = 0;
-
-        /**
-         * Start a timer because there may be 1000s of irrelevant messages and we should try and avoid a timeout.
-         */
-        $timeLimit = 60; // 60 seconds
-        $startTime = time();
-        $client = $this->getClient();
-
-        $infoFrame = new \AfriCC\EPP\Frame\Command\Poll();
-        $infoFrame->request();
-        /** @var MessageQueue $polls */
-        $polls = $client->request($infoFrame);
-        $countRemaining = $polls->queueCount();
-        $messages = $polls->queueMessage();
-        $count = $polls->queueMessage()->count();
-        $limit = ($params->limit < $count) ? $params->limit : $count;
-
-        try {
-            while (count($notifications) < $limit && (time() - $startTime) < $timeLimit) {
-                foreach ($messages as $message) {
-                    $doc = new DOMDocument();
-                    $doc->loadXML($message->textContent);
-                    $notification = DomainNotification::create()
-                        ->setId($polls->queueId())
-                        ->setType($this->mapType($doc->getElementsByTagName('details')->item(0)->nodeValue))
-                        ->setMessage($polls->message())
-                        ->setDomains([$doc->getElementsByTagName('name')->item(0)->nodeValue])
-                        ->setCreatedAt(Carbon::parse($polls->queueDate()))
-                        ->setExtra(['xml' => $message->textContent]);
-                    $notifications[] = $notification;
-                }
-            }
-        } catch (\Throwable $e) {
-            $data = [];
-            return $this->errorResult('Error encountered while polling for domain notifications', $data, [], $e);
-        }
-
-        return new PollResult([
-            'count_remaining' => $countRemaining,
-            'notifications' => $notifications,
-        ]);
+        $this->errorResult('Operation not currently supported');
     }
 
     /**
-     * @param RegisterDomainParams $params
-     * @return DomainResult
+     * @throws \Exception
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
@@ -279,9 +235,8 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param TransferParams $params
-     * @return DomainResult
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
@@ -300,9 +255,8 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param RenewParams $params
-     * @return DomainResult
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(RenewParams $params): DomainResult
     {
@@ -321,6 +275,10 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_getDomain($domainName);
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -328,9 +286,8 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param EppParams $params
-     * @return EppCodeResult
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
@@ -349,7 +306,7 @@ class Provider extends DomainNames implements ProviderInterface
             $codeRes = $xmlResponse->getElementsByTagName('result')->item(0)->getAttribute('code');
             $msg = $xmlResponse->getElementsByTagName('msg')->item(0)->nodeValue;
 
-            throw $this->errorResult(
+            $this->errorResult(
                 'Unable to obtain EPP code for this domain',
                 ['code' => $codeRes, 'msg' => $msg, 'data' => $domainData],
                 ['xml' => (string)$xmlResponse]
@@ -362,8 +319,6 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param LockParams $params
-     * @return DomainResult
      * @throws \Exception
      */
     public function setLock(LockParams $params): DomainResult
@@ -388,16 +343,26 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_getDomain($domainName);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('The requested operation not supported', $params);
+        $this->errorResult('The requested operation not supported', $params);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -440,14 +405,17 @@ class Provider extends DomainNames implements ProviderInterface
             ->setMessage('Nameservers updated');
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         return $this->updateContact($params->sld, $params->tld, $params->contact, EppHelper::CONTACT_TYPE_REGISTRANT);
     }
 
     /**
-     * Returns a filesystem path to use for the given certificate PEM, creating
-     * the file if necessary.
+     * Returns a filesystem path to use for the given certificate PEM, creating the file if necessary.
      *
      * @param string|null $certificate Certificate PEM
      *
@@ -470,7 +438,9 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @return ContactResult[] [registrant, billing, administrative, technical]
+     *
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _allContactInfo(
         string $registrantId,
@@ -489,9 +459,8 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $contactId
-     * @return PromiseInterface
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _getContactInfo(string $contactId): ContactResult
     {
@@ -507,7 +476,7 @@ class Provider extends DomainNames implements ProviderInterface
             $codeRes = $xmlResponse->getElementsByTagName('result')->item(0)->getAttribute('code');
             $msg = $xmlResponse->getElementsByTagName('msg')->item(0)->nodeValue;
 
-            throw $this->errorResult(
+            $this->errorResult(
                 'Unable to obtain contact data',
                 ['code' => $codeRes, 'msg' => $msg, 'contact_id' => $contactId],
                 ['xml' => (string)$xmlResponse]
@@ -517,10 +486,6 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_parseContactInfo($contactData);
     }
 
-    /**
-     * @param array $contact
-     * @return ContactResult
-     */
     protected function _parseContactInfo(array $contact): ContactResult
     {
         return ContactResult::create([
@@ -551,6 +516,10 @@ class Provider extends DomainNames implements ProviderInterface
         ]);
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _getDomain(
         string $domainName,
         string $msg = 'Domain data retrieved',
@@ -562,9 +531,6 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame = new \AfriCC\EPP\Frame\Command\Info\Domain();
         $infoFrame->setDomain($domainName);
 
-        //        $infoXml = $infoFrame->__toString();
-        //        $this->getLogger()->debug(__METHOD__, compact('client', 'infoXml', 'xmlResponse'));
-
         $xmlResponse = $client->request($infoFrame);
         $domainData = $xmlResponse->data();
 
@@ -572,7 +538,7 @@ class Provider extends DomainNames implements ProviderInterface
             $codeRes = $xmlResponse->getElementsByTagName('result')->item(0)->getAttribute('code');
             $msg = $xmlResponse->getElementsByTagName('msg')->item(0)->nodeValue;
 
-            throw $this->errorResult(
+            $this->errorResult(
                 'Unable to obtain domain data',
                 ['code' => $codeRes, 'msg' => $msg, 'data' => $domainData],
                 ['xml' => (string)$xmlResponse]
@@ -612,12 +578,6 @@ class Provider extends DomainNames implements ProviderInterface
                 $lockStatus = true;
             }
         }
-        // $arrSearch = array_search("clientRenewProhibited", $currentStatuses);
-        // if ($arrSearch !== false) {
-        //     if (array_key_exists($arrSearch, $currentStatuses) == 1) {
-        //         $renewStatus = true;
-        //     }
-        // }
 
         $info = DomainResult::create([
             'id' => $domainData['infData']['roid'],
@@ -635,22 +595,17 @@ class Provider extends DomainNames implements ProviderInterface
             'expires_at' => Utils::formatDate($domainData['infData']['exDate']),
         ])->setMessage($msg);
 
-        //        $arrSearch = array_search("Active", $currentStatuses);
-        //        if ($assertActive && $arrSearch === false) {
-        //            throw $this->errorResult(sprintf('Domain name is %s', $status), $info->toArray());
-        //        }
-
         return $info;
     }
 
     /**
      * Assert the given Response frame indicates success.
      *
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function checkResponse(Response $xmlResponse, ?string $failureMessage = null, array $data = []): void
     {
-        /** @var \AfriCC\EPP\DOM\DomElement $result */
+        /** @var \AfriCC\EPP\DOM\DOMElement $result */
         $result = $xmlResponse->getElementsByTagName('result')->item(0);
         $responseCode = $result->getAttribute('code');
         $responseMessage = $xmlResponse->getElementsByTagName('msg')->item(0)->nodeValue;
@@ -662,7 +617,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         if (!$this->eppSuccess($responseCode)) {
-            throw $this->errorResult(
+            $this->errorResult(
                 $errorMessage,
                 array_merge(['code' => $responseCode, 'msg' => $responseMessage], $data),
                 ['xml' => (string)$xmlResponse]
@@ -672,10 +627,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @link https://www.rfc-editor.org/rfc/rfc5730#page-40
-     *
-     * @param $code
-     *
-     * @return bool
      */
     private function eppSuccess($code): bool
     {
@@ -687,12 +638,10 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
-     * @param \Upmind\ProvisionProviders\DomainNames\Data\ContactParams $contact
-     * @param string $type
-     * @return ContactResult
+     * @return \Upmind\ProvisionProviders\DomainNames\Data\ContactResult
+     *
      * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function updateContact(string $sld, string $tld, \Upmind\ProvisionProviders\DomainNames\Data\ContactParams $contact, string $type)
     {
@@ -700,7 +649,7 @@ class Provider extends DomainNames implements ProviderInterface
         $domain = $this->_getDomain($domainName)->toArray();
 
         if (!isset($domain['registrant']['id'])) {
-            throw $this->errorResult(
+            $this->errorResult(
                 'Unable to determine domain registrant',
                 ['domain_info' => $domain],
             );
@@ -726,16 +675,6 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
         $infoFrame->appendStreet('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:street[]', $contact->address1);
 
-        //        $infoFrame->setCity($mode, $contact->city);
-        //        $infoFrame->setName($mode, $contact->name);
-        //        $infoFrame->setCountryCode($mode, Utils::normalizeCountryCode($contact->country_code));
-        //        $infoFrame->setEmail($mode, $contact->email);
-        //        $infoFrame->setOrganization($mode, $contact->organisation?? $contact->name);
-        //        $infoFrame->setPostalCode($mode, $contact->postcode);
-        //        $infoFrame->addStreet($mode, $contact->address1);
-        //        $infoFrame->setVoice($mode, Utils::internationalPhoneToEpp($contact->phone));
-        //        $infoFrame->setProvince($mode, Utils::stateNameToCode($contact->country_code, $contact->state));
-
         $xmlResponse = $client->request($infoFrame);
         $this->checkResponse($xmlResponse);
 
@@ -753,6 +692,9 @@ class Provider extends DomainNames implements ProviderInterface
         ])->setMessage('Contact details updated');
     }
 
+    /**
+     * @throws \Exception
+     */
     private function addNameserverHost(string $nameserver): void
     {
         if (!$this->checkNameserverExists($nameserver)) {
@@ -765,8 +707,6 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $nameServer
-     * @return bool
      * @throws \Exception
      */
     private function checkNameserverExists(string $nameServer): bool
@@ -784,7 +724,6 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param ContactParams $contact
      * @return string Contact id
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
@@ -794,18 +733,6 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame = new \AfriCC\EPP\Frame\Command\Create\Contact();
         $id = $this->generateHandle();
         $infoFrame->setId($id);
-
-        //        $mode = 'create';
-        //        $infoFrame->appendCity('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:city', $contact->city);
-        //        $infoFrame->appendEmail('contact:chg/contact:email', $contact->email);
-        //        $infoFrame->appendCountryCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:cc', Utils::normalizeCountryCode($contact->country_code));
-        //        $infoFrame->appendName('contact:chg/contact:postalInfo[@type=\'%s\']/contact:name', $contact->name);
-        //        $infoFrame->appendOrganization('contact:chg/contact:postalInfo[@type=\'%s\']/contact:org', $contact->organisation?? $contact->name);
-        //        $infoFrame->appendPostalCode('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:pc', $contact->postcode);
-        //        $infoFrame->appendProvince('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:sp', Utils::stateNameToCode($contact->country_code, $contact->state));
-        //        $infoFrame->appendVoice('contact:chg/contact:voice', Utils::internationalPhoneToEpp($contact->phone));
-        //        $infoFrame->appendStreet('contact:chg/contact:postalInfo[@type=\'%s\']/contact:addr/contact:street[]', $contact->address1);
-
         $infoFrame->setCity($contact->city);
         $infoFrame->setName($contact->name ?? $contact->organisation);
         $infoFrame->setCountryCode(Utils::normalizeCountryCode($contact->country_code));
@@ -835,21 +762,5 @@ class Provider extends DomainNames implements ProviderInterface
         $randStr = substr($shuffled, mt_rand(0, 45), 5);
         $handle = "$stamp$randStr";
         return $handle;
-    }
-
-    /**
-     * @param string $type
-     * @return string|null
-     */
-    private function mapType(string $type): ?string
-    {
-        switch ($type) {
-            case 'Domain Transferred Away':
-            case 'Domain transfer approved on your behalf.':
-                return DomainNotification::TYPE_TRANSFER_OUT;
-            case 'Domain deleted':
-                return DomainNotification::TYPE_DELETED;
-        }
-        return null;
     }
 }
