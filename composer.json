@@ -33,7 +33,9 @@
         "upmind/domainnameapi-sdk": "^1.0",
         "fakerphp/faker": "^1.0",
         "centralnic-reseller/php-sdk": "^8.0",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "ext-simplexml": "*"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10"

@@ -58,10 +58,6 @@ use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 ⠀⣸⠃⢿⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠘⣿⠀⠀
  */
 
-/**
- * Class Provider
- * @package Upmind\ProvisionProviders\DomainNames\Enom
- */
 class Provider extends DomainNames implements ProviderInterface
 {
     /**
@@ -70,7 +66,7 @@ class Provider extends DomainNames implements ProviderInterface
     protected $configuration;
 
     /**
-     * @var EnomApi
+     * @var EnomApi|null
      */
     protected $api;
 
@@ -98,47 +94,24 @@ class Provider extends DomainNames implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/enom-logo@2x.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Operation not supported');
-
-        // Get Domains
-        $domains = [];
-
-        $max = 30;
-        $start = 0;
-
-        foreach (Arr::get($params, 'domains') as $domain) {
-            $domains[] = Utils::getDomain($domain['sld'], $domain['tld']);
-
-            $start++;
-
-            // Allow up to 30 domains in one check
-            if ($start == $max) {
-                break;
-            }
-        }
-
-        // Enom V1 only. For using V2 we will need to issue multiple requests for each domain name.
-        $domainList = rtrim(implode(",", $domains), ',');
-
-        try {
-            $domainsCheck = $this->api()->checkMultipleDomains($domainList);
-
-            return $this->okResult("Domain Check Results", $domainsCheck);
-        } catch (\Throwable $e) {
-            $this->handleException($e, $params);
-        }
-    }
-
-    public function poll(PollParams $params): PollResult
-    {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
     /**
-     * @param RegisterDomainParams $params
-     * @return DomainResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
+    public function poll(PollParams $params): PollResult
+    {
+        $this->errorResult('Operation not supported');
+    }
+
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
@@ -150,19 +123,19 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             // eNom doesn't have contact IDs, so we must have the `register` part for each contact.
             if (!Arr::has($params, 'registrant.register')) {
-                return $this->errorResult('Registrant contact data is required!');
+                $this->errorResult('Registrant contact data is required!');
             }
 
             if (!Arr::has($params, 'tech.register')) {
-                return $this->errorResult('Tech contact data is required!');
+                $this->errorResult('Tech contact data is required!');
             }
 
             if (!Arr::has($params, 'admin.register')) {
-                return $this->errorResult('Admin contact data is required!');
+                $this->errorResult('Admin contact data is required!');
             }
 
             if (!Arr::has($params, 'billing.register')) {
-                return $this->errorResult('Billing contact data is required!');
+                $this->errorResult('Billing contact data is required!');
             }
 
             // Register the domain with the registrant contact data
@@ -197,8 +170,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param TransferParams $params
-     * @return DomainResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
@@ -215,13 +187,15 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             // Check for previous order first
             if ($prevOrders = $this->api()->getDomainTransferOrders($sld, $tld)) {
-                $prevOrder = collect($prevOrders)->sortByDesc('date')->first();
+                /** @var \IlluminateAgnostic\Arr\Support\Collection $prevOrderCollection */
+                $prevOrderCollection = collect($prevOrders);
+                $prevOrder = $prevOrderCollection->sortByDesc('date')->first();
                 $prevOrderData = $this->api()->getOrderDetails((string)$prevOrder['orderId']);
                 $transferOrderStatus = (int)$prevOrderData['transferorderdetail']['statusid'];
 
                 if ($this->orderDetailStatusIsInProgress($transferOrderStatus)) {
                     // throw error result containing order data
-                    throw $this->errorResult(
+                    $this->errorResult(
                         sprintf('Transfer order in progress since %s', $prevOrder['date']),
                         ['order' => $prevOrderData]
                     );
@@ -230,7 +204,7 @@ class Provider extends DomainNames implements ProviderInterface
                 if ($this->orderDetailStatusRequiresEppCode($transferOrderStatus)) {
                     if (empty($params->epp_code)) {
                         // throw error explaining that EPP code is required
-                        throw $this->errorResult(
+                        $this->errorResult(
                             'Transfer order requires EPP code to be re-initiated',
                             ['order' => $prevOrderData]
                         );
@@ -243,7 +217,7 @@ class Provider extends DomainNames implements ProviderInterface
             // Attempt to create a new transfer order.
             $this->api()->initiateTransfer($sld, $tld, $params->epp_code ?: '1234');
 
-            throw $this->errorResult(
+            $this->errorResult(
                 sprintf(
                     'Domain transfer order %s',
                     !isset($prevOrder) ? 'initiated' : 're-initiated due to previous order status'
@@ -251,13 +225,12 @@ class Provider extends DomainNames implements ProviderInterface
                 ['previous_order' => $prevOrderData ?? null]
             );
         } catch (\Throwable $e) {
-            throw $this->handleException($e, $params);
+            $this->handleException($e, $params);
         }
     }
 
     /**
-     * @param RenewParams $params
-     * @return DomainResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(RenewParams $params): DomainResult
     {
@@ -286,8 +259,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param DomainInfoParams $params
-     * @return DomainResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
@@ -299,10 +271,10 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
-     * @param string $message
-     * @return DomainResult
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function _getInfo(string $sld, string $tld, string $message): DomainResult
     {
@@ -311,8 +283,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param UpdateNameserversParams $params
-     * @return NameserversResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
@@ -346,8 +317,7 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Emails EPP code to the registrant's email address.
      *
-     * @param EppParams $params
-     * @return EppCodeResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
@@ -381,17 +351,15 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param IpsTagParams $params
-     * @return ResultData
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported', $params);
+        $this->errorResult('Operation not supported', $params);
     }
 
     /**
-     * @param UpdateDomainContactParams $params
-     * @return ContactResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
@@ -399,8 +367,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param LockParams $params
-     * @return ResultData
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setLock(LockParams $params): DomainResult
     {
@@ -425,8 +392,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param AutoRenewParams $params
-     * @return ResultData
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
@@ -447,11 +413,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
-     * @param ContactParams $params
-     * @param string $type
-     * @return ContactResult
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function updateContact(string $sld, string $tld, ContactParams $params, string $type): ContactResult
     {
@@ -508,15 +470,13 @@ class Provider extends DomainNames implements ProviderInterface
      */
     protected function orderDetailStatusRequiresEppCode(int $statusId): bool
     {
-        return in_array($statusId, [
-            32, // Canceled - Invalid EPP/authorization key - Please contact current registrar to obtain correct key
-        ]);
+        return $statusId == 32; // Canceled - Invalid EPP/authorization key - Please contact current registrar to obtain correct key
     }
 
     /**
-     * @throws ProvisionFunctionError
-     *
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function handleException(Throwable $e, $params = null): void
     {
@@ -545,7 +505,7 @@ class Provider extends DomainNames implements ProviderInterface
             'connect_timeout' => 10,
             'timeout' => 60,
             'verify' => !$this->configuration->sandbox,
-            'handler' => $this->getGuzzleHandlerStack(!!$this->configuration->debug),
+            'handler' => $this->getGuzzleHandlerStack(),
         ]);
 
         return $this->api = new EnomApi($client, $this->configuration);
