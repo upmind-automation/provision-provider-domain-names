@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\GoDaddy\Helper;
 
-use Carbon\Carbon;
 use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
-use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -45,7 +41,8 @@ class GoDaddyApi
      *
      * @return DacDomain[]
      *
-     * @throws Throwable
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function checkMultipleDomains(array $domainList): array
     {
@@ -85,7 +82,11 @@ class GoDaddyApi
 
     /**
      * @param ContactParams[] $contacts
-     * @param string[] $nameservers
+     * @param string[] $nameServers
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(string $domainName, int $years, array $contacts, array $nameServers): void
     {
@@ -115,6 +116,10 @@ class GoDaddyApi
 
     /**
      * @param ContactParams[] $contacts
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer(string $domainName, string $eppCode, array $contacts, int $period): string
     {
@@ -134,7 +139,7 @@ class GoDaddyApi
         $body['consent'] = $consent;
 
         foreach ($contacts as $type => $contact) {
-            if (!empty($contact)) {
+            if ($contact !== null) {
                 $contactParams = $this->setContactParams($contact, $type);
                 $body = array_merge($body, $contactParams);
             }
@@ -145,6 +150,10 @@ class GoDaddyApi
         return (string)$response['orderId'];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function getAgreementKey(string $tld)
     {
         $command = "/v1/domains/agreements";
@@ -156,6 +165,10 @@ class GoDaddyApi
         return $response[0]['agreementKey'];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainInfo(string $domainName): array
     {
         $command = "/v1/domains/{$domainName}";
@@ -185,6 +198,10 @@ class GoDaddyApi
         ];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(string $domainName, int $period): void
     {
         $command = "/v1/domains/{$domainName}/renew";
@@ -194,6 +211,10 @@ class GoDaddyApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainEppCode(string $domainName): string
     {
         $command = "/v1/domains/{$domainName}";
@@ -202,6 +223,10 @@ class GoDaddyApi
         return $response['authCode'];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRenewalMode(string $domainName, bool $autoRenew): void
     {
         $command = "/v1/domains/{$domainName}";
@@ -210,6 +235,11 @@ class GoDaddyApi
         $this->makeRequest($command, null, $body, "PATCH");
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
     {
         $command = "/v1/domains/{$domainName}/contacts";
@@ -223,6 +253,9 @@ class GoDaddyApi
 
     /**
      * @param string[] $nameservers
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(string $domainName, array $nameservers): array
     {
@@ -246,6 +279,9 @@ class GoDaddyApi
         return compact('firstName', 'lastName');
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     private function setContactParams(ContactParams $contactParams, string $type): array
     {
         $nameParts = $this->getNameParts($contactParams->name ?? $contactParams->organisation);
@@ -296,6 +332,10 @@ class GoDaddyApi
         return $result;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function makeRequest(string $command, ?array $params = null, ?array $body = null, ?string $method = 'GET'): ?array
     {
         $requestParams = [];
@@ -328,6 +368,10 @@ class GoDaddyApi
         return (bool)$response['locked'];
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $command = "/v1/domains/{$domainName}";
@@ -336,6 +380,9 @@ class GoDaddyApi
         $this->makeRequest($command, null, $body, "PATCH");
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseResponseData(string $result): array
     {
         $parsedResult = json_decode($result, true);
@@ -360,10 +407,8 @@ class GoDaddyApi
     protected function getResponseErrorMessage($responseData): ?string
     {
         $statusCode = $responseData['code'] ?? 'unknown';
-        if ($statusCode == "NOT_FOUND") {
-            if (isset($responseData['message'])) {
-                $errorMessage = $responseData['message'];
-            }
+        if (($statusCode === "NOT_FOUND") && isset($responseData['message'])) {
+            $errorMessage = $responseData['message'];
         }
 
         return $errorMessage ?? null;
