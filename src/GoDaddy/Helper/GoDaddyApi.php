@@ -360,6 +360,9 @@ class GoDaddyApi
         return $this->parseResponseData($result);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getRegistrarLockStatus(string $domainName): bool
     {
         $command = "/v1/domains/{$domainName}";
