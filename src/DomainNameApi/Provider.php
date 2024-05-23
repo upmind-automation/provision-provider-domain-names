@@ -12,8 +12,6 @@ use Upmind\DomainNameApiSdk\ClientFactory;
 use Upmind\DomainNameApiSdk\SDK\ArrayType\ArrayOfstring;
 use Upmind\DomainNameApiSdk\SDK\EnumType\ContactType;
 use Upmind\DomainNameApiSdk\SDK\StructType\BaseMethodResponse;
-use Upmind\DomainNameApiSdk\SDK\StructType\CheckAvailability;
-use Upmind\DomainNameApiSdk\SDK\StructType\CheckAvailabilityRequest;
 use Upmind\DomainNameApiSdk\SDK\StructType\ContactInfo;
 use Upmind\DomainNameApiSdk\SDK\StructType\DisableTheftProtectionLock;
 use Upmind\DomainNameApiSdk\SDK\StructType\DisableTheftProtectionLockRequest;
