@@ -106,7 +106,7 @@ class DomainFaker
             ->setPhone($this->faker->e164PhoneNumber())
             ->setAddress1($this->faker->streetAddress())
             ->setCity($this->faker->city())
-            ->setState($this->faker->state())
+            ->setState('') // Empty state.
             ->setPostcode($this->faker->postcode())
             ->setCountryCode($this->faker->countryCode());
     }
@@ -119,7 +119,7 @@ class DomainFaker
             ->setPhone($this->faker->e164PhoneNumber())
             ->setAddress1($this->faker->streetAddress())
             ->setCity($this->faker->city())
-            ->setState($this->faker->state())
+            ->setState('') // Empty state.
             ->setPostcode($this->faker->postcode())
             ->setCountryCode($this->faker->countryCode());
     }
@@ -164,7 +164,7 @@ class DomainFaker
 
     public function getExpiresAt(): CarbonImmutable
     {
-        return $this->expiresAt ??= $this->getCreatedAt()->addYear($this->getRegPeriod());
+        return $this->expiresAt ??= $this->getCreatedAt()->addYears($this->getRegPeriod());
     }
 
     public function getDomainResult(): DomainResult
