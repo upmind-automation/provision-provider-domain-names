@@ -58,46 +58,58 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(RenewParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
@@ -131,50 +143,62 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function setLock(LockParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
@@ -183,7 +207,7 @@ class Provider extends DomainNames implements ProviderInterface
     protected function client(): Client
     {
         return $this->client ??= new Client([
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'handler' => $this->getGuzzleHandlerStack(),
             'base_uri' => 'https://api.example.com/v1/',
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->configuration->api_token,
