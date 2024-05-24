@@ -11,6 +11,8 @@ use Metaregistrar\EPP\eppException;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
+//use Upmind\ProvisionProviders\DomainNames\Data\FinishTransferParams;
+//use Upmind\ProvisionProviders\DomainNames\Data\InitiateTransferResult;
 use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
 use Upmind\ProvisionProviders\DomainNames\EURID\Helper\EppHelper;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactResult;
@@ -200,6 +202,89 @@ class Provider extends DomainNames implements ProviderInterface
             $this->_eppExceptionHandler($e);
         }
     }
+
+//    /**
+//     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+//     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+//     */
+//    public function initiateTransfer(TransferParams $params): InitiateTransferResult
+//    {
+//        $domainName = Utils::getDomain(
+//            Utils::normalizeSld($params->sld),
+//            Utils::normalizeTld($params->tld)
+//        );
+//
+//        $eppCode = $params->epp_code ?: null;
+//
+//        try {
+//            $domain = $this->_getInfo($domainName, '');
+//
+//            return InitiateTransferResult::create([
+//                'domain' => $domainName,
+//                'transfer_status' => 'complete',
+//                'domain_info' => $domain,
+//            ])->setMessage('Domain active in registrar account');
+//        } catch (eppException $e) {
+//            // initiate transfer ...
+//        }
+//
+//        if (!$params->registrant) {
+//            $this->errorResult('Registrant contact is required!', $params);
+//        }
+//
+//        try {
+//            $contactIds = [
+//                'registrant' => $params->registrant->id
+//                    ?? $this->epp()->createContact($params->registrant->register, 'registrant'),
+//                'tech' => $this->configuration->tech_contact_id,
+//                'billing' => $this->configuration->billing_contact_id
+//            ];
+//
+//            $transferId = $this->epp()->initiateTransfer(
+//                $domainName,
+//                intval($params->renew_years),
+//                $eppCode,
+//                $contactIds
+//            );
+//
+//            return InitiateTransferResult::create([
+//                'domain' => $domainName,
+//                'transfer_status' => 'in_progress',
+//                'transfer_order_id' => $transferId
+//            ])->setMessage(sprintf('Transfer for %s domain successfully created!', $domainName));
+//        } catch (eppException $e) {
+//            $this->_eppExceptionHandler($e);
+//        }
+//    }
+//
+//    /**
+//     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+//     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+//     */
+//    public function finishTransfer(FinishTransferParams $params): DomainResult
+//    {
+//        $domainName = Utils::getDomain(
+//            Utils::normalizeSld($params->sld),
+//            Utils::normalizeTld($params->tld)
+//        );
+//
+//        try {
+//            return $this->_getInfo($domainName, 'Domain active in registrar account');
+//        } catch (eppException $e) {
+//        }
+//
+//        try {
+//            $status = $this->epp()->getTransferInfo($domainName);
+//
+//            $this->errorResult(
+//                sprintf('Transfer order status for %s: %s', $domainName, $status),
+//                [],
+//                $params
+//            );
+//        } catch (eppException $e) {
+//            $this->_eppExceptionHandler($e);
+//        }
+//    }
 
     /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
