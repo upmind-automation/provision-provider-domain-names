@@ -691,7 +691,7 @@ class Countries
     /**
      * Obtain the code of the given country name.
      *
-     * @param string $countryName Country name
+     * @param string|null $countryName Country name
      *
      * @return string|null ISO alpha-2 country code, or null if unknown
      */
@@ -738,18 +738,13 @@ class Countries
         }
     }
 
-    /**
-     * @param string $countryCode
-     * @param string $stateName
-     * @return string|null
-     */
     public static function stateNameToCode(string $countryCode, string $stateName): ?string
     {
         if (!$countryCode = self::normalizeCode($countryCode)) {
             return null;
         }
 
-        if (!$stateName = strtolower(trim($stateName ?? ''))) {
+        if (!$stateName = strtolower(trim($stateName))) {
             return null;
         }
 
