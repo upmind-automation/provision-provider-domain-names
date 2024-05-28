@@ -611,8 +611,7 @@ class Provider extends DomainNames implements ProviderInterface
             $paramKey = 'query';
         }
 
-        $client = new Client(['handler' => $this->getGuzzleHandlerStack(),
-        ]);
+        $client = new Client(['handler' => $this->getGuzzleHandlerStack()]);
 
         $headers = [];
 
