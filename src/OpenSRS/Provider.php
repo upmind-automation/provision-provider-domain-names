@@ -812,7 +812,7 @@ class Provider extends DomainNames implements ProviderInterface
             'connect_timeout' => 10,
             'timeout' => 60,
             'verify' => !$this->configuration->sandbox,
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'handler' => $this->getGuzzleHandlerStack(),
         ]);
 
         return $this->apiClient = new OpenSrsApi($client, $this->configuration);
