@@ -24,18 +24,19 @@
     },
     "require": {
         "php": "8.1 - 8.3",
-        "upmind/provision-provider-base": "^4.0",
-        "metaregistrar/php-epp-client": "^1.0",
-        "propaganistas/laravel-phone": "^4.2 || ^5.0",
-        "guzzlehttp/guzzle": "^6.3|^7.0",
-        "pragmarx/countries": "^0.8.2",
-        "africc/php-epp2": "^1.0",
-        "upmind/domainnameapi-sdk": "^1.0",
-        "fakerphp/faker": "^1.0",
-        "centralnic-reseller/php-sdk": "^8.0",
         "ext-dom": "*",
         "ext-libxml": "*",
-        "ext-simplexml": "*"
+        "ext-simplexml": "*",
+        "ext-xml": "*",
+        "africc/php-epp2": "^1.0",
+        "centralnic-reseller/php-sdk": "^8.0",
+        "fakerphp/faker": "^1.0",
+        "guzzlehttp/guzzle": "^6.3|^7.0",
+        "metaregistrar/php-epp-client": "^1.0",
+        "pragmarx/countries": "^0.8.2",
+        "propaganistas/laravel-phone": "^4.2 || ^5.0",
+        "upmind/domainnameapi-sdk": "^1.0",
+        "upmind/provision-provider-base": "^4.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10"
