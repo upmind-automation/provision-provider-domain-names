@@ -271,6 +271,8 @@ class Utils
      * @param string|null $countryCode Country code, if known
      *
      * @return string International format phone number, if possible
+     *
+     * @throws \Throwable
      */
     public static function localPhoneToInternational(string $number, ?string $countryCode, bool $orFail = true): string
     {
