@@ -783,7 +783,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         try {
-            $connection = new NominetConnection(!!$this->configuration->debug);
+            $connection = new NominetConnection();
             $connection->setPsrLogger($this->getLogger());
 
             $connection->setHostname(
