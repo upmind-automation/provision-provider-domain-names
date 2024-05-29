@@ -226,11 +226,11 @@ class Utils
      *
      * @link https://tools.ietf.org/html/rfc5733#section-2.5
      *
+     * @param string|null $number Phone number in "international format" E.g., +447515878251
+     *
+     * @return string|null Phone number in "EPP format" E.g., +44.7515878251
+     *
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid international phone number
-     *
-     * @param string $number Phone number in "international format" E.g., +447515878251
-     *
-     * @return string Phone number in "EPP format" E.g., +44.7515878251
      */
     public static function internationalPhoneToEpp(?string $number): ?string
     {
