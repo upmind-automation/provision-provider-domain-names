@@ -24,7 +24,7 @@
     },
     "require": {
         "upmind/provision-provider-base": "^3.7",
-        "metaregistrar/php-epp-client": "^1.0",
+        "metaregistrar/php-epp-client": "^1.0.12",
         "hexonet/php-sdk": "^5.0",
         "propaganistas/laravel-phone": "^4.2",
         "guzzlehttp/guzzle": "^6.3|^7.0",
