@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\InternetBS\Helper;
 
-use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\Utils as PromiseUtils;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Support\Arr;
-use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -51,7 +47,7 @@ class InternetBSApi
     }
 
     /**
-     * @return Promise<?array>
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function asyncRequest(
         string $command,
@@ -75,7 +71,8 @@ class InternetBSApi
             $requestParams['json'] = $body;
         }
 
-        return $this->client->requestAsync($method, $url, $requestParams)
+        /** @var \GuzzleHttp\Promise\Promise $promise */
+        $promise = $this->client->requestAsync($method, $url, $requestParams)
             ->then(function (Response $response) {
                 $result = $response->getBody()->getContents();
 
@@ -87,8 +84,13 @@ class InternetBSApi
 
                 return $this->parseResponseData($result);
             });
+
+        return $promise;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function makeRequest(
         string $command,
         ?array $query = null,
@@ -98,6 +100,9 @@ class InternetBSApi
         return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseResponseData(string $result): array
     {
         $parsedResult = json_decode($result, true);
@@ -138,6 +143,8 @@ class InternetBSApi
      * @param string[] $domains
      *
      * @return DacDomain[]
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function checkMultipleDomains(array $domains)
     {
@@ -169,6 +176,9 @@ class InternetBSApi
         return PromiseUtils::all($promises)->wait();
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainInfo(string $domainName): array
     {
         $response = $this->makeRequest('/Domain/Info', ['Domain' => $domainName]);
@@ -231,7 +241,10 @@ class InternetBSApi
 
     /**
      * @param ContactParams[] $contacts
-     * @param string[] $nameservers
+     * @param string[] $nameServers
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(string $domainName, int $years, array $contacts, array $nameServers): void
     {
@@ -249,6 +262,10 @@ class InternetBSApi
         $this->makeRequest('/Domain/Create', $params);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function setContactParams(ContactParams $contactParams, string $type): array
     {
         $nameParts = $this->getNameParts($contactParams->name ?? $contactParams->organisation);
@@ -267,11 +284,6 @@ class InternetBSApi
         ];
     }
 
-    /**
-     * @param string|null $name
-     *
-     * @return array
-     */
     private function getNameParts(?string $name): array
     {
         $nameParts = explode(" ", $name);
@@ -281,6 +293,9 @@ class InternetBSApi
         return compact('firstName', 'lastName');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainEppCode(string $domainName): ?string
     {
         $response = $this->makeRequest('/Domain/Info', ['Domain' => $domainName]);
@@ -288,6 +303,9 @@ class InternetBSApi
         return $response['transferauthinfo'] ?? null;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRenewalMode(string $domainName, bool $autoRenew)
     {
         $params = [
@@ -298,6 +316,9 @@ class InternetBSApi
         $this->makeRequest('/Domain/Update', $params);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getRegistrarLockStatus(string $domainName): bool
     {
         $response = $this->makeRequest('/Domain/RegistrarLock/Status', ['Domain' => $domainName]);
@@ -305,6 +326,9 @@ class InternetBSApi
         return $response['registrar_lock_status'] == 'LOCKED';
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $params = [
@@ -315,6 +339,9 @@ class InternetBSApi
         $this->makeRequest('/Domain/Update', $params);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(string $domainName, array $nameServers): NameserversResult
     {
         $params = [
@@ -327,6 +354,10 @@ class InternetBSApi
         return $this->getDomainInfo($domainName)['ns'];
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
     {
         $params = [
@@ -342,6 +373,9 @@ class InternetBSApi
         return $this->getDomainInfo($domainName)['registrant'];
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(string $domainName, int $period): void
     {
         $params = [
@@ -352,6 +386,10 @@ class InternetBSApi
         $this->makeRequest('/Domain/Renew', $params);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function initiateTransfer(string $domainName, string $eppCode, array $contacts): string
     {
         $params = [
