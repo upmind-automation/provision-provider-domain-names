@@ -8,7 +8,6 @@ use GuzzleHttp\Client;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionProviders\DomainNames\HRS\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\HRS\Helper\HrsApi;
-use Upmind\ProvisionProviders\DomainNames\OpenSRS\Helper\OpenSrsApi;
 use Upmind\ProvisionProviders\DomainNames\OpenSRS\Provider as OpenSRSProvider;
 
 class Provider extends OpenSRSProvider
@@ -19,7 +18,7 @@ class Provider extends OpenSRSProvider
     protected $configuration;
 
     /**
-     * @var HrsApi
+     * @var HrsApi|null
      */
     protected $apiClient;
 
@@ -28,9 +27,6 @@ class Provider extends OpenSRSProvider
         $this->configuration = $configuration;
     }
 
-    /**
-     * @return AboutData
-     */
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
@@ -48,7 +44,7 @@ class Provider extends OpenSRSProvider
         $client = new Client([
             'connect_timeout' => 10,
             'timeout' => 60,
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'handler' => $this->getGuzzleHandlerStack(),
         ]);
 
         return $this->apiClient = new HrsApi($client, $this->configuration);
