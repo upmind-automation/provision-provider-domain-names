@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.1) - 2024-05-31
+
+- Update metaregistrar/php-epp-client dependency to ^1.0.12 to fix EPP extension issue with EurId
+
 ## [v2.12.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.0) - 2024-05-16
 
 - Implement EurId provider

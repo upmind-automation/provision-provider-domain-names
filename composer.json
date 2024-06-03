@@ -32,7 +32,7 @@
         "centralnic-reseller/php-sdk": "^8.0",
         "fakerphp/faker": "^1.0",
         "guzzlehttp/guzzle": "^6.3|^7.0",
-        "metaregistrar/php-epp-client": "^1.0",
+        "metaregistrar/php-epp-client": "^1.0.12",
         "pragmarx/countries": "^0.8.2",
         "propaganistas/laravel-phone": "^4.2 || ^5.0",
         "upmind/domainnameapi-sdk": "^1.0",
