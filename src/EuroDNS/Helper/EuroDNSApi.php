@@ -6,7 +6,6 @@ namespace Upmind\ProvisionProviders\DomainNames\EuroDNS\Helper;
 
 use Throwable;
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
@@ -32,9 +31,11 @@ class EuroDNSApi
     protected $url;
     protected Configuration $configuration;
     private $error;
+    // @phpstan-ignore-next-line
     private $errorCode;
     private $params;
     private $contactParams;
+    // @phpstan-ignore-next-line
     private $pendingMessage;
     private $contactOrgId;
     private $contactBillingId;
@@ -42,6 +43,11 @@ class EuroDNSApi
     private $contactAdminId;
     private $nameServers;
     private $logger;
+
+    /**
+     * @var string|null
+     */
+    private $request;
 
     public function __construct(Configuration $configuration, LoggerInterface $logger = null)
     {
@@ -71,7 +77,7 @@ class EuroDNSApi
      *
      * @param string[] $domainList Array of domain names to check.
      *
-     * @return DacDomain[] Array of DacDomain objects representing domain availability.
+     * @return array<string, bool|string>|array<DacDomain> Array of DacDomain objects representing domain availability, or error.
      *
      * @throws Throwable
      */
@@ -523,7 +529,7 @@ class EuroDNSApi
         return $sanitizedData;
     }
 
-   /**
+    /**
      * FUNCTION setContactUpdate
      * Set contact details for update action from the provided parameters.
      *
@@ -876,7 +882,7 @@ class EuroDNSApi
         return $resdataArray;
     }
 
-   /**
+    /**
      * Function to check if a node value exists and return it.
      *
      * @param \DOMXPath $xpath       The DOMXPath object for querying.
@@ -976,7 +982,7 @@ class EuroDNSApi
         return '0';
     }
 
-   /**
+    /**
      * Function to initiate domain transfer in EuroDNS.
      *
      * @param string $domainName - The domain name to be transferred.
@@ -1563,11 +1569,6 @@ class EuroDNSApi
 
     /**
      * Generate XML request for domain registration.
-     *
-     * @param string $domainName
-     * @param array $params
-     *
-     * @return string
      */
     private function generateDomainRegistrationRequest(string $domainName): string
     {
@@ -1596,11 +1597,6 @@ class EuroDNSApi
     }
     /**
      * Generate XML request for transfer registration.
-     *
-     * @param string $domainName
-     * @param array $params
-     *
-     * @return string
      */
     private function generateDomainTransferRequest(string $domainName): string
     {
