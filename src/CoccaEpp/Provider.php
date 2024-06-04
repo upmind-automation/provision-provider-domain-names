@@ -104,7 +104,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         // Get supported TLDs from configuration
 
-        /** @var \IlluminateAgnostic\Arr\Support\Collection $tldsCollection */
+        /** @var \Illuminate\Support\Collection $tldsCollection */
         $tldsCollection = collect(explode(',', $this->configuration->supported_tlds ?? ''));
         $tlds = $tldsCollection->map(function ($tld) {
                 return Utils::normalizeTld(trim($tld));

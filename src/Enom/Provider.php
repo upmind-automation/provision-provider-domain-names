@@ -187,7 +187,7 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             // Check for previous order first
             if ($prevOrders = $this->api()->getDomainTransferOrders($sld, $tld)) {
-                /** @var \IlluminateAgnostic\Arr\Support\Collection $prevOrderCollection */
+                /** @var \Illuminate\Support\Collection $prevOrderCollection */
                 $prevOrderCollection = collect($prevOrders);
                 $prevOrder = $prevOrderCollection->sortByDesc('date')->first();
                 $prevOrderData = $this->api()->getOrderDetails((string)$prevOrder['orderId']);

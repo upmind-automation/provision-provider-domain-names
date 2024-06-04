@@ -368,7 +368,7 @@ class Provider extends DomainNames implements ProviderInterface
             $nameservers = array_unique($params->pluckHosts());
             $this->epp()->updateNameservers($domainName, $nameservers);
 
-            /** @var \IlluminateAgnostic\Arr\Support\Collection $nameServersCollection */
+            /** @var \Illuminate\Support\Collection $nameServersCollection */
             $nameServersCollection = collect($nameservers);
             $result = $nameServersCollection->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
 

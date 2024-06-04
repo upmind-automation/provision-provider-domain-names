@@ -94,7 +94,7 @@ class eppPollResponse extends DefaultEppPollResponse
         foreach ($queryPaths as $path) {
             $nodeList = $xpath->query($path);
             if ($nodeList instanceof DOMNodeList && $nodeList->length > 0) {
-                /** @var \IlluminateAgnostic\Arr\Support\Collection $nodeListCollection */
+                /** @var \Illuminate\Support\Collection $nodeListCollection */
                 $nodeListCollection = collect($nodeList);
 
                 return $nodeListCollection->map(function (DOMElement $element) {

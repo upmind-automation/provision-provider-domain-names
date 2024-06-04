@@ -294,7 +294,7 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             $this->api()->updateNameservers($domainName, $params->pluckHosts());
 
-            /** @var \IlluminateAgnostic\Arr\Support\Collection $hostsCollection */
+            /** @var \Illuminate\Support\Collection $hostsCollection */
             $hostsCollection = collect($params->pluckHosts());
             $result = $hostsCollection->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
 

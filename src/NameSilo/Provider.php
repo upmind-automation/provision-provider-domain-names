@@ -960,9 +960,9 @@ class Provider extends DomainNames implements ProviderInterface
      */
     protected function _allContactInfo(string $registrantId, string $billingId, string $adminId, string $techId): array
     {
+        /** @var \Illuminate\Support\Collection $functionArgumentsCollection */
         $functionArgumentsCollection = collect(func_get_args());
 
-        /** @var \IlluminateAgnostic\Arr\Support\Collection $functionArgumentsCollection */
         $contacts = $functionArgumentsCollection->unique()->mapWithKeys(function ($contactId) {
             return [$contactId => $this->_contactInfo($contactId)];
         });

@@ -863,7 +863,7 @@ class Provider extends DomainNames implements ProviderInterface
             $errorMessage = preg_replace('/\w+=(?=\w+ )/', '', $errorMessage);
 
             // ucfirst each error message
-            /** @var \IlluminateAgnostic\Arr\Support\Collection $errorMessageCollection */
+            /** @var \Illuminate\Support\Collection $errorMessageCollection */
             $errorMessageCollection = collect(explode(', ', $errorMessage));
             $errorMessage = $errorMessageCollection
                 ->map(function ($message) {

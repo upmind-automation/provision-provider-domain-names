@@ -249,7 +249,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         $this->assertResultSuccess($result);
 
-        /** @var \IlluminateAgnostic\Arr\Support\Collection $returnNameserversCollection */
+        /** @var \Illuminate\Support\Collection $returnNameserversCollection */
         $returnNameserversCollection = collect($nameservers);
 
         $returnNameservers = $returnNameserversCollection
@@ -466,12 +466,12 @@ class Provider extends DomainNames implements ProviderInterface
         $nameServersList = $domainInfo->getNameServerList();
 
         // Empty array if nameServersList is null.
-        /** @var \IlluminateAgnostic\Arr\Support\Collection $nameServersCollection */
+        /** @var \Illuminate\Support\Collection $nameServersCollection */
         $nameServersCollection = collect($nameServersList !== null ? $nameServersList->getString() : []);
         $nameservers = $nameServersCollection
             ->mapWithKeys(fn ($host, $i) => ['ns' . ($i + 1) => ['host' => $host]]);
 
-        /** @var \IlluminateAgnostic\Arr\Support\Collection $statusesCollection */
+        /** @var \Illuminate\Support\Collection $statusesCollection */
         $statusesCollection = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()]);
         $statuses = $statusesCollection
             ->map(fn ($status) => ucfirst(strtolower($status)))
