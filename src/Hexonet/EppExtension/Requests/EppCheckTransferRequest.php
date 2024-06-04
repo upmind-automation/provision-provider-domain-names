@@ -11,6 +11,9 @@ use Metaregistrar\EPP\eppRequest;
  */
 class EppCheckTransferRequest extends eppRequest
 {
+    /**
+     * @throws \DOMException
+     */
     public function __construct(string $domainName, ?string $eppCode = null)
     {
         parent::__construct();

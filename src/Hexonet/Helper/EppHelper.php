@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Hexonet\Helper;
 
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 use LogicException;
 use Metaregistrar\EPP\eppCheckDomainRequest;
-use Metaregistrar\EPP\eppCheckDomainResponse;
 use Metaregistrar\EPP\eppCheckRequest;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\EppConnection as eppConnection;
 use Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Requests\EppTransferRequest as eppTransferRequest;
@@ -17,25 +14,17 @@ use Metaregistrar\EPP\eppContact;
 use Metaregistrar\EPP\eppContactHandle;
 use Metaregistrar\EPP\eppContactPostalInfo;
 use Metaregistrar\EPP\eppCreateContactRequest;
-use Metaregistrar\EPP\eppCreateContactResponse;
 use Metaregistrar\EPP\eppCreateDomainRequest;
-use Metaregistrar\EPP\eppCreateDomainResponse;
 use Metaregistrar\EPP\eppCreateHostRequest;
-use Metaregistrar\EPP\eppCreateResponse;
 use Metaregistrar\EPP\eppDomain;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppHost;
 use Metaregistrar\EPP\eppInfoContactRequest;
-use Metaregistrar\EPP\eppInfoContactResponse;
 use Metaregistrar\EPP\eppInfoDomainRequest;
-use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\eppRenewRequest;
-use Metaregistrar\EPP\eppRenewResponse;
 use Metaregistrar\EPP\eppTransferResponse;
 use Metaregistrar\EPP\eppUpdateContactRequest;
-use Metaregistrar\EPP\eppUpdateContactResponse;
 use Metaregistrar\EPP\eppUpdateDomainRequest;
-use Metaregistrar\EPP\eppUpdateDomainResponse;
 use Metaregistrar\EPP\eppUpdateResponse;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -96,13 +85,11 @@ class EppHelper
     /**
      * Authenticate and establish a connection with the Domain Provider API and login.
      *
-     * @param Configuration $configuration
-     * @param array $eppConnectionData
-     * @return eppConnection
+     * @throws \RuntimeException
      */
     public static function establishConnection(Configuration $configuration, LoggerInterface $logger): eppConnection
     {
-        $connection = new eppConnection(!!$configuration->debug);
+        $connection = new eppConnection();
         $connection->setPsrLogger($logger);
 
         $eppConnectionData = self::EPP_CONNECTION;
@@ -122,8 +109,7 @@ class EppHelper
     /**
      * After we finished with API calls, we need to close the connection.
      *
-     * @param eppConnection $connection
-     * @throws eppException
+     * @throws \Metaregistrar\EPP\eppException
      */
     public static function terminateConnection(?eppConnection $connection): void
     {
@@ -135,11 +121,9 @@ class EppHelper
     /**
      * Checks Domain Availability
      *
-     * @param eppConnection $connection
-     * @param   array   $domains
-     * @return array    The following format is do be expected: ['domain' => 'domainName', 'available' => bool, 'reason' => ?string]
+     * @return array The following format is do be expected: ['domain' => 'domainName', 'available' => bool, 'reason' => ?string]
      *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function checkDomains(eppConnection $connection, array $domains): array
     {
@@ -147,7 +131,7 @@ class EppHelper
         $contactsRequest = new eppCheckDomainRequest($domains);
 
         // Process the response
-        /** @var eppCheckDomainResponse $response */
+        /** @var \Metaregistrar\EPP\eppCheckDomainResponse $response */
         $response = $connection->request($contactsRequest);
         $result = [];
 
@@ -173,12 +157,7 @@ class EppHelper
     /**
      * Renew a domain for a given period
      *
-     * @param eppConnection $connection
-     * @param string $domain
-     * @param int $period
-     * @return array
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function renewDomain(eppConnection $connection, string $domain, int $period): array
     {
@@ -186,7 +165,7 @@ class EppHelper
         $info = new eppInfoDomainRequest($domainData);
 
         // Get Domain Info
-        /** @var eppInfoDomainResponse $response */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $connection->request($info);
         // New Expiry Date
         $expiresAt = Utils::formatDate($response->getDomainExpirationDate(), 'Y-m-d');
@@ -196,7 +175,7 @@ class EppHelper
         $domainData->setPeriodUnit('y');
 
         $renewRequest = new eppRenewRequest($domainData, $expiresAt);
-        /** @var eppRenewResponse $renewResponse */
+        /** @var \Metaregistrar\EPP\eppRenewResponse $renewResponse */
         $renewResponse = $connection->request($renewRequest);
 
         return [
@@ -208,18 +187,16 @@ class EppHelper
     /**
      * Returns EPP Code for a given domain
      *
-     * @param eppConnection $connection
-     * @param string $domainName
      * @return string Epp/Auth code
      *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function getDomainEppCode(eppConnection $connection, string $domainName): string
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var eppInfoDomainResponse $response */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $connection->request($info);
 
         return $response->getDomainAuthInfo();
@@ -228,18 +205,14 @@ class EppHelper
     /**
      * Returns domain info
      *
-     * @param eppConnection $connection
-     * @param string $domainName
-     * @return array
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function getDomainInfo(eppConnection $connection, string $domainName): array
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $connection->request($info);
         $registrantId = $response->getDomainRegistrant();
         $updatedAt = $response->getDomainUpdateDate();
@@ -262,21 +235,8 @@ class EppHelper
     /**
      * Updating a contact
      *
-     * @param eppConnection $connection
-     * @param string $contactId
-     * @param string $email
-     * @param string|null $telephone
-     * @param string $name
-     * @param string|null $organization
-     * @param string|null $address
-     * @param string|null $postcode
-     * @param string|null $city
-     * @param string|null $countryCode
-     * @param string|null $contactType
-     * @param string|null $password
-     * @return ContactData
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If phone number is invalid
      */
     public static function updateDomainContact(
         eppConnection $connection,
@@ -284,12 +244,12 @@ class EppHelper
         string $email,
         ?string $telephone,
         string $name,
-        ?string $organization = null,
         ?string $address,
         ?string $postcode,
         ?string $city,
         ?string $state,
         ?string $countryCode,
+        ?string $organization = null,
         ?string $contactType = null,
         ?string $password = null
     ): ContactData {
@@ -316,7 +276,7 @@ class EppHelper
         $updateQuery = new eppContact($postalInfo, $email, $telephone);
         $updateRequest = new eppUpdateContactRequest(new eppContactHandle($contactId), null, null, $updateQuery);
 
-        /** @var eppUpdateContactResponse $response */
+        /** @var \Metaregistrar\EPP\eppUpdateContactResponse $response */
         $response = $connection->request($updateRequest);
 
         return ContactData::create([
@@ -341,7 +301,8 @@ class EppHelper
      * @param string $domainName
      * @param string $contactType One of: reg, admin, billing, tech
      * @return string|null Contact id
-     * @throws eppException
+     *
+     * @throws \Metaregistrar\EPP\eppException
      */
     public static function getDomainContactId(
         eppConnection $connection,
@@ -362,7 +323,7 @@ class EppHelper
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $connection->request($info);
 
         return $contactType === eppContactHandle::CONTACT_TYPE_REGISTRANT
@@ -373,33 +334,20 @@ class EppHelper
     /**
      * Create Contact for a domain
      *
-     * @param eppConnection $connection
-     * @param string $email
-     * @param string|null $telephone
-     * @param string $name
-     * @param string|null $organization
-     * @param string|null $address
-     * @param string|null $postcode
-     * @param string|null $city
-     * @param string|null $state
-     * @param string|null $countryCode
-     * @param string|null $contactType
-     * @param string|null $password
-     * @return ContactData
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If phone number is invalid
      */
     public static function createContact(
         eppConnection $connection,
         string $email,
         ?string $telephone,
         string $name,
-        ?string $organization = null,
         ?string $address,
         ?string $postcode,
         ?string $city,
         ?string $state,
         ?string $countryCode,
+        ?string $organization = null,
         ?string $contactType = null,
         ?string $password = null
     ): ContactData {
@@ -425,7 +373,7 @@ class EppHelper
         $contact = new eppCreateContactRequest($contactInfo);
 
         // Include more details in the response
-        /** @var eppCreateContactResponse $response */
+        /** @var \Metaregistrar\EPP\eppCreateContactResponse $response */
         $response = $connection->request($contact);
 
         return ContactData::create([
@@ -445,14 +393,9 @@ class EppHelper
     /**
      * Set or update the given contact on the given domain name.
      *
-     * @param \Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\EppConnection $connection
-     * @param string $domainName
-     * @param string $contactType One of: reg, admin, billing, tech
-     * @param string $contactId
+     * @param string $contactType One of: reg, admin, billing, teche
      *
-     * @return \Metaregistrar\EPP\eppUpdateResponse
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function setDomainContact(
         eppConnection $connection,
@@ -488,11 +431,14 @@ class EppHelper
 
     /**
      * Query list of existing transfer-IN requests.
+     *
+     * @throws \DOMException
+     * @throws \Metaregistrar\EPP\eppException
      */
     public static function queryTransferList(eppConnection $connection, string $domain): EppQueryTransferListResponse
     {
         $transferQueryRequest = new EppQueryTransferListRequest($domain);
-        /** @var EppQueryTransferListResponse $transferQueryResponse */
+        /** @var \Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Responses\EppQueryTransferListResponse $transferQueryResponse */
         $transferQueryResponse = $connection->request($transferQueryRequest);
 
         return $transferQueryResponse;
@@ -503,19 +449,11 @@ class EppHelper
      *
      * This method will handle the request transfer and then will try to automatically approve the request.
      *
-     * @param eppConnection $connection
-     * @param string $domain
-     * @param array $nameServers
-     * @param string|null $registrantId
-     * @param string|null $adminContactId
-     * @param string|null $billingContactId
-     * @param string|null $techContactId
-     * @param string|null $eppCode
      * @param int $renewYears How many years to renew the domain for upon successful transfer
-     * @return eppTransferResponse
      *
-     * @throws eppException If command fails
-     * @throws ProvisionFunctionError If domain is not transferrable
+     * @throws \DOMException
+     * @throws \Metaregistrar\EPP\eppException If command fails
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError If domain is not transferrable
      */
     public static function transferRequest(
         eppConnection $connection,
@@ -532,11 +470,11 @@ class EppHelper
         $checkData = $transferCheck->getData();
 
         if (!$transferCheck->isAvailable()) {
-            return self::errorResult($transferCheck->getResultReason(), $checkData);
+            self::errorResult($transferCheck->getResultReason(), $checkData);
         }
 
         if (!empty($checkData['TRANSFERLOCK'])) {
-            return self::errorResult('Domain is currently transfer-locked', $checkData);
+            self::errorResult('Domain is currently transfer-locked', $checkData);
         }
 
         // Get Domain Info
@@ -550,36 +488,6 @@ class EppHelper
         $domainInfo->setPeriod($renewYears);
         $domainInfo->setPeriodUnit('y');
 
-        // This doesn't appear to do anything!!
-        // // Add Registrant Contact
-        // if (!is_null($registrantId)) {
-        //     $domainInfo->setRegistrant(new eppContactHandle($registrantId));
-        // }
-        //
-        // // Add Contacts
-        // if (!is_null($adminContactId)) {
-        //     $domainInfo->addContact(new eppContactHandle($adminContactId, eppContactHandle::CONTACT_TYPE_ADMIN));
-        // }
-        //
-        // if (!is_null($billingContactId)) {
-        //     $domainInfo->addContact(new eppContactHandle($billingContactId, eppContactHandle::CONTACT_TYPE_TECH));
-        // }
-
-        // if (!is_null($techContactId)) {
-        //     $domainInfo->addContact(new eppContactHandle($techContactId, eppContactHandle::CONTACT_TYPE_BILLING));
-        // }
-        //
-        // // Set Name Servers
-        // self::validateNameServers($nameServers);
-
-        // // Add Name Servers
-        // $domainInfo = self::addNameServers($connection, $domainInfo, $nameServers);
-
-        // // Check if we have the name servers yet
-        // if (count($domainInfo->getHosts()) < 1) {
-        //     return ['error' => 'We were unable to add name servers for the domain!'];
-        // }
-
         // Using our custom transfer request here in order to support Hexonet's USERTRANSFER for internal transfers
         $transferRequest = new eppTransferRequest(eppTransferRequest::OPERATION_REQUEST, $domainInfo);
         if (!empty($checkData['USERTRANSFERREQUIRED'])) {
@@ -587,24 +495,29 @@ class EppHelper
         }
 
         // Process Response
-        /** @var eppTransferResponse */
+        /** @var \Metaregistrar\EPP\eppTransferResponse */
         return $connection->request($transferRequest);
     }
 
+    /**
+     * @throws \DOMException
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public static function checkTransfer(
         eppConnection $connection,
         string $domain,
         ?string $eppCode = null
     ): EppCheckTransferResponse {
         try {
-            /** @var EppCheckTransferResponse $response */
+            /** @var \Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Responses\EppCheckTransferResponse $response */
             $response = $connection->request(new EppCheckTransferRequest($domain, $eppCode));
         } catch (eppException $e) {
-            /** @var EppCheckTransferResponse $response */
             if (!$response = $e->getResponse()) {
                 throw $e; // unexpected error
             }
 
+            /** @var \Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Responses\EppCheckTransferResponse $response */
             if ('2' !== substr((string)$response->getCode(), 0, 1)) {
                 throw $e; // non 2xx errors are unrelated to the checked domain status
             }
@@ -613,37 +526,29 @@ class EppHelper
         $checkData = $response->getData();
 
         if (!empty($checkData['TRANSFERLOCK'])) {
-            throw self::errorResult('Domain is currently transfer-locked', ['check_data' => $checkData]);
+            self::errorResult('Domain is currently transfer-locked', ['check_data' => $checkData]);
         }
 
         if ($checkData['AUTHISVALID'] === 'NO') {
-            throw self::errorResult('EPP Code is invalid', ['check_data' => $checkData]);
+            self::errorResult('EPP Code is invalid', ['check_data' => $checkData]);
         }
 
         if (empty($eppCode) && !empty($checkData['AUTHREQUIRED'])) {
-            throw self::errorResult('EPP Code is required to initiate transfer', ['check_data' => $checkData]);
+            self::errorResult('EPP Code is required to initiate transfer', ['check_data' => $checkData]);
         }
 
         if (!$response->isAvailable()) {
-            throw self::errorResult($response->getUnavailableReason(), ['check_data' => $checkData]);
+            self::errorResult($response->getUnavailableReason(), ['check_data' => $checkData]);
         }
 
         return $response;
     }
 
     /**
-     * @param eppConnection $connection
-     * @param string $domainName
      * @param int $period Registration period in years
-     * @param string $registrantId
-     * @param string $adminContactId
-     * @param string $billingContactId
-     * @param string $techContactId
-     * @param array $nameServers
-     * @return array
      *
-     * @throws eppException If command fails
-     * @throws ProvisionFunctionError If NS cannot be added
+     * @throws \Metaregistrar\EPP\eppException If command fails
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError If NS cannot be added
      */
     public static function createDomain(
         eppConnection $connection,
@@ -672,7 +577,7 @@ class EppHelper
 
         // Check if we have the name servers yet
         if (count($domain->getHosts()) < 1) {
-            return self::errorResult('We were unable to add name servers for the domain!', [
+            self::errorResult('We were unable to add name servers for the domain!', [
                 'domain' => $domainName,
                 'nameservers' => $nameServers
             ]);
@@ -685,7 +590,7 @@ class EppHelper
         // Create the domain
         $create = new eppCreateDomainRequest($domain);
 
-        /** @var eppCreateDomainResponse */
+        /** @var \Metaregistrar\EPP\eppCreateDomainResponse $response */
         $response = $connection->request($create);
 
         return [
@@ -698,20 +603,17 @@ class EppHelper
     /**
      * Add and check name servers to a domain
      *
-     * @param eppConnection $connection
-     * @param eppDomain $domain
-     * @param array $nameServers
-     * @return eppDomain
-     * @throws eppException
+     * @throws \Metaregistrar\EPP\eppException
      */
     private static function addNameServers(eppConnection $connection, eppDomain $domain, array $nameServers): eppDomain
     {
         // Check our name servers
-        $nameServers = collect($nameServers);
-        $availableHosts = self::checkHosts($connection, $nameServers);
+        /** @var \Illuminate\Support\Collection $nameServersCollection */
+        $nameServersCollection = collect($nameServers);
+        $availableHosts = self::checkHosts($connection, $nameServersCollection);
 
         foreach ($availableHosts as $nameServer => $available) {
-            $nameServerData = $nameServers->where('host', $nameServer)->first();
+            $nameServerData = $nameServersCollection->where('host', $nameServer)->first();
 
             // In case this host is not known and it's available to be created - attempt to create it. If it's unavailable for creation - just add it to the domain
             if ($available) {
@@ -739,16 +641,7 @@ class EppHelper
      *
      * Contact IDs should be passed as identifier strings.
      *
-     * @param eppConnection $connection
-     * @param string $domainName
-     * @param array|null $nameServers
-     * @param string|null $registrantContactId
-     * @param string|null $adminContactId
-     * @param string|null $billingContactId
-     * @param string|null $techContactId
-     * @return eppUpdateResponse
-     *
-     * @throws eppException If command fails
+     * @throws \Metaregistrar\EPP\eppException If command fails
      */
     public static function updateDomain(
         eppConnection $connection,
@@ -769,7 +662,7 @@ class EppHelper
         $addData = new eppDomain($domainName);
 
         // Check the results and the details that we have to update
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $connection->request($domainInfo);
 
         // Update Name Servers
@@ -841,16 +734,12 @@ class EppHelper
         // Save all the changes
         $update = new eppUpdateDomainRequest($domain, $addData, $removeData, $updateData);
 
-        /** @var eppUpdateResponse */
+        /** @var \Metaregistrar\EPP\eppUpdateResponse */
         return $connection->request($update);
     }
 
     /**
      * Checks for valid contact by ID
-     *
-     * @param eppConnection $connection
-     * @param string $contactId
-     * @return bool
      */
     public static function isValidContactId(eppConnection $connection, string $contactId): bool
     {
@@ -865,16 +754,12 @@ class EppHelper
     /**
      * Get Contact Info
      *
-     * @param eppConnection $connection
-     * @param string $contactId
-     * @return ContactData
-     *
-     * @throws eppException If command fails E.g., if contact id is invalid
+     * @throws \Metaregistrar\EPP\eppException If command fails E.g., if contact id is invalid
      */
     public static function getContactInfo(eppConnection $connection, string $contactId): ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
-        /** @var eppInfoContactResponse */
+        /** @var \Metaregistrar\EPP\eppInfoContactResponse $response */
         $response = $connection->request($request);
 
         return ContactData::create([
@@ -895,8 +780,7 @@ class EppHelper
     /**
      * Return a normalized array with names servers ['host' => 'hostname', 'ip' => 'ipAddress']
      *
-     * @param eppHost[] $nameServers    Array with eppHost objects
-     * @return array
+     * @param eppHost[] $nameServers Array with eppHost objects
      */
     private static function parseNameServers(array $nameServers): array
     {
@@ -914,11 +798,6 @@ class EppHelper
         return $result;
     }
 
-    /**
-     * @param eppConnection $connection
-     * @param Collection $hosts
-     * @return array|null
-     */
     public static function checkHosts(eppConnection $connection, Collection $hosts): ?array
     {
         try {
@@ -931,9 +810,8 @@ class EppHelper
             $check = new eppCheckRequest($checkHost);
 
             if ($response = $connection->request($check)) {
-                $checks = $response->getCheckedHosts();
-
-                return $checks;
+                /** @var \Metaregistrar\EPP\eppCheckResponse $response */
+                return $response->getCheckedHosts();
             }
 
             return null;
@@ -942,12 +820,6 @@ class EppHelper
         }
     }
 
-    /**
-     * @param eppConnection $connection
-     * @param string $host
-     * @param string|null $ip
-     * @return bool
-     */
     public static function createHost(eppConnection $connection, string $host, string $ip = null): bool
     {
         try {
@@ -966,9 +838,7 @@ class EppHelper
     /**
      * Make sure that we have the details in the right format.
      *
-     * @param bool $sandbox
-     * @param array $eppConnectionData
-     * @return array
+     * @throws \RuntimeException
      */
     public static function validateParseEppConnectionData(bool $sandbox, array $eppConnectionData): array
     {
@@ -993,7 +863,8 @@ class EppHelper
      * Validates the provider name servers. Just.In.Case
      *
      * @param array $nameServers
-     * @throws ProvisionFunctionError
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public static function validateNameServers(array $nameServers): void
     {
@@ -1002,10 +873,6 @@ class EppHelper
                 throw (new ProvisionFunctionError('No valid host for name server found in name server configuration!'))
                     ->withData(['nameservers' => $nameServers]);
             }
-
-            // if (!is_null($nameServer['ip']) && !filter_var($nameServer['ip'], FILTER_VALIDATE_IP)) {
-            //     throw new ProvisionFunctionError('No valid IP Address for name server found in name server configuration!');
-            // }
         }
     }
 
@@ -1018,7 +885,9 @@ class EppHelper
      * @param array $debug Error debug
      * @param Throwable|null $previous Encountered exception
      *
-     * @throws ProvisionFunctionError
+     * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public static function errorResult($message, $data = [], $debug = [], ?Throwable $previous = null): void
     {
@@ -1029,8 +898,6 @@ class EppHelper
 
     /**
      * Generates a random auth code containing lowercase letters, uppercase letters, numbers and special characters.
-     *
-     * @return string
      */
     private static function generateValidAuthCode(int $length = 12): string
     {

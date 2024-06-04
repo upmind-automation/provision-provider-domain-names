@@ -15,6 +15,8 @@ class EppQueryTransferListRequest extends eppRequest
      * @param string|null $domainPattern Domain name search pattern e.g., foo.com or *.com
      * @param int $limit Number of results to return (pagination)
      * @param int $offset Offset of results to return (pagination)
+     *
+     * @throws \DOMException
      */
     public function __construct(?string $domainPattern = null, int $limit = 10, int $offset = 0)
     {
