@@ -719,6 +719,8 @@ class Countries
 
     /**
      * Normalize the given country code to upper-case.
+     *
+     * @param string|null $countryCode ISO alpha-2 country code
      */
     public static function normalizeCode($countryCode): ?string
     {
@@ -749,6 +751,7 @@ class Countries
         }
 
         $countries = new \PragmaRX\Countries\Package\Countries();
+        // @phpstan-ignore-next-line
         return $countries->where('cca2', $countryCode)
             ->first()
             ->hydrateStates()
@@ -765,11 +768,12 @@ class Countries
             return null;
         }
 
-        if (!$stateCode = strtolower(trim($stateCode ?? ''))) {
+        if (!$stateCode = strtolower(trim($stateCode))) {
             return null;
         }
 
         $countries = new \PragmaRX\Countries\Package\Countries();
+        // @phpstan-ignore-next-line
         return $countries->where('cca2', $countryCode)
                 ->first()
                 ->hydrateStates()
@@ -934,18 +938,13 @@ class Countries
             'û' => 'u',
             'ü' => 'u',
             'ý' => 'y',
-            'ý' => 'y',
             'þ' => 'b',
             'ÿ' => 'y',
             'ƒ' => 'f',
             'ă' => 'a',
-            'î' => 'i',
-            'â' => 'a',
             'ș' => 's',
             'ț' => 't',
             'Ă' => 'A',
-            'Î' => 'I',
-            'Â' => 'A',
             'Ș' => 'S',
             'Ț' => 'T',
         ];
