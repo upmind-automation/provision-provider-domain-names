@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\EuroDNS\Helper;
 
-use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
@@ -245,6 +244,8 @@ class EuroDNSApi
      * @param UpdateDomainContactParams $updateDomainContactParams The parameters for updating the registrant contact.
      *
      * @return array An array containing the result of the update operation.
+     *
+     * @throws \Throwable
      */
     public function updateRegistrantContactDetails(string $domainName, UpdateDomainContactParams $updateDomainContactParams): array
     {
@@ -521,6 +522,8 @@ class EuroDNSApi
      * @param string $action
      *
      * @return string $contact
+     *
+     * @throws \Throwable
      */
     private function setContactUpdate($action)
     {
@@ -562,7 +565,6 @@ class EuroDNSApi
      * Function to split the name into firstname and last name based on the space between them
      * if there is no speration then take firstname and last name as same
      */
-
      private function splitName($fullName)
      {
          // Check if the full name is empty
@@ -576,8 +578,8 @@ class EuroDNSApi
          $nameParts = explode(' ', $fullName);
 
          // Set first name and last name
-         $firstName = isset($nameParts[0]) ? $nameParts[0] : '';
-         $lastName = isset($nameParts[1]) ? $nameParts[1] : $nameParts[0]; // If space is not there, use the whole name as the last name
+         $firstName = $nameParts[0] ?? '';
+         $lastName = $nameParts[1] ?? $nameParts[0]; // If space is not there, use the whole name as the last name
 
          // Create an array with first name and last name
          $nameArray = [
@@ -672,7 +674,6 @@ class EuroDNSApi
      *
      * @return mixed $resdataArray An array containing relevant details based on the response type.
      */
-
     private function processResponse($response, $type = "")
     {
         $dom = new \DOMDocument();
@@ -716,7 +717,7 @@ class EuroDNSApi
                     ] ;
                     break;
                 }
-                //other wise extract deatils from the response and then assign to the return array
+                // Otherwise, extract details from the response and then assign to the return array
                 $msgId = $this->getNodeValueIfExists($xpath, './poll:message/message:id', $childNode);
                 $createDate = $this->getNodeValueIfExists($xpath, './poll:message/message:crDate', $childNode);
                 $class = $this->getNodeValueIfExists($xpath, './poll:message/message:class', $childNode);
@@ -884,10 +885,10 @@ class EuroDNSApi
         if ($nodeList->length > 0) {
             // Return the node value
             return $nodeList->item(0)->nodeValue;
-        } else {
-            // Return null
-            return null;
         }
+
+        // Return null
+        return null;
     }
 
     /**
@@ -973,6 +974,8 @@ class EuroDNSApi
      * @param array $data - Additional data for the transfer.
      *
      * @return array - Result of the transfer initiation.
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer($domainName, $data): array
     {
@@ -1004,10 +1007,11 @@ class EuroDNSApi
     }
 
     /**
-     * This function is used to give nameserver details manually beacuse
-     *  upmind not providing any options to give nameserver deatils at transfer
+     * This function is used to give nameserver details manually because
+     * upmind not providing any options to give nameserver details at transfer
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-
     public function setManualNS($type, $domainName)
     {
         //check for there is any lookup nameservers available for this domain name
@@ -1262,10 +1266,12 @@ class EuroDNSApi
      *
      * ToDo: Validate if method is required, as it is not used.
      *
-     * @param ContactParams $contactParams - The contact parameters.
-     * @param string $type - The type of contact ('create', 'billing', 'tech', 'admin').
+     * @param  ContactParams  $contactParams  - The contact parameters.
+     * @param  string  $type  - The type of contact ('create', 'billing', 'tech', 'admin').
      *
      * @return array - An array representing the contact parameters.
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      *
      * @phpstan-ignore method.unused
      */
@@ -1590,6 +1596,8 @@ class EuroDNSApi
     }
     /**
      * Generate XML request for transfer registration.
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function generateDomainTransferRequest(string $domainName): string
     {
@@ -1638,6 +1646,8 @@ class EuroDNSApi
      * @param bool $additionalInfoFlag Flag to include additional information in the update.
      *
      * @return string The generated XML request.
+     *
+     * @throws \Throwable
      */
     private function generateDomainUpdateRequest(string $domainName, string $updateType, bool $additionalInfoFlag): string
     {
