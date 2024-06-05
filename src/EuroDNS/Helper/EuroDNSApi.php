@@ -516,6 +516,26 @@ class EuroDNSApi
     }
 
     /**
+     * ToDo: Validate if method is required, as it is not used.
+     *
+     * @phpstan-ignore method.unused
+     */
+    private function sanitizeData($data)
+    {
+        $sanitizedData = [];
+        foreach ($data as $key => $value) {
+            // Check if the value is an array itself and recursively sanitize
+            if (is_array($value)) {
+                $sanitizedData[$key] = $this->sanitizeData($value);
+            } else {
+                // Sanitize the value
+                $sanitizedData[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+            }
+        }
+        return $sanitizedData;
+    }
+
+    /**
      * FUNCTION setContactUpdate
      * Set contact details for update action from the provided parameters.
      *
