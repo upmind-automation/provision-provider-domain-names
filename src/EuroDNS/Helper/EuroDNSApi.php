@@ -372,7 +372,7 @@ class EuroDNSApi
         }
 
         return [
-            'count_remaining' => $countRemaining,
+            'count_remaining' => $countRemaining ?? 0,
             'notifications' => $messageArray,
         ];
     }
@@ -822,7 +822,7 @@ class EuroDNSApi
                 ];
             }
 
-            return $contactDetails;
+            return $contactDetails ?? [];
         } elseif($type == 'check') {
             //processing the check response
             $cdNodes = $xpath->query('//domain:check/domain:cd');
@@ -1016,6 +1016,7 @@ class EuroDNSApi
         $i = 1;
         // Loop through name servers and generate XML
         foreach ($nameserversArray as $key => $val) {
+            // @phpstan-ignore-next-line
             $host = isset($val['host']) ? $val['host'] : $val;
 
             // Check if the host is not empty
@@ -1256,10 +1257,14 @@ class EuroDNSApi
     /**
      * Function to set contact parameter details based on ContactParams and type.
      *
+     * ToDo: Validate if method is required, as it is not used.
+     *
      * @param ContactParams $contactParams - The contact parameters.
      * @param string $type - The type of contact ('create', 'billing', 'tech', 'admin').
      *
      * @return array - An array representing the contact parameters.
+     *
+     * @phpstan-ignore method.unused
      */
     private function setContactParams(ContactParams $contactParams, string $type): array
     {
@@ -1314,9 +1319,13 @@ class EuroDNSApi
     /**
      * Function to parse contact details for contact update from the provided array.
      *
+     * ToDo: Validate if method is required, as it is not used.
+     *
      * @param array $contact - The array representing contact details.
      *
      * @return array - An array containing parsed contact information for contact update.
+     *
+     * @phpstan-ignore method.unused
      */
     private function parseContactUpdate(array $contact)
     {
