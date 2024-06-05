@@ -43,10 +43,7 @@ class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    /**
-     * @var EuroDNSApi
-     */
-    protected EuroDNSApi $api;
+    protected EuroDNSApi|null $api = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -66,6 +63,8 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * Default poll function
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(PollParams $params): PollResult
     {
@@ -78,7 +77,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if there is an error in the poll response
         if(isset($poll['error'])) {
             // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$poll['msg']), ['response' => $poll]);
+            $this->errorResult(sprintf((string)$poll['msg']), ['response' => $poll]);
         }
 
         // Create a PollResult object from the poll response
@@ -87,6 +86,9 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * Check the availability of multiple domains.
+     *
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
@@ -105,7 +107,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if there is an error in the domains response
         if(isset($domainsResponse['error'])) {
             // Throw an exception with the error message
-            throw $this->errorResult(sprintf((string)$domainsResponse['msg']), ['response' => $domainsResponse]);
+            $this->errorResult(sprintf((string)$domainsResponse['msg']), ['response' => $domainsResponse]);
         }
 
         // Create a DacResult object with the domain availability information
@@ -117,7 +119,6 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Function to connect to API class file in Helper
      */
-
     protected function api(): EuroDNSApi
     {
         if (isset($this->api)) {
@@ -129,6 +130,8 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
@@ -148,37 +151,40 @@ class Provider extends DomainNames implements ProviderInterface
 
             // Retrieve and return domain information after successful registration
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
-        } else {
-            // Throw an exception with the error message if domain registration fails
-            throw $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
         }
+
+        // Throw an exception with the error message if domain registration fails
+        $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
     }
 
     /**
      * Function to check  all the contact details are given while registration
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-
     private function checkRegisterParams($params): void
     {
         if (!Arr::has($params, 'registrant.register')) {
-            throw $this->errorResult('Registrant contact data is required!');
+            $this->errorResult('Registrant contact data is required!');
         }
 
         if (!Arr::has($params, 'tech.register')) {
-            throw $this->errorResult('Tech contact data is required!');
+            $this->errorResult('Tech contact data is required!');
         }
 
         if (!Arr::has($params, 'admin.register')) {
-            throw $this->errorResult('Admin contact data is required!');
+            $this->errorResult('Admin contact data is required!');
         }
 
         if (!Arr::has($params, 'billing.register')) {
-            throw $this->errorResult('Billing contact data is required!');
+            $this->errorResult('Billing contact data is required!');
         }
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
@@ -195,14 +201,16 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$registerDomain['error']) {
             // Throw an exception indicating that the transfer for the domain was successfully created
             return $this->_getInfo($domainName, sprintf('Transfer for %s domain successfully created! Scheduled for transfer!', $domainName));
-        } else {
-            // Throw an exception with the error message if domain transfer initiation fails
-            throw $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
         }
+
+        // Throw an exception with the error message if domain transfer initiation fails
+        $this->errorResult(sprintf($registerDomain['msg']), ['response' => $registerDomain]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(RenewParams $params): DomainResult
     {
@@ -219,14 +227,16 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$renew['error']) {
             // If renewal is successful, return domain information
             return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
-        } else {
-            // Throw an exception with the error message if domain renewal fails
-            throw $this->errorResult(sprintf($renew['msg']), ['response' => $renew]);
         }
+
+        // Throw an exception with the error message if domain renewal fails
+        $this->errorResult(sprintf($renew['msg']), ['response' => $renew]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
@@ -245,7 +255,7 @@ class Provider extends DomainNames implements ProviderInterface
      *
      * @return DomainResult - An instance of DomainResult containing the domain information.
      *
-     * @throws ApiException - If an error occurs during the API call.
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError - If an error occurs during the API call.
      */
 
     private function _getInfo(string $domainName, string $message): DomainResult
@@ -256,7 +266,7 @@ class Provider extends DomainNames implements ProviderInterface
         // Check if the API response contains an error
         if(isset($domainInfo['error'])) {
             // Throw an exception with the error message
-            throw $this->errorResult($domainInfo['msg'], ['response' => $domainInfo]);
+            $this->errorResult($domainInfo['msg'], ['response' => $domainInfo]);
         }
         // Remove sensitive information (e.g., authCode) before creating the DomainResult
         unset($domainInfo['authCode']);
@@ -267,6 +277,8 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
@@ -280,14 +292,16 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$updateContact['error']) {
             // Create a ContactResult instance with the success message
             return ContactResult::create($updateContact['msg']);
-        } else {
-            // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateContact['msg']), ['response' => $updateContact]);
         }
+
+        // Throw an exception with the error message if the update fails
+        $this->errorResult(sprintf($updateContact['msg']), ['response' => $updateContact]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
@@ -310,14 +324,16 @@ class Provider extends DomainNames implements ProviderInterface
 
             return NameserversResult::create()
                                     ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
-        } else {
-            // Throw an exception with the error message if the update fails
-            throw $this->errorResult(sprintf($updateNS['msg']), ['response' => $updateNS]);
         }
+
+        // Throw an exception with the error message if the update fails
+        $this->errorResult(sprintf($updateNS['msg']), ['response' => $updateNS]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setLock(LockParams $params): DomainResult
     {
@@ -348,14 +364,16 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$responseLock['error']) {
             // Create a DomainResult instance with a success message
             return $domainResult->setLocked($lock);
-        } else {
-            // Throw an exception with the error message if the action fails
-            throw $this->errorResult($responseLock['msg'], ['response' => $responseLock]);
         }
+
+        // Throw an exception with the error message if the action fails
+        $this->errorResult($responseLock['msg'], ['response' => $responseLock]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
@@ -372,14 +390,16 @@ class Provider extends DomainNames implements ProviderInterface
         if (!$setAuto['error']) {
             // Create a DomainResult instance with a success message
             return $this->_getInfo($domainName, sprintf('Auto-renew mode  for %s domain was updated!', $domainName));
-        } else {
-            // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($setAuto['msg']), ['response' => $setAuto]);
         }
+
+        // Throw an exception with the error message if the action fails
+        $this->errorResult(sprintf($setAuto['msg']), ['response' => $setAuto]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
@@ -395,17 +415,19 @@ class Provider extends DomainNames implements ProviderInterface
             return EppCodeResult::create([
                 'epp_code' => $eppCode['authCode'],
             ])->setMessage('EPP/Auth code obtained');
-        } else {
-            // Throw an exception with the error message if the action fails
-            throw $this->errorResult(sprintf($eppCode['msg']), ['response' => $eppCode]);
         }
+
+        // Throw an exception with the error message if the action fails
+        $this->errorResult(sprintf($eppCode['msg']), ['response' => $eppCode]);
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Not Available on this module');
+        $this->errorResult('Not Available on this module');
     }
 }
