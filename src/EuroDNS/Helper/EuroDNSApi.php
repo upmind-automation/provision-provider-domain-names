@@ -46,6 +46,10 @@ class EuroDNSApi
 
     /**
      * @var string|null
+     *
+     * ToDo: Evaluate if this property is necessary, as it is only written but never read.
+     *
+     * @phpstan-ignore-next-line
      */
     private $request;
 
