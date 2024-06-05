@@ -1614,6 +1614,7 @@ class EuroDNSApi
         </request>
         XML;
     }
+
     /**
      * Generate XML request for transfer registration.
      *
