@@ -79,7 +79,7 @@ class EuroDNSApi
      *
      * @return array<string, bool|string>|array<DacDomain> Array of DacDomain objects representing domain availability, or error.
      *
-     * @throws Throwable
+     * @throws \Throwable
      */
     public function checkDomains(array $domainList): array
     {
@@ -508,25 +508,6 @@ class EuroDNSApi
             </contact:{$action}>";
 
         return $contact;
-    }
-
-    /**
-     *
-     */
-
-    private function sanitizeData($data)
-    {
-        $sanitizedData = [];
-        foreach ($data as $key => $value) {
-            // Check if the value is an array itself and recursively sanitize
-            if (is_array($value)) {
-                $sanitizedData[$key] = $this->sanitizeData($value);
-            } else {
-                // Sanitize the value
-                $sanitizedData[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-            }
-        }
-        return $sanitizedData;
     }
 
     /**
