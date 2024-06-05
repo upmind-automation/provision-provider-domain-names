@@ -123,7 +123,7 @@ class Dac
                     return $data;
                 }
 
-                // ToDo: Evalue if this is the best approach.
+                // ToDo: Evaluate if this is the best approach.
                 parse_str($line, $line);
 
                 // e.g., ['PROPERTY.DOMAINCHECK.2' => '210 Available']
