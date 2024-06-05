@@ -643,7 +643,6 @@ class EuroDNSApi
         $this->errorCode = $this->getCode($response);
         $response = preg_replace('/(\>(?!\<).*?)((\&)\3*)(.*?\<)/', '$1&amp;$4', $response);
         $response = utf8_encode($response);
-        $this->response = $response;
 
         if (isset($this->logger)) {
             $this->logger->debug('EuroDNS Response:' . $response);
