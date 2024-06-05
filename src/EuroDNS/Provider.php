@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\EuroDNS;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Throwable;
 use Illuminate\Support\Arr;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -27,8 +25,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
-use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
-use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
@@ -278,6 +274,7 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * @inheritDoc
      *
+     * @throws \Throwable
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
