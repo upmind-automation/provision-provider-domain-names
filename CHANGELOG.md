@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.3) - 2024-06-24
+
+- pdate EuroDNSApi::getDomainInfo(), ensure id is never empty
+
 ## [v2.12.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.2) - 2024-06-24
 
 - Update EuroDNS fix null organisation parameter
