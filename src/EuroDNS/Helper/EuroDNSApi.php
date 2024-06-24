@@ -445,7 +445,7 @@ class EuroDNSApi
                 <contact:type>billing</contact:type>
                 <contact:firstname>" . htmlspecialchars($nameBilling['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
                 <contact:lastname>" . htmlspecialchars($nameBilling['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
-                <contact:company>" . htmlspecialchars($billingDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:company>" . (empty($billingDetails['organisation'])) ? '' : htmlspecialchars($billingDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
                 <contact:address1>" . htmlspecialchars($billingDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
                 <contact:address2>" . htmlspecialchars($billingDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
                 <contact:city>" . htmlspecialchars($billingDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
@@ -460,7 +460,7 @@ class EuroDNSApi
                 <contact:type>org</contact:type>
                 <contact:firstname>" . htmlspecialchars($nameContact['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
                 <contact:lastname>" . htmlspecialchars($nameContact['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
-                <contact:company>" . htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:company>" . (empty($registrantDetails['organisation'])) ? '' : htmlspecialchars($registrantDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
                 <contact:address1>" . htmlspecialchars($registrantDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
                 <contact:address2>" . htmlspecialchars($registrantDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
                 <contact:city>" . htmlspecialchars($registrantDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
@@ -475,7 +475,7 @@ class EuroDNSApi
                 <contact:type>admin</contact:type>
                 <contact:firstname>" . htmlspecialchars($nameAdmin['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
                 <contact:lastname>" . htmlspecialchars($nameAdmin['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
-                <contact:company>" . htmlspecialchars($adminDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:company>" . (empty($adminDetails['organisation'])) ? '' : htmlspecialchars($adminDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
                 <contact:address1>" . htmlspecialchars($adminDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
                 <contact:address2>" . htmlspecialchars($adminDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
                 <contact:city>" . htmlspecialchars($adminDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
@@ -490,7 +490,7 @@ class EuroDNSApi
                 <contact:type>tech</contact:type>
                 <contact:firstname>" . htmlspecialchars($nameTech['first_name'], ENT_QUOTES, 'UTF-8') . "</contact:firstname>
                 <contact:lastname>" . htmlspecialchars($nameTech['last_name'], ENT_QUOTES, 'UTF-8') . "</contact:lastname>
-                <contact:company>" . htmlspecialchars($techDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
+                <contact:company>" . (empty($techDetails['organisation'])) ? '' : htmlspecialchars($techDetails['organisation'], ENT_QUOTES, 'UTF-8') . "</contact:company>
                 <contact:address1>" . htmlspecialchars($techDetails['address1'], ENT_QUOTES, 'UTF-8') . "</contact:address1>
                 <contact:address2>" . htmlspecialchars($techDetails['state'], ENT_QUOTES, 'UTF-8') . "</contact:address2>
                 <contact:city>" . htmlspecialchars($techDetails['city'], ENT_QUOTES, 'UTF-8') . "</contact:city>
