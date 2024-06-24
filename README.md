@@ -95,6 +95,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
  - [Nikolai Arsov](https://github.com/nikiarsov777)
  - [Codeline](https://codeline.fi/)
  - [PEWEO](https://www.peweo.com/)
+ - [Dan](https://github.com/domainregistrar)
  - [All Contributors](../../contributors)
 
 ## License
