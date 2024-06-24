@@ -203,7 +203,7 @@ class EuroDNSApi
 
             // Construct and return the array of domain details
             return [
-                'id' => $processedData['id'], // Domain ID
+                'id' => $processedData['id'] ?: 'n/a', // Domain ID
                 'domain' => (string) $processedData['domain'], // Domain name
                 'statuses' => [$processedData['statuses']], // domain status
                 'locked' => $lockedStatus,
