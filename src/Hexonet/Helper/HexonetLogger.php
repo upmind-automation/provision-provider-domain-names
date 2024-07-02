@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Hexonet\Helper;
 
-use HEXONET\Logger as BaseHexonetLogger;
-use HEXONET\Response as BaseHexonetResponse;
+use CNIC\HEXONET\Logger as BaseHexonetLogger;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -28,7 +27,12 @@ class HexonetLogger extends BaseHexonetLogger
         $this->logger = $logger;
     }
 
-    public function log(string $post, BaseHexonetResponse $r, ?string $error = null): void
+    /**
+     * @param string $post
+     * @param \CNIC\HEXONET\Response $r
+     * @param string|null  $error
+     */
+    public function log($post, $r, $error = null): void
     {
         // Compile the Message
         $message = implode("\n", [

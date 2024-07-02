@@ -157,6 +157,6 @@ class WhoisPrivacy
 
     public static function tldIsSupported(string $tld): bool
     {
-        return !in_array(Utils::getRootTld($tld), static::$unsupported);
+        return !in_array(Utils::getRootTld($tld), self::$unsupported);
     }
 }

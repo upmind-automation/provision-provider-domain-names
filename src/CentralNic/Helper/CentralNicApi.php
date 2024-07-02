@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\CentralNic\Helper;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
 use Upmind\ProvisionBase\Helper;
 use Metaregistrar\EPP\eppCheckDomainRequest;
 use Metaregistrar\EPP\eppCheckDomainResponse;
@@ -21,7 +19,6 @@ use Metaregistrar\EPP\eppCreateContactResponse;
 use Metaregistrar\EPP\eppCreateDomainRequest;
 use Metaregistrar\EPP\eppCreateDomainResponse;
 use Metaregistrar\EPP\eppCreateHostRequest;
-use Metaregistrar\EPP\eppCreateResponse;
 use Metaregistrar\EPP\eppDomain;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppHost;
@@ -30,17 +27,11 @@ use Metaregistrar\EPP\eppInfoContactResponse;
 use Metaregistrar\EPP\eppInfoDomainRequest;
 use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\eppRenewRequest;
-use Metaregistrar\EPP\eppRenewResponse;
 use Metaregistrar\EPP\eppTransferRequest;
 use Metaregistrar\EPP\eppTransferResponse;
-use Metaregistrar\EPP\eppUpdateContactRequest;
-use Metaregistrar\EPP\eppUpdateContactResponse;
 use Metaregistrar\EPP\eppUpdateDomainRequest;
 use Metaregistrar\EPP\eppUpdateDomainResponse;
-use Metaregistrar\EPP\eppUpdateResponse;
-use Metaregistrar\EPP\eppResponse;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\CentralNic\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -205,7 +196,7 @@ class CentralNicApi
         // Create the domain
         $create = new eppCreateDomainRequest($domain);
 
-        /** @var eppCreateDomainResponse */
+        /** @var eppCreateDomainResponse $response */
         $response = $this->connection->request($create);
 
         return [
@@ -251,6 +242,10 @@ class CentralNicApi
         $this->connection->request($renewRequest);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainInfo(string $domainName, bool $checkRegistrar = true): array
     {
         $domain = new eppDomain($domainName);
@@ -298,7 +293,6 @@ class CentralNicApi
             $mod
         );
 
-        /** @var eppUpdateDomainResponse $response */
         $this->connection->request($update);
 
         return $this->getContactInfo($contactID);
@@ -318,7 +312,6 @@ class CentralNicApi
             $mod
         );
 
-        /** @var eppUpdateDomainResponse $response */
         $this->connection->request($update);
 
         return $code;
@@ -354,7 +347,7 @@ class CentralNicApi
             new eppDomain($domainName),
             $addInfo,
             $removeInfo ?? null,
-            $updateInfo ?? null
+            null
         );
 
         /** @var eppUpdateDomainResponse $response */
@@ -448,11 +441,13 @@ class CentralNicApi
         return $response->getDomainNameservers();
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     private function createHost(string $host, ?string $ip): void
     {
         $create = new eppCreateHostRequest(new eppHost($host, $ip));
 
-        /** @var eppCreateHostResponse */
         $this->connection->request($create);
     }
 
@@ -535,9 +530,9 @@ class CentralNicApi
         }
 
         $check = new eppCheckRequest($checkHost);
-        /** @var eppCheckResponse $response */
+        /** @var \Metaregistrar\EPP\eppCheckResponse|null $response */
         $response = $this->connection->request($check);
 
-        return $response->getCheckedHosts();
+        return $response === null ? null : $response->getCheckedHosts();
     }
 }

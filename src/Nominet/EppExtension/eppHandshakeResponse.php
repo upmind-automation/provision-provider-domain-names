@@ -31,7 +31,7 @@ class eppHandshakeResponse extends eppResponse
     }
 
     /**
-     * @return array
+     * @return string
      */
     public function getDomains()
     {

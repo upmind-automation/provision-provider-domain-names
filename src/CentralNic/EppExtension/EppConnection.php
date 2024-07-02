@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\CentralNic\EppExtension;
 
-use Metaregistrar\EPP\eppCreateContactResponse;
-use Metaregistrar\EPP\eppInfoContactRequest;
-use Metaregistrar\EPP\eppPollRequest;
 use Metaregistrar\EPP\eppConnection as BaseEppConnection;
 use Psr\Log\LoggerInterface;
 

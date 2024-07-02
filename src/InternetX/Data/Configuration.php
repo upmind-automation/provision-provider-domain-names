@@ -13,7 +13,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $username API key
  * @property-read string $password Password
  * @property-read bool|null $sandbox Make API requests against the sandbox environment
- * @property-read bool|null $debug Whether or not to log API requests and responses
  */
 class Configuration extends DataSet
 {
@@ -23,7 +22,6 @@ class Configuration extends DataSet
             'username' => ['required', 'string', 'min:6'],
             'password' => ['required', 'string', 'min:3'],
             'sandbox' => ['nullable', 'boolean'],
-            'debug' => ['nullable', 'boolean'],
         ]);
     }
 }

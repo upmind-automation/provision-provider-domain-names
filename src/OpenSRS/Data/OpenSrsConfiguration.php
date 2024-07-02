@@ -11,7 +11,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $username Username of the account
  * @property-read string $key API key of the account
  * @property-read bool|null $sandbox Used for switching to testing environment
- * @property-read bool|null $debug Whether or not to debug log
  */
 class OpenSrsConfiguration extends DataSet
 {
@@ -21,7 +20,6 @@ class OpenSrsConfiguration extends DataSet
             'username' => ['required', 'string', 'min:3'],
             'key' => ['required', 'string', 'min:6'],
             'sandbox' => ['boolean'],
-            'debug' => ['boolean'],
         ]);
     }
 }

@@ -6,7 +6,6 @@ namespace Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Responses;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppResponse;
 
 /**
@@ -15,7 +14,7 @@ use Metaregistrar\EPP\eppResponse;
 class EppQueryTransferListResponse extends eppResponse
 {
     /**
-     * @var string[]
+     * @var string[]|null
      */
     protected $extensionData;
 
@@ -52,8 +51,8 @@ class EppQueryTransferListResponse extends eppResponse
         $extensionNode = $this->xPath()->query('/epp:epp/epp:response/epp:extension');
         $extension = $extensionNode->item(0);
 
-        /** @var \DomElement $child */
         foreach ($extension->childNodes as $child) {
+            /** @var \DomElement $child */
             if ($child->nodeName === 'keyvalue:extension') {
                 $keyValuesNode = $child;
                 break;
@@ -66,8 +65,8 @@ class EppQueryTransferListResponse extends eppResponse
 
         $data = [];
 
-        /** @var \DomElement $child */
         foreach ($keyValuesNode->childNodes as $child) {
+            /** @var \DomElement $child */
             if ($child->nodeName === 'keyvalue:kv') {
                 $data[$child->getAttribute('key')] = $child->getAttribute('value');
             }

@@ -6,7 +6,6 @@ namespace Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension;
 
 use Metaregistrar\EPP\eppDomain;
 use Metaregistrar\EPP\eppException;
-use Metaregistrar\EPP\eppTransferRequest;
 use Metaregistrar\EPP\eppUpdateRequest;
 
 /**
@@ -16,9 +15,12 @@ class eppReleaseRequest extends eppUpdateRequest
 {
     /**
      * metaregEppTransferExtendedRequest constructor.
-     * @param string $operation
+     *
      * @param eppDomain $object
-     * @throws eppException
+     * @param string $newTag
+     *
+     * @throws \DOMException
+     * @throws \Metaregistrar\EPP\eppException
      */
     public function __construct(eppDomain $object, string $newTag)
     {
@@ -41,12 +43,6 @@ class eppReleaseRequest extends eppUpdateRequest
         $release->appendChild($this->createElement('r:registrarTag', $newTag));
 
         $update->appendChild($release);
-        // $update->appendChild($this->createElement('clTRID', "ABC-12345"));
         $this->getCommand()->appendChild($update);
-        // $this->addSessionId();
-        // $domainChild->appendChild($release);
-        // $commandExt = $this->createElement('command-ext:command-ext');
-        // $commandExt->appendChild($domainChild);
-        // $this->getExtension()->appendChild($commandExt);
     }
 }

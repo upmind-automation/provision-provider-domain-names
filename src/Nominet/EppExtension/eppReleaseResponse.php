@@ -29,18 +29,4 @@ class eppReleaseResponse extends eppResponse
     {
         return $this->queryPath('/epp:epp/epp:response/epp:resData/r:releasePending');
     }
-
-    // /**
-    //  * @return null|string
-    //  */
-    // public function getMsg() {
-    //     return $this->queryPath('/epp:epp/epp:response/response:result/result:msg');
-    // }
-
-    // /**
-    //  * @return null|string
-    //  */
-    // public function getDetails() {
-    //     return $this->queryPath('/epp:epp/epp:response/response:resData/resData:r:releasePending');
-    // }
 }

@@ -7,16 +7,12 @@ namespace Upmind\ProvisionProviders\DomainNames\RealtimeRegister\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use Illuminate\Support\Arr;
-use InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\Utils as PromiseUtils;
 use GuzzleHttp\Psr7\Response;
-use RuntimeException;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
@@ -24,7 +20,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\RealtimeRegister\Data\Configuration;
-use Upmind\ProvisionBase\Helper;
 
 /**
  * Class RealtimeRegisterApi
@@ -57,14 +52,16 @@ class RealtimeRegisterApi
     }
 
     /**
-     * @param string[] $domainList
+     * @param string[]  $domainList
      *
      * @return DacDomain[]
+     * @throws \Throwable
      */
     public function checkMultipleDomains(array $domainList): array
     {
         $checkPromises = array_map(function ($domainName): Promise {
-            return $this->asyncRequest("/v2/domains/{$domainName}/check")
+            /** @var \GuzzleHttp\Promise\Promise $promise */
+            $promise = $this->asyncRequest("/v2/domains/{$domainName}/check")
                 ->then(function (array $data) use ($domainName): DacDomain {
                     $available = (bool)$data['available'];
 
@@ -97,6 +94,8 @@ class RealtimeRegisterApi
                         'is_premium' => false,
                     ]);
                 });
+
+            return $promise;
         }, $domainList);
 
         return PromiseUtils::all($checkPromises)->wait();
@@ -105,6 +104,8 @@ class RealtimeRegisterApi
     /**
      * @param array<string,int>|string[] $contacts
      * @param string[] $nameservers
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(string $domainName, array $contacts, array $nameservers): void
     {
@@ -134,7 +135,9 @@ class RealtimeRegisterApi
     }
 
     /**
-     * @return Promise<array|null>
+     * Method returns a Promise with response of either null or array of response data
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function asyncRequest(
         string $command,
@@ -152,7 +155,8 @@ class RealtimeRegisterApi
             $requestParams['json'] = $body;
         }
 
-        return $this->client->requestAsync($method, $command, $requestParams)
+        /** @var \GuzzleHttp\Promise\Promise $promise */
+        $promise = $this->client->requestAsync($method, $command, $requestParams)
             ->then(function (Response $response): ?array {
                 $responseBody = trim($response->getBody()->__toString());
 
@@ -162,8 +166,13 @@ class RealtimeRegisterApi
 
                 return $this->parseResponseData($responseBody);
             });
+
+        return $promise;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function makeRequest(
         string $command,
         ?array $params = null,
@@ -173,6 +182,9 @@ class RealtimeRegisterApi
         return $this->asyncRequest($command, $params, $body, $method)->wait();
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseResponseData(string $result): array
     {
         $parsedResult = json_decode($result, true);
@@ -187,6 +199,9 @@ class RealtimeRegisterApi
         return $parsedResult;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainInfo(string $domainName): array
     {
         $command = "/v2/domains/{$domainName}";
@@ -232,6 +247,9 @@ class RealtimeRegisterApi
         ];
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseNameServers(array $nameServers): array
     {
         $result = [];
@@ -274,6 +292,9 @@ class RealtimeRegisterApi
         return false;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getContact(string $handle): ?ContactData
     {
         $command = "v2/customers/{$this->configuration->customer}/contacts/{$handle}";
@@ -286,6 +307,9 @@ class RealtimeRegisterApi
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getDomainEppCode(string $domainName): ?string
     {
         $command = "/v2/domains/{$domainName}";
@@ -298,6 +322,9 @@ class RealtimeRegisterApi
         return null;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAuthCode(string $domainName): ?string
     {
         $command = "/v2/domains/{$domainName}/update";
@@ -308,6 +335,9 @@ class RealtimeRegisterApi
         return $this->getDomainEppCode($domainName);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRenewalMode(string $domainName, bool $autoRenew)
     {
         $command = "/v2/domains/{$domainName}/update";
@@ -316,6 +346,9 @@ class RealtimeRegisterApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function pushTransfer(string $domainName, string $registrar): void
     {
         $this->makeRequest(
@@ -326,6 +359,9 @@ class RealtimeRegisterApi
         );
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
         $command = "/v2/domains/{$domainName}";
@@ -345,6 +381,9 @@ class RealtimeRegisterApi
         $this->makeRequest($command, null, $body, "POST");
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(string $domainName, int $period): void
     {
         $command = "/v2/domains/{$domainName}/renew";
@@ -356,6 +395,8 @@ class RealtimeRegisterApi
 
     /**
      * @param string[] $nameservers
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(string $domainName, array $nameservers): array
     {
@@ -371,6 +412,9 @@ class RealtimeRegisterApi
         return $this->parseNameservers($response['ns']);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function createHost(string $host, ?string $ip = null)
     {
         if (!$this->getHost($host)) {
@@ -393,17 +437,25 @@ class RealtimeRegisterApi
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getHost(string $hostName): ?array
     {
         $command = "/v2/hosts/{$hostName}";
 
         try {
             return $this->makeRequest($command);
-        } catch (RequestException $e) {
+        /** @phpstan-ignore catch.neverThrown */
+        } catch (RequestException) {
             return null;
         }
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
     {
         $command = "/v2/domains/{$domainName}/update";
@@ -417,6 +469,10 @@ class RealtimeRegisterApi
         return $this->getDomainInfo($domainName)['registrant'];
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function createContact(ContactParams $params): string
     {
         $handle = uniqid();
@@ -428,6 +484,10 @@ class RealtimeRegisterApi
         return $handle;
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function setContactParams(ContactParams $contactParams): array
     {
         return [
@@ -443,6 +503,9 @@ class RealtimeRegisterApi
         ];
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function initiateTransfer(string $domainName, string $eppCode, array $contacts): string
     {
         $command = "/v2/domains/{$domainName}/transfer";
@@ -476,6 +539,9 @@ class RealtimeRegisterApi
         return (string)$response['processId'];
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(int $limit, ?Carbon $since): ?array
     {
         $command = "/v2/processes";

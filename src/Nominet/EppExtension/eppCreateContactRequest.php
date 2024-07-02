@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension;
 
-use DOMElement;
 use Metaregistrar\EPP\eppCreateContactRequest as MetaRegistrarEppCreateContactRequest;
-use Metaregistrar\EPP\eppDomain;
-use Metaregistrar\EPP\eppException;
-use Metaregistrar\EPP\eppTransferRequest;
-use Metaregistrar\EPP\eppUpdateRequest;
 
 /**
  * Extended eppCreateContractRequest so we can set the Nominet contact create extension.
@@ -27,8 +22,10 @@ class eppCreateContactRequest extends MetaRegistrarEppCreateContactRequest
         ?string $companyNumber = null
     ): void {
         // reset extension
+        /** @phpstan-ignore-next-line  */
         if ($this->extension) {
             $this->getCommand()->removeChild($this->getExtension());
+            /** @phpstan-ignore-next-line  */
             $this->extension = null;
         }
 
@@ -44,9 +41,9 @@ class eppCreateContactRequest extends MetaRegistrarEppCreateContactRequest
 
         // set contact create stuff
 
-        /** @var DOMElement $create */
+        /** @var \DOMElement $create */
         $create = $this->getCommand()->getElementsByTagName('create')->item(0);
-        /** @var DOMElement $contactCreate */
+        /** @var \DOMElement $contactCreate */
         $contactCreate = $create->getElementsByTagName('contact:create')->item(0);
 
         $contactCreate->setAttribute('xmlns:contact', 'urn:ietf:params:xml:ns:contact-1.0');

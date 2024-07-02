@@ -10,7 +10,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\DacResult;
@@ -54,7 +53,8 @@ class Dac
      * @param string[] $tlds Top-level domains e.g., ['.com', '.net']
      * @param string $language Language code
      *
-     * @throws ProvisionFunctionError If DAC search fails
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError If DAC search fails
      *
      * @return DacResult
      */
@@ -97,12 +97,9 @@ class Dac
     /**
      * Process a DAC search response and return the result.
      *
-     * @param ResponseInterface $response
      * @param string[] $domains
      *
-     * @return DacResult
-     *
-     * @throws ProvisionFunctionError If DAC search response is invalid
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError If DAC search response is invalid
      */
     protected function processResponse(ResponseInterface $response, array $domains): DacResult
     {
@@ -115,7 +112,10 @@ class Dac
         }
 
         $lines = explode("\n", $response->getBody()->__toString());
-        $arrayDotData = collect($lines)
+        /** @var \Illuminate\Support\Collection $arrayDotDataCollection */
+        $arrayDotDataCollection = collect($lines);
+
+        $arrayDotData = $arrayDotDataCollection
             ->reduce(function (array $data, string $line) {
                 /** @var string $line DAC result line e.g., PROPERTY[DOMAINCHECK][2]=210 Available */
                 if (!$line = trim($line)) {
@@ -123,6 +123,7 @@ class Dac
                     return $data;
                 }
 
+                // ToDo: Evaluate if this is the best approach.
                 parse_str($line, $line);
 
                 // e.g., ['PROPERTY.DOMAINCHECK.2' => '210 Available']
@@ -173,6 +174,9 @@ class Dac
         ]);
     }
 
+    /**
+     * @throws \RuntimeException
+     */
     protected function checkCode(string $code): void
     {
         if ($code === '200') {

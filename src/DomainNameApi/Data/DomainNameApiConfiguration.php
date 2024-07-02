@@ -13,7 +13,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $username Username
  * @property-read string $password Password
  * @property-read bool|null $sandbox Use OTE
- * @property-read bool|null $debug Enable debug logging
  */
 class DomainNameApiConfiguration extends DataSet
 {
@@ -23,7 +22,6 @@ class DomainNameApiConfiguration extends DataSet
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
             'sandbox' => ['boolean'],
-            'debug' => ['boolean'],
         ]);
     }
 }

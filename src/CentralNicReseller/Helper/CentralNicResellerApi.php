@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Helper;
 
-use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
-use Upmind\ProvisionBase\Helper;
-use Metaregistrar\EPP\rrpproxyEppRenewalmodeRequest;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterContactParams;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
@@ -20,20 +14,16 @@ use CNIC\ClientFactory as CF;
 use CNIC\CNR\SessionClient as CentralNicResellerClient;
 use CNIC\HEXONET\Response as HexonetResponse;
 
-/**
- * Class CentralNic Reseller API
- *
- * @package Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Helper
- */
 class CentralNicResellerApi
 {
-    protected Configuration $configuration;
-
     protected CentralNicResellerClient $client;
 
+    /**
+     * @throws \Exception
+     */
     public function __construct(Configuration $configuration, LoggerInterface $logger)
     {
-        $this->client = self::establishConnection($configuration, $logger);
+        $this->client = $this->establishConnection($configuration, $logger);
     }
 
     public function __destruct()
@@ -46,10 +36,11 @@ class CentralNicResellerApi
     /**
      * Authenticate and establish a connection with the Domain Provider API and login.
      *
-     * @throws ProvisionFunctionError
+     * @throws \Exception
      */
     protected function establishConnection(Configuration $configuration, LoggerInterface $logger): CentralNicResellerClient
     {
+        /** @var \CNIC\CNR\SessionClient $client */
         $client = CF::getClient([
             "registrar" => "CNR"
         ]);
@@ -64,10 +55,7 @@ class CentralNicResellerApi
         }
 
         // Set Logging and Logger Handler
-        if ($configuration->debug) {
-            $client->enableDebugMode(true);
-            $client->setCustomLogger(new CentralNicResellerLogger($logger));
-        }
+        $client->setCustomLogger(new CentralNicResellerLogger($logger));
 
         return $client;
     }
@@ -75,9 +63,7 @@ class CentralNicResellerApi
     /**
      * Run a command against the API
      *
-     * @param string $command
-     * @param array $parameters
-     * @return HexonetResponse
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function runCommand(string $command, array $parameters = []): HexonetResponse
     {
@@ -107,6 +93,10 @@ class CentralNicResellerApi
         return $response;
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function initiateTransfer(
         string                 $domain,
         int                    $period,
@@ -168,6 +158,9 @@ class CentralNicResellerApi
         return $this->runCommand('TransferDomain', $params)->getHash();
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     private function transformContactParams(ContactParams $contact): array
     {
         $name = $contact->name ?: $contact->organisation;
@@ -175,7 +168,7 @@ class CentralNicResellerApi
 
         return [
             'firstname' => $firstName,
-            'lastname' => $lastName ?? $firstName,
+            'lastname' => !empty($lastName) ? $lastName : $firstName,
             'organization' => $contact->organisation,
             'email' => $contact->email,
             'phone' => Utils::internationalPhoneToEpp($contact->phone),
@@ -189,6 +182,9 @@ class CentralNicResellerApi
 
     /**
      * @return string Contact ID
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function createContact(ContactParams $contact): string
     {
@@ -197,6 +193,10 @@ class CentralNicResellerApi
         return $result['PROPERTY']['CONTACT'][0];
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function register(
         string                $domain,
         int                   $period,

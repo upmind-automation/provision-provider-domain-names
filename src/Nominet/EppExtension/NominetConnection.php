@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 class NominetConnection extends eppConnection
 {
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface|null
      */
     protected $logger;
 

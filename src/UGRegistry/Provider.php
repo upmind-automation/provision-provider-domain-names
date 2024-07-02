@@ -10,7 +10,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\Contract\LogsDebugData;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -38,7 +37,7 @@ use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\UGRegistry\Data\UGRegistryConfiguration;
 
-class Provider extends DomainNames implements ProviderInterface, LogsDebugData
+class Provider extends DomainNames implements ProviderInterface
 {
     /**
      * @var UGRegistryConfiguration
@@ -79,11 +78,18 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/ugregistry-logo.webp');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
         $domains = [];
@@ -132,6 +138,11 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         ]);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function register(RegisterDomainParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -141,7 +152,7 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         ], '/domains/check-availability', 'GET');
 
         if (empty($checkedDomains['data'][0]['available'])) {
-            return $this->errorResult('This domain is not available to register');
+            $this->errorResult('This domain is not available to register');
         }
 
         $data = [
@@ -176,8 +187,8 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
     }
 
     /**
-     * @param TransferParams $params
-     * @return DomainResult
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
@@ -195,15 +206,23 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
                 'POST'
             );
 
-            throw $this->errorResult('Domain transfer requested');
+            $this->errorResult('Domain transfer requested');
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function release(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(RenewParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -214,6 +233,11 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             ->setMessage('Domain renewed');
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -221,6 +245,11 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         return $this->_getDomain($domain, true);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $this->_updateRegisteredNameServer($params);
@@ -231,16 +260,27 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             ->setMessage('Nameservers updated');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getEppCode(EppParams $params): EppCodeResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -281,6 +321,11 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         return $this->_parseContactInfo($domainData['data']['domain']['contacts']['registrant']);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setLock(LockParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -303,12 +348,17 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             ->setMessage($message);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
         $domainData = $this->_getDomain(Utils::getDomain($params->sld, $params->tld));
         if ($domainData['renew'] == $params->auto_renew) {
-            return $this->errorResult(sprintf('Domain already is set to %s', $domainData['renew'] ? 'auto-renew' : 'not auto-renew'), $params);
+            $this->errorResult(sprintf('Domain already is set to %s', $domainData['renew'] ? 'auto-renew' : 'not auto-renew'), $params);
         }
         if ($params->auto_renew == true) {
             $path = 'addAutoRenewal';
@@ -327,17 +377,17 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             ->setMessage('Domain auto-renew mode updated');
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _callApi(array $params, string $path, string $method = 'GET'): array
     {
         $url = $this->baseUrl;
         $url .= $path ;
         $paramKey = 'json';
 
-        // if ($method == 'GET') {
-        //     $paramKey = 'query';
-        // }
-
-        $client = new Client(['handler' => $this->getGuzzleHandlerStack(!!$this->configuration->debug)]);
+        $client = new Client(['handler' => $this->getGuzzleHandlerStack()]);
 
         $headers = ['Authorization' => 'Bearer ' . $this->configuration->api_key];
 
@@ -354,12 +404,17 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         $responseData = json_decode($response->getBody()->__toString(), true);
 
         if ($response->getStatusCode() >= 300 || empty($responseData)) {
-            throw $this->_handleApiErrorResponse($response, $responseData);
+            $this->_handleApiErrorResponse($response, $responseData);
         }
 
         return $responseData;
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Throwable
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _getDomain(
         string $domainName,
         bool $verifyOwnership = false,
@@ -377,7 +432,7 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         }
 
         if ($assertActive && $domainData['data']['domain']['status'] != 'ACTIVE') {
-            throw $this->errorResult('Domain is not active', ['response_data' => $domainData]);
+            $this->errorResult('Domain is not active', ['response_data' => $domainData]);
         }
 
         $ns = [];
@@ -406,6 +461,9 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         return $info;
     }
 
+    /**
+     * @throws \Throwable
+     */
     private function _parseContactInfo(array $contact): ContactResult
     {
         return ContactResult::create([
@@ -424,8 +482,8 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
     /**
      * Renew domain
      *
-     * @param string $domainName
-     * @return boolean
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function _renewDomain(string $domainName, int $renew_years): void
     {
@@ -439,6 +497,10 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
         );
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _updateRegisteredNameServer(UpdateNameserversParams $params): void
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -471,9 +533,9 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
     }
 
     /**
-     * @throws ProvisionFunctionError
-     *
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function _handleApiErrorResponse(Response $response, ?array $responseData): void
     {
@@ -485,7 +547,7 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
 
         $message = sprintf('Provider Error: %s', trim($errorMessage ?? 'Unknown error', '.'));
 
-        throw $this->errorResult($message, [
+        $this->errorResult($message, [
             'http_code' => $response->getStatusCode(),
             'response_data' => $responseData,
         ]);
@@ -493,27 +555,61 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
 
     private function _prepareContact(?ContactParams $register, string $type): array
     {
-        $data = [];
-        $data['firstname'] = $register->name ?? $register->organisation;
-        if ($type != 'registrant') {
-            $nameParts = explode(' ', $register->name ?? $register->organisation, 2);
+        // Set default data values.
+        $data = [
+            'firstname' => '',
+            'email' => '',
+            'organization' => '',
+            'country' => '',
+            'city' => '',
+            'street_address' => '',
+            'phone' => '',
+            'postal_code' => '',
+            'fax' => '',
+        ];
+
+        // Set empty value for non registrant type.
+        if ($type !== 'registrant') {
+            $data['lastname'] = '';
+        }
+
+        // If register is null, return empty data.
+        if ($register === null) {
+            return $data;
+        }
+
+        // Now set the data if we have a register.
+        $name = $register->name ?? null;
+
+        if ($name === null) {
+            $name = $register->organisation ?? null;
+        }
+
+        $data['firstname'] = $name;
+        if ($type !== 'registrant') {
+            $nameParts = explode(' ', $name ?? '', 2);
             $data['firstname'] = $nameParts[0];
             $data['lastname'] = $nameParts[1] ?? '';
         }
-        $data['email'] = $register->email;
-        $data['organization'] = $register->organisation;
-        $data['country'] = Utils::codeToCountry($register->country_code);
-        $data['city'] = $register->city;
-        $data['street_address'] = $register->address1;
-        $data['phone'] = $register->phone;
-        $data['postal_code'] = $register->postcode;
+        $data['email'] = $register->email ?? null;
+        $data['organization'] = $register->organisation ?? null;
+        $data['country'] = Utils::codeToCountry($register->country_code ?? null);
+        $data['city'] = $register->city ?? null;
+        $data['street_address'] = $register->address1 ?? null;
+        $data['phone'] = $register->phone ?? null;
+        $data['postal_code'] = $register->postcode ?? null;
         $data['fax'] = "";
 
+        // Transform null values to empty strings.
         return array_map(function ($value) {
             return $value ?? '';
         }, $data);
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _updateDomain(string $domain, array $contacts, array $nameservers)
     {
         $params = [];
@@ -527,6 +623,9 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
     /**
      * Verify the given domain is owned by the current account the only way we know how:
      * attempt to update the domain without any changes.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function _verifyOwnership(string $domain, ?array $domainData = null): void
     {
@@ -563,13 +662,17 @@ class Provider extends DomainNames implements ProviderInterface, LogsDebugData
             }
 
             if (Str::contains($e->getMessage(), 'not authorized')) {
-                throw $this->errorResult('Domain is not owned by this account', $e->getData(), $e->getDebug(), $e);
+                $this->errorResult('Domain is not owned by this account', $e->getData(), $e->getDebug(), $e);
             }
 
             throw $e;
         }
     }
 
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _toggleLock(string $domain, bool $locked): void
     {
         $path = $locked ? '/domains/lock' : '/domains/unlock';

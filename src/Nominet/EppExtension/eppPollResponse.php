@@ -6,7 +6,6 @@ namespace Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension;
 
 use DOMElement;
 use DOMNodeList;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppPollResponse as DefaultEppPollResponse;
 use RuntimeException;
@@ -95,7 +94,10 @@ class eppPollResponse extends DefaultEppPollResponse
         foreach ($queryPaths as $path) {
             $nodeList = $xpath->query($path);
             if ($nodeList instanceof DOMNodeList && $nodeList->length > 0) {
-                return collect($nodeList)->map(function (DOMElement $element) {
+                /** @var \Illuminate\Support\Collection $nodeListCollection */
+                $nodeListCollection = collect($nodeList);
+
+                return $nodeListCollection->map(function (DOMElement $element) {
                     return trim($element->textContent);
                 })->all();
             }

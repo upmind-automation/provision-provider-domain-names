@@ -6,11 +6,8 @@ namespace Upmind\ProvisionProviders\DomainNames\CentralNicReseller;
 
 use Carbon\Carbon;
 use ErrorException;
-use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppException;
-use Metaregistrar\EPP\eppContactHandle;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -32,7 +29,6 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
-use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
@@ -47,10 +43,10 @@ use Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension\EppCon
 class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
-    protected EppConnection $connection;
+    protected EppConnection|null $connection = null;
 
-    protected EppHelper $epp;
-    protected CentralNicResellerApi $api;
+    protected EppHelper|null $epp = null;
+    protected CentralNicResellerApi|null $api = null;
 
     private const MAX_CUSTOM_NAMESERVERS = 13;
 
@@ -59,6 +55,9 @@ class Provider extends DomainNames implements ProviderInterface
         $this->configuration = $configuration;
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function __destruct()
     {
         if (isset($this->connection) && $this->connection->isLoggedin()) {
@@ -77,6 +76,9 @@ class Provider extends DomainNames implements ProviderInterface
             );
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(PollParams $params): PollResult
     {
         $since = $params->after_date ? Carbon::parse($params->after_date) : null;
@@ -84,12 +86,16 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             $poll = $this->epp()->poll(intval($params->limit), $since);
 
+            /** @var \Upmind\ProvisionProviders\DomainNames\Data\PollResult */
             return PollResult::create($poll);
         } catch (eppException $e) {
             $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
         $sld = Utils::normalizeSld($params->sld);
@@ -109,6 +115,12 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function register(RegisterDomainParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -119,11 +131,11 @@ class Provider extends DomainNames implements ProviderInterface
         $checkResult = $this->epp()->checkMultipleDomains([$domainName]);
 
         if (count($checkResult) < 1) {
-            throw $this->errorResult('Empty domain availability check result');
+            $this->errorResult('Empty domain availability check result');
         }
 
         if (!$checkResult[0]->can_register) {
-            throw $this->errorResult('This domain is not available to register');
+            $this->errorResult('This domain is not available to register');
         }
 
         //$contactIds = $this->getRegisterContactIds($params);
@@ -149,10 +161,15 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, sprintf('Domain %s was registered successfully!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function transfer(TransferParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -179,7 +196,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $params->billing ?? null
             );
 
-            throw $this->errorResult(sprintf('Transfer for %s domain successfully initiated!', $domainName), [
+            $this->errorResult(sprintf('Transfer for %s domain successfully initiated!', $domainName), [
                 'transfer_id' => $transferId
             ]);
         } catch (eppException $e) {
@@ -187,6 +204,9 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(RenewParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -201,10 +221,13 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -215,10 +238,13 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             return $this->_getInfo($domainName);
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function _getInfo(string $domain, $msg = 'Domain data obtained'): DomainResult
     {
         $domainInfo = $this->epp()->getDomainInfo($domain);
@@ -226,6 +252,10 @@ class Provider extends DomainNames implements ProviderInterface
         return DomainResult::create($domainInfo, false)->setMessage($msg);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domainName = Utils::getDomain(
@@ -238,10 +268,14 @@ class Provider extends DomainNames implements ProviderInterface
 
             return ContactResult::create($contact);
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $sld = Utils::normalizeSld($params->sld);
@@ -260,16 +294,20 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             $this->api()->updateNameservers($domainName, $params->pluckHosts());
 
-            $result = collect($params->pluckHosts())
-                ->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
+            /** @var \Illuminate\Support\Collection $hostsCollection */
+            $hostsCollection = collect($params->pluckHosts());
+            $result = $hostsCollection->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => ['host' => $ns]]);
 
             return NameserversResult::create($result)
                 ->setMessage(sprintf('Name servers for %s domain were updated!', $domainName));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setLock(LockParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -300,10 +338,13 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
         $domainName = Utils::getDomain(
@@ -318,10 +359,13 @@ class Provider extends DomainNames implements ProviderInterface
 
             return $this->_getInfo($domainName, 'Auto-renew mode updated');
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getEppCode(EppParams $params): EppCodeResult
     {
         $domainName = Utils::getDomain(
@@ -336,15 +380,23 @@ class Provider extends DomainNames implements ProviderInterface
                 'epp_code' => $eppCode,
             ])->setMessage('EPP/Auth code obtained');
         } catch (eppException $e) {
-            return $this->_eppExceptionHandler($e);
+            $this->_eppExceptionHandler($e);
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
+    /**
+     * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function _eppExceptionHandler(eppException $exception, array $data = [], array $debug = []): void
     {
         $data['error_reason'] = $exception->getReason();
@@ -365,14 +417,17 @@ class Provider extends DomainNames implements ProviderInterface
                 $errorMessage = $exception->getMessage();
         }
 
-        throw $this->errorResult(sprintf('Registry Error: %s', $errorMessage), $data, $debug, $exception);
+        $this->errorResult(sprintf('Registry Error: %s', $errorMessage), $data, $debug, $exception);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function connect(): EppConnection
     {
         try {
             if (!isset($this->connection) || !$this->connection->isConnected() || !$this->connection->isLoggedin()) {
-                $connection = new EppConnection(!!$this->configuration->debug);
+                $connection = new EppConnection();
                 $connection->setPsrLogger($this->getLogger());
 
                 // Set connection data
@@ -397,9 +452,9 @@ class Provider extends DomainNames implements ProviderInterface
                     $errorMessage = 'Unexpected provider connection error';
             }
 
-            throw $this->errorResult(trim(sprintf('%s %s', $e->getCode() ?: null, $errorMessage)), [], [], $e);
+            $this->errorResult(trim(sprintf('%s %s', $e->getCode() ?: null, $errorMessage)), [], [], $e);
         } catch (ErrorException $e) {
-            throw $this->errorResult('Unexpected provider connection error', [], [], $e);
+            $this->errorResult('Unexpected provider connection error', [], [], $e);
         }
     }
 
@@ -428,6 +483,9 @@ class Provider extends DomainNames implements ProviderInterface
             : 700;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function api(): CentralNicResellerApi
     {
         if (isset($this->api)) {

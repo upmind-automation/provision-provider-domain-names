@@ -41,8 +41,8 @@ class EppCheckTransferResponse extends eppResponse
         $extensionNode = $this->xPath()->query('/epp:epp/epp:response/epp:extension');
         $extension = $extensionNode->item(0);
 
-        /** @var \DomElement $child */
         foreach ($extension->childNodes as $child) {
+            /** @var \DomElement $child */
             if ($child->nodeName === 'keyvalue:extension') {
                 $keyValuesNode = $child;
                 break;
@@ -55,8 +55,8 @@ class EppCheckTransferResponse extends eppResponse
 
         $data = [];
 
-        /** @var \DomElement $child */
         foreach ($keyValuesNode->childNodes as $child) {
+            /** @var \DomElement $child */
             if ($child->nodeName === 'keyvalue:kv') {
                 $data[$child->getAttribute('key')] = $child->getAttribute('value');
             }

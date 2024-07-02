@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension;
 
 use DOMElement;
-use Metaregistrar\EPP\eppCreateContactRequest as MetaRegistrarEppCreateContactRequest;
 use Metaregistrar\EPP\eppInfoContactResponse as MetaRegistrarEppInfoContactResponse;
-use Metaregistrar\EPP\eppDomain;
-use Metaregistrar\EPP\eppException;
-use Metaregistrar\EPP\eppTransferRequest;
-use Metaregistrar\EPP\eppUpdateRequest;
 
 class eppInfoContactResponse extends MetaRegistrarEppInfoContactResponse
 {
@@ -27,7 +22,7 @@ class eppInfoContactResponse extends MetaRegistrarEppInfoContactResponse
     public function getNominetContactValue($name): ?string
     {
         /**
-         * @var DOMElement $element
+         * @var \DOMElement $element
          */
         $element = $this->getExtensionElement()->getElementsByTagName($name)->item(0);
         return $element->textContent ?? null;

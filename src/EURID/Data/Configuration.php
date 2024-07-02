@@ -15,7 +15,7 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $billing_contact_id Billing contact ID
  * @property-read string $tech_contact_id Tech contact ID
  * @property-read bool|null $sandbox
- * @property-read bool|null $debug Whether or not to enable debug logging
+
  */
 class Configuration extends DataSet
 {
@@ -27,7 +27,6 @@ class Configuration extends DataSet
             'billing_contact_id' => ['required', 'string'],
             'tech_contact_id' => ['required', 'string'],
             'sandbox' => ['nullable', 'boolean'],
-            'debug' => ['nullable', 'boolean'],
         ]);
     }
 }

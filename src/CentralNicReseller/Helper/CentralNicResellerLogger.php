@@ -9,9 +9,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * A custom PSR-3 logger for CentralNicReseller debugging.
- *
- * Class CentralNicResellerLogger
- * @package Upmind\ProvisionProviders\DomainNames\CentralNicReseller\Helper
  */
 class CentralNicResellerLogger extends BaseCNRLogger
 {

@@ -691,7 +691,7 @@ class Countries
     /**
      * Obtain the code of the given country name.
      *
-     * @param string $countryName Country name
+     * @param string|null $countryName Country name
      *
      * @return string|null ISO alpha-2 country code, or null if unknown
      */
@@ -719,6 +719,8 @@ class Countries
 
     /**
      * Normalize the given country code to upper-case.
+     *
+     * @param string|null $countryCode ISO alpha-2 country code
      */
     public static function normalizeCode($countryCode): ?string
     {
@@ -738,22 +740,18 @@ class Countries
         }
     }
 
-    /**
-     * @param string $countryCode
-     * @param string $stateName
-     * @return string|null
-     */
     public static function stateNameToCode(string $countryCode, string $stateName): ?string
     {
         if (!$countryCode = self::normalizeCode($countryCode)) {
             return null;
         }
 
-        if (!$stateName = strtolower(trim($stateName ?? ''))) {
+        if (!$stateName = strtolower(trim($stateName))) {
             return null;
         }
 
         $countries = new \PragmaRX\Countries\Package\Countries();
+        // @phpstan-ignore-next-line
         return $countries->where('cca2', $countryCode)
             ->first()
             ->hydrateStates()
@@ -770,11 +768,12 @@ class Countries
             return null;
         }
 
-        if (!$stateCode = strtolower(trim($stateCode ?? ''))) {
+        if (!$stateCode = strtolower(trim($stateCode))) {
             return null;
         }
 
         $countries = new \PragmaRX\Countries\Package\Countries();
+        // @phpstan-ignore-next-line
         return $countries->where('cca2', $countryCode)
                 ->first()
                 ->hydrateStates()
@@ -939,18 +938,13 @@ class Countries
             'û' => 'u',
             'ü' => 'u',
             'ý' => 'y',
-            'ý' => 'y',
             'þ' => 'b',
             'ÿ' => 'y',
             'ƒ' => 'f',
             'ă' => 'a',
-            'î' => 'i',
-            'â' => 'a',
             'ș' => 's',
             'ț' => 't',
             'Ă' => 'A',
-            'Î' => 'I',
-            'Â' => 'A',
             'Ș' => 'S',
             'Ț' => 'T',
         ];

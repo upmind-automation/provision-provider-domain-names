@@ -89,16 +89,27 @@ class Provider extends DomainNames implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/connectreseller-logo_2x.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function register(RegisterDomainParams $params): DomainResult
     {
         $data = [];
@@ -143,6 +154,11 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_getDomain($domainName)->setMessage('Domain registered - ' . $domainName);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function transfer(TransferParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -166,7 +182,7 @@ class Provider extends DomainNames implements ProviderInterface
             ?? null;
 
         if (!$contact) {
-            throw $this->errorResult('Contact details are required to initiate transfer');
+            $this->errorResult('Contact details are required to initiate transfer');
         }
 
         $eppCode = $params->epp_code ?? '0000';
@@ -174,9 +190,13 @@ class Provider extends DomainNames implements ProviderInterface
 
         $transferResponse = $this->_initiateTransfer($customerId, $domainName, $eppCode);
 
-        throw $this->errorResult('Domain transfer initiated', [], ['response_data' => $transferResponse]);
+        $this->errorResult('Domain transfer initiated', [], ['response_data' => $transferResponse]);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function renew(RenewParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -188,6 +208,10 @@ class Provider extends DomainNames implements ProviderInterface
             ->setExpiresAt(Carbon::parse($expiryDate));
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -195,6 +219,10 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_getDomain($domainName)->setMessage('Domain info obtained');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -230,6 +258,10 @@ class Provider extends DomainNames implements ProviderInterface
             ->setMessage('Nameservers updated');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function getEppCode(EppParams $params): EppCodeResult
     {
         $domainData = $this->_getDomain(Utils::getDomain($params->sld, $params->tld));
@@ -247,11 +279,18 @@ class Provider extends DomainNames implements ProviderInterface
         ]);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported!');
+        $this->errorResult('Operation not supported!');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -272,6 +311,10 @@ class Provider extends DomainNames implements ProviderInterface
             ->setMessage('Registrant contact updated');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     public function setLock(LockParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -294,13 +337,19 @@ class Provider extends DomainNames implements ProviderInterface
             ->setMessage(sprintf('Domain %s', $params->lock ? 'locked' : 'unlocked'));
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('The requested operation not supported', $params);
+        $this->errorResult('The requested operation not supported', $params);
     }
 
     /**
-     * @throws ProvisionFunctionError If domain doesn't exist or is otherwise not active
+     * ProvisionFunctionError exception if domain doesn't exist or is otherwise not active.
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _getDomain(string $domainName, $assertActive = true): DomainResult
     {
@@ -347,7 +396,7 @@ class Provider extends DomainNames implements ProviderInterface
         if ($assertActive && !array_intersect(['Active', 'Locked'], $statuses)) {
             $message = 'Domain is not active';
 
-            throw $this->errorResult(
+            $this->errorResult(
                 $message,
                 $info->toArray(),
                 ['response_data' => $domainData]
@@ -358,12 +407,15 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @param string $domain
-     * @param int|string $registrantContactId
-     * @param int|string $billingContactId
-     * @param int|string $techContactId
-     * @param int|string $adminContactId
-     * @param int|null $domainId
+     * @param  string  $domain
+     * @param  int|string  $registrantContactId
+     * @param  int|string  $billingContactId
+     * @param  int|string  $techContactId
+     * @param  int|string  $adminContactId
+     * @param  int|null  $domainId
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _setContacts(
         string $domain,
@@ -392,6 +444,10 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     protected function _getDomainId(string $domain): int
     {
         return $this->_callApi([
@@ -399,6 +455,10 @@ class Provider extends DomainNames implements ProviderInterface
         ], 'ViewDomain')['responseData']['domainNameId'];
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     protected function _getDomainCustomerId(string $domain): int
     {
         return $this->_callApi([
@@ -413,6 +473,9 @@ class Provider extends DomainNames implements ProviderInterface
      * @param int $renewYears
      *
      * @return string New expiry date
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _renewDomain(string $domainName, int $renewYears): string
     {
@@ -431,7 +494,9 @@ class Provider extends DomainNames implements ProviderInterface
      * @param string $path
      * @param string $method
      * @return mixed
-     * @throws Exception
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _callApi(array $data, string $path, string $method = 'GET')
     {
@@ -439,7 +504,7 @@ class Provider extends DomainNames implements ProviderInterface
         $url .= $path ;
 
         $client = new Client([
-            'handler' => $this->getGuzzleHandlerStack(boolval($this->configuration->debug)),
+            'handler' => $this->getGuzzleHandlerStack(),
             'headers' => [
                 'Accept' => 'application/json',
             ],
@@ -466,7 +531,7 @@ class Provider extends DomainNames implements ProviderInterface
             if (!in_array($statusCode, [200, 1000])) {
                 $errorMessage = $this->getResponseErrorMessage($responseData);
 
-                throw $this->errorResult(
+                $this->errorResult(
                     sprintf('Provider API %s error: %s', $statusCode, $errorMessage),
                     [],
                     ['response_data' => $responseData],
@@ -476,28 +541,29 @@ class Provider extends DomainNames implements ProviderInterface
             return $responseData;
         } catch (Throwable $e) {
             $this->handleException($e);
-
-            throw $e;
         }
     }
 
     /**
-     * @throws ProvisionFunctionError
-     * @throws Throwable If error is completely unexpected
+     * Generate a custom ProvisionFunctionError exceptiom, but throw as-is if error is completely unexpected.
      *
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function handleException(Throwable $e): void
     {
         if ($e instanceof RequestException) {
             if ($e->hasResponse()) {
+                /** @var \Psr\Http\Message\ResponseInterface $response */
                 $response = $e->getResponse();
 
                 // application/json responses
                 $responseData = $this->getResponseData($response);
                 $errorMessage = $this->getResponseErrorMessage($responseData);
 
-                throw $this->errorResult(
+                $this->errorResult(
                     sprintf('Provider API error: %s', $errorMessage),
                     [],
                     ['response_data' => $responseData],
@@ -514,6 +580,8 @@ class Provider extends DomainNames implements ProviderInterface
      * Obtain the response body data from the given api response.
      *
      * @return array|string|int
+     *
+     * @throws \Throwable
      */
     protected function getResponseData(Response $response)
     {
@@ -557,6 +625,11 @@ class Provider extends DomainNames implements ProviderInterface
         return $errorMessage;
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     protected function _getCustomerId(ContactParams $contact)
     {
         $email = $this->_normalizeEmail($contact->email);
@@ -577,7 +650,9 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Create a contact and return the contact id.
      *
-     * @return int
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _createContact(ContactParams $contact, ?int $customerId = null): int
     {
@@ -603,6 +678,9 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->_callApi($data, 'AddRegistrantContact')['responseMsg']['id'];
     }
 
+    /**
+     * @throws \Throwable
+     */
     protected function _getCustomer(string $email): array
     {
         $data = [
@@ -617,6 +695,10 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * Create a customer and return its ID.
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
      */
     protected function _createCustomer(ContactParams $contact): int
     {
@@ -653,6 +735,10 @@ class Provider extends DomainNames implements ProviderInterface
         return 'ns' . $int . '.' . $serverName;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     private function _initiateTransfer(int $customerId, string $domainName, $eppCode): array
     {
         $transferData = $this->_callApi([
@@ -670,10 +756,10 @@ class Provider extends DomainNames implements ProviderInterface
 
             if (Str::contains($message, 'invalid AuthCode')) {
                 // epp code invalid
-                throw $this->errorResult('Invalid EPP Code', [], ['response_data' => $transferData]);
+                $this->errorResult('Invalid EPP Code', [], ['response_data' => $transferData]);
             }
 
-            throw $this->errorResult(
+            $this->errorResult(
                 sprintf('Provider API %s error: %s', $transferData['responseData']['statusCode'], $message),
                 [],
                 ['response_data' => $transferData],
@@ -684,13 +770,13 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * Check the status of an existing transfer order and return successful
-     * transfer data.
-     *
-     * @throws InvalidArgumentException If transfer order doesn't exist or EPP code is invalid (initiate new transfer)
-     * @throws ProvisionFunctionError If transfer is in progress and we just gotta wait
+     * Check the status of an existing transfer order and return successful transfer data.
      *
      * @return array Successful transfer data, if transfer is complete
+     *
+     * @throws \InvalidArgumentException If transfer order doesn't exist or EPP code is invalid (initiate new transfer)
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError If transfer is in progress and we just gotta wait
+     * @throws \Throwable
      */
     protected function _checkTransfer(string $domain)
     {
@@ -712,7 +798,7 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             if (empty($expiryDate)) {
-                throw $this->errorResult(sprintf('Transfer %s: %s', $status, $reason), [], ['response_data' => $checkData]);
+                $this->errorResult(sprintf('Transfer %s: %s', $status, $reason), [], ['response_data' => $checkData]);
             }
 
             return $checkData;
@@ -737,6 +823,10 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Throwable
+     */
     protected function _getContactData($contactId): ContactData
     {
         $data = $this->_callApi([
@@ -763,8 +853,6 @@ class Provider extends DomainNames implements ProviderInterface
      * Obtain the given contact id without a OR_ prefix.
      *
      * @param string|int $contactId
-     *
-     * @return string
      */
     private function _normalizeContactId($contactId): string
     {
@@ -778,7 +866,9 @@ class Provider extends DomainNames implements ProviderInterface
      *
      * @param string $phone International phone number
      *
-     * @return string[] E.g., ['44', '1234567890']
+     * @return array<int, string|null> E.g., ['44', '1234567890']
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     protected function getPhoneParts($phone): array
     {
@@ -817,7 +907,7 @@ class Provider extends DomainNames implements ProviderInterface
      *
      * @param string $countryCode E.g., GB
      *
-     * @return string E.g., United Kingdom
+     * @return string|null E.g., United Kingdom
      */
     protected function _countryCodeToName(string $countryCode): ?string
     {
@@ -837,7 +927,7 @@ class Provider extends DomainNames implements ProviderInterface
      *
      * @param string $country E.g., United Kingdom
      *
-     * @return string E.g., GB
+     * @return string|null E.g., GB
      */
     protected function _countryNameToCode(string $country): ?string
     {

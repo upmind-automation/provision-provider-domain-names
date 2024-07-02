@@ -7,14 +7,10 @@ namespace Upmind\ProvisionProviders\DomainNames\InternetX\Helper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\Utils as PromiseUtils;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Support\Arr;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
-use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
@@ -43,7 +39,7 @@ class InternetXApi
     }
 
     /**
-     * @return Promise<?array>
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function asyncRequest(
         string $command,
@@ -60,7 +56,8 @@ class InternetXApi
             $requestParams['json'] = $body;
         }
 
-        return $this->client->requestAsync($method, "/v1{$command}", $requestParams)
+        /** @var \GuzzleHttp\Promise\Promise $promise */
+        $promise = $this->client->requestAsync($method, "/v1{$command}", $requestParams)
             ->then(function (Response $response) use ($command) {
                 $result = $response->getBody()->getContents();
                 $response->getBody()->close();
@@ -75,8 +72,13 @@ class InternetXApi
 
                 return $this->parseResponseData($result)["data"][0];
             });
+
+        return $promise;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function makeRequest(
         string $command,
         ?array $query = null,
@@ -86,6 +88,9 @@ class InternetXApi
         return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     private function parseResponseData(string $result): array
     {
         $parsedResult = json_decode($result, true);
@@ -129,8 +134,7 @@ class InternetXApi
     }
 
     /**
-     * @param  string  $domainName
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainInfo(string $domainName): array
     {
@@ -165,8 +169,7 @@ class InternetXApi
     }
 
     /**
-     * @param  int  $id
-     * @return ContactData
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getContactInfo(int $id): ContactData
     {
@@ -186,8 +189,8 @@ class InternetXApi
     }
 
     /**
-     * @param ContactParams $contactParams
-     * @return int|null
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function createContact(ContactParams $contactParams): ?int
     {
@@ -198,10 +201,6 @@ class InternetXApi
         return $response['id'] ?? null;
     }
 
-    /**
-     * @param array $nameservers
-     * @return array
-     */
     private function parseNameservers(array $nameservers): array
     {
         $result = [];
@@ -216,11 +215,9 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param int $period
      * @param string[] $nameServers
-     * @param array $contacts
-     * @return void
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(string $domainName, int $period, array $contacts, array $nameServers): void
     {
@@ -250,8 +247,8 @@ class InternetXApi
     }
 
     /**
-     * @param ContactParams $contactParams
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     private function setContactParams(ContactParams $contactParams): array
     {
@@ -274,10 +271,6 @@ class InternetXApi
         ];
     }
 
-    /**
-     * @param string|null $name
-     * @return array
-     */
     private function getNameParts(?string $name): array
     {
         $nameParts = explode(" ", $name);
@@ -288,8 +281,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @return string|null
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainEppCode(string $domainName): ?string
     {
@@ -298,8 +290,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @return bool
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getRegistrarLockStatus(string $domainName): bool
     {
@@ -308,9 +299,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param bool $lock
-     * @return void
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
@@ -322,8 +311,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param array $nameServers
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(string $domainName, array $nameServers): void
     {
@@ -340,8 +328,8 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param ContactParams $contactParams
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): void
     {
@@ -355,9 +343,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param int $period
-     * @return void
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(string $domainName, int $period): void
     {
@@ -376,11 +362,7 @@ class InternetXApi
     }
 
     /**
-     * @param string $domainName
-     * @param string $eppCode
-     * @param array $contacts
-     * @param int $period
-     * @return string
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer(string $domainName, string $eppCode, array $contacts, int $period): string
     {
@@ -408,9 +390,7 @@ class InternetXApi
     }
 
     /**
-     * @param int $limit
-     * @param Carbon|null $since
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(int $limit, ?Carbon $since): array
     {
@@ -468,7 +448,7 @@ class InternetXApi
                 continue;
             }
 
-            if (isset($since) && $messageDateTime->lessThan($since)) {
+            if (isset($since) && $messageDateTime !== null && $messageDateTime->lessThan($since)) {
                 // this message is too old
                 continue;
             }

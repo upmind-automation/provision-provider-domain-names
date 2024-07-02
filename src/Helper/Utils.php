@@ -18,6 +18,8 @@ class Utils
      *
      * @param string|null $date
      * @param string|null $format
+     * @param string|null $adjustHours
+     *
      * @return string|null Formatted date, or null
      */
     public static function formatDate(?string $date, ?string $format = null, ?string $adjustHours = null): ?string
@@ -224,11 +226,11 @@ class Utils
      *
      * @link https://tools.ietf.org/html/rfc5733#section-2.5
      *
+     * @param string|null $number Phone number in "international format" E.g., +447515878251
+     *
+     * @return string|null Phone number in "EPP format" E.g., +44.7515878251
+     *
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid international phone number
-     *
-     * @param string $number Phone number in "international format" E.g., +447515878251
-     *
-     * @return string Phone number in "EPP format" E.g., +44.7515878251
      */
     public static function internationalPhoneToEpp(?string $number): ?string
     {
@@ -269,6 +271,8 @@ class Utils
      * @param string|null $countryCode Country code, if known
      *
      * @return string International format phone number, if possible
+     *
+     * @throws \Throwable
      */
     public static function localPhoneToInternational(string $number, ?string $countryCode, bool $orFail = true): string
     {

@@ -4,21 +4,12 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\EURID\EppExtension;
 
-use Metaregistrar\EPP\eppCreateContactResponse;
-use Metaregistrar\EPP\eppInfoContactRequest;
-use Metaregistrar\EPP\eppPollRequest;
 use Metaregistrar\EPP\eppConnection as BaseEppConnection;
 use Psr\Log\LoggerInterface;
-use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\Requests\EppUpdateAuthInfoRequest;
-use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\euridEppInfoDomainResponse;
 use Metaregistrar\EPP\eppInfoDomainRequest;
 use Metaregistrar\EPP\eppTransferResponse;
 
-/**
- * Class EppConnection
- * @package Upmind\ProvisionProviders\DomainNames\EURID\EppExtension
- */
 class EppConnection extends BaseEppConnection
 {
     /**
@@ -30,8 +21,9 @@ class EppConnection extends BaseEppConnection
 
     /**
      * EppConnection constructor.
-     * @param bool $logging
-     * @param string|null $settingsFile
+     * @param  bool  $logging
+     * @param  string|null  $settingsFile
+     * @throws \Metaregistrar\EPP\eppException
      */
     public function __construct(bool $logging = false, string $settingsFile = null)
     {
@@ -62,8 +54,6 @@ class EppConnection extends BaseEppConnection
 
     /**
      * Writes a log message to the log file or PSR-3 logger.
-     *
-     * @inheritdoc
      */
     public function writeLog($text, $action)
     {
