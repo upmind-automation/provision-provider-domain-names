@@ -23,6 +23,7 @@ use Metaregistrar\EPP\eppCreateContactRequest;
 use Metaregistrar\EPP\eppCreateDomainRequest;
 use Metaregistrar\EPP\eppCreateHostRequest;
 use Metaregistrar\EPP\eppDomain;
+use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppHost;
 use Metaregistrar\EPP\eppInfoContactRequest;
 use Metaregistrar\EPP\eppInfoDomainRequest;
@@ -267,11 +268,19 @@ class EppHelper
     /**
      * @throws \Metaregistrar\EPP\eppException
      */
-    public function getContactInfo(string $contactId): ContactData
+    public function getContactInfo(string $contactId): ?ContactData
     {
-        $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
-        /** @var \Metaregistrar\EPP\eppInfoContactResponse $response */
-        $response = $this->connection->request($request);
+        try {
+            $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
+            /** @var \Metaregistrar\EPP\eppInfoContactResponse $response */
+            $response = $this->connection->request($request);
+        } catch (eppException $e) {
+            if ((int)$e->getCode() === 2303) {
+                return null; // Error 2303: Object does not exist
+            }
+
+            throw $e;
+        }
 
         return ContactData::create([
             'id' => $contactId,
