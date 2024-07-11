@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.5) - 2024-07-11
+
+- Update CentralNicReseller/Helper/EppHelper::getContactInfo() to return null if object not found
+
 ## [v2.12.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.4) - 2024-07-02
 
 - Fix EuroDNS unparenthesized ternary operation error
