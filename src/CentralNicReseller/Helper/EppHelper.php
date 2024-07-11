@@ -273,11 +273,22 @@ class EppHelper
         $this->connection->request($renewRequest);
     }
 
-    public function getContactInfo(string $contactId): ContactData
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
+    public function getContactInfo(string $contactId): ?ContactData
     {
-        $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
-        /** @var eppInfoContactResponse */
-        $response = $this->connection->request($request);
+        try {
+            $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
+            /** @var \Metaregistrar\EPP\eppInfoContactResponse $response */
+            $response = $this->connection->request($request);
+        } catch (eppException $e) {
+            if ((int)$e->getCode() === 2303) {
+                return null; // Error 2303: Object does not exist
+            }
+
+            throw $e;
+        }
 
         return ContactData::create([
             'id' => $contactId,
