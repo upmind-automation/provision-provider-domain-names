@@ -36,7 +36,7 @@
         "metaregistrar/php-epp-client": "^1.0.12",
         "pragmarx/countries": "^0.8.2",
         "propaganistas/laravel-phone": "^4.2 || ^5.0",
-        "upmind/domainnameapi-sdk": "^1.0",
+        "upmind/domainnameapi-sdk": "^1.1",
         "upmind/provision-provider-base": "^4.0"
     },
     "require-dev": {
