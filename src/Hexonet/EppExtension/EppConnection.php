@@ -55,6 +55,7 @@ class EppConnection extends BaseEppConnection
     public function setPsrLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
+        $this->logging = isset($logger);
         if (isset($logger)) {
             $this->logFile = '/dev/null';
         }

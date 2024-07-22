@@ -58,8 +58,9 @@ class HexonetApi
                 'username' => $configuration->username,
                 'password' => $configuration->password,
                 'sandbox' => $configuration->sandbox,
+                'logging' => true,
             ],
-            $logger
+            new HexonetLogger($logger)
         );
 
         // Login
