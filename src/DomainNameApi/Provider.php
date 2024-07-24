@@ -430,20 +430,23 @@ class Provider extends DomainNames implements ProviderInterface
         $phoneDiallingCode = trim(Str::before($eppPhone, '.'), '+');
         $phoneNumber = Str::after($eppPhone, '.');
 
-        return (new ContactInfo())
-            ->setType(ContactType::VALUE_CONTACT)
-            ->setFirstName($firstName)
-            ->setLastName($lastName ?? $firstName)
-            ->setCompany($params->organisation)
-            ->setAddressLine1($params->address1)
-            ->setCity($params->city)
-            ->setState(strtoupper($params->country_code ?? '') === 'US' ? $params->state : null)
-            ->setZipCode($params->postcode)
-            ->setCountry($params->country_code)
-            ->setEMail($params->email)
-            ->setPhoneCountryCode($phoneDiallingCode)
-            ->setPhone($phoneNumber)
-            ->setStatus('');
+        $contactInfo = new ContactInfo();
+
+        $contactInfo->setType(ContactType::VALUE_CONTACT);
+        $contactInfo->setFirstName($firstName);
+        $contactInfo->setLastName(empty($lastName) ? $firstName : $lastName);
+        $contactInfo->setCompany($params->organisation);
+        $contactInfo->setAddressLine1(trim((string)$params->address1) ?: 'N/A');
+        $contactInfo->setCity(trim((string)$params->city) ?: 'N/A');
+        $contactInfo->setState(strtoupper($params->country_code ?? '') === 'US' ? $params->state : null);
+        $contactInfo->setZipCode(trim((string)$params->postcode) ?: 'N/A');
+        $contactInfo->setCountry($params->country_code);
+        $contactInfo->setEMail($params->email);
+        $contactInfo->setPhoneCountryCode($phoneDiallingCode);
+        $contactInfo->setPhone($phoneNumber);
+        $contactInfo->setStatus('');
+
+        return $contactInfo;
     }
 
     /**
