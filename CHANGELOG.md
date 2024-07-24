@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.6) - 2024-07-24
+
+- Fix Utils::internationalPhoneToEpp() and eppPhoneToInternational() to work with invalid numbers
+
 ## [v2.12.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.5) - 2024-07-11
 
 - Update CentralNicReseller/Helper/EppHelper::getContactInfo() to return null if object not found
