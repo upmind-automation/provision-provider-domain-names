@@ -520,10 +520,10 @@ class Provider extends DomainNames implements ProviderInterface
         $contactInfo->setFirstName($firstName);
         $contactInfo->setLastName(empty($lastName) ? $firstName : $lastName);
         $contactInfo->setCompany($params->organisation);
-        $contactInfo->setAddressLine1($params->address1);
-        $contactInfo->setCity($params->city);
+        $contactInfo->setAddressLine1(trim((string)$params->address1) ?: 'N/A');
+        $contactInfo->setCity(trim((string)$params->city) ?: 'N/A');
         $contactInfo->setState(strtoupper($params->country_code ?? '') === 'US' ? $params->state : null);
-        $contactInfo->setZipCode($params->postcode);
+        $contactInfo->setZipCode(trim((string)$params->postcode) ?: 'N/A');
         $contactInfo->setCountry($params->country_code);
         $contactInfo->setEMail($params->email);
         $contactInfo->setPhoneCountryCode($phoneDiallingCode);
