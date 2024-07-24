@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.7) - 2024-07-24
+
+- Update DomainNameApi/Provider::contactParamsToSoap() fix for invalid/empty values
+
 ## [v2.12.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.6) - 2024-07-24
 
 - Fix Utils::internationalPhoneToEpp() and eppPhoneToInternational() to work with invalid numbers
