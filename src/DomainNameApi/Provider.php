@@ -575,7 +575,8 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->apiClient = (new ClientFactory())->create(
             $this->configuration->username,
             $this->configuration->password,
-            $this->configuration->sandbox ? ClientFactory::ENV_TEST : ClientFactory::ENV_LIVE
+            $this->configuration->sandbox ? ClientFactory::ENV_TEST : ClientFactory::ENV_LIVE,
+            $this->getLogger()
         );
     }
 }
