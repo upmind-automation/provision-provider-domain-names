@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\Helper;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use libphonenumber\PhoneNumberUtil;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionProviders\DomainNames\Helper\Tlds\WhoisPrivacy;
@@ -230,7 +231,7 @@ class Utils
      *
      * @return string|null Phone number in "EPP format" E.g., +44.7515878251
      *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid international phone number
+     * @throws \libphonenumber\NumberParseException If not a valid international phone number
      */
     public static function internationalPhoneToEpp(?string $number): ?string
     {
@@ -238,13 +239,11 @@ class Utils
             return null;
         }
 
-        $phone = phone($number);
-        $diallingCode = $phone->getPhoneNumberInstance()->getCountryCode();
+        $phone = PhoneNumberUtil::getInstance()->parse($number, null);
+        $diallingCode = $phone->getCountryCode();
+        $nationalNumber = $phone->getNationalNumber();
 
-        $prefix = sprintf('+%d', $diallingCode);
-        $suffix = Str::replaceFirst($prefix, '', (string)$phone);
-
-        return sprintf('%s.%s', $prefix, $suffix);
+        return sprintf('+%s.%s', $diallingCode, $nationalNumber);
     }
 
     /**
@@ -253,7 +252,7 @@ class Utils
      *
      * @link https://tools.ietf.org/html/rfc5733#section-2.5
      *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException If not a valid EPP format phone number
+     * @throws \libphonenumber\NumberParseException If not a valid EPP format phone number
      *
      * @param string $eppNumber Phone number in "EPP format" E.g., +44.7515878251
      *
@@ -261,7 +260,11 @@ class Utils
      */
     public static function eppPhoneToInternational(string $eppNumber): string
     {
-        return (string)phone($eppNumber);
+        $phone = PhoneNumberUtil::getInstance()->parse($eppNumber, null);
+        $diallingCode = $phone->getCountryCode();
+        $nationalNumber = $phone->getNationalNumber();
+
+        return sprintf('+%s%s', $diallingCode, $nationalNumber);
     }
 
     /**
