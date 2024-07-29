@@ -516,26 +516,6 @@ class EuroDNSApi
     }
 
     /**
-     * ToDo: Validate if method is required, as it is not used.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function sanitizeData($data)
-    {
-        $sanitizedData = [];
-        foreach ($data as $key => $value) {
-            // Check if the value is an array itself and recursively sanitize
-            if (is_array($value)) {
-                $sanitizedData[$key] = $this->sanitizeData($value);
-            } else {
-                // Sanitize the value
-                $sanitizedData[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-            }
-        }
-        return $sanitizedData;
-    }
-
-    /**
      * FUNCTION setContactUpdate
      * Set contact details for update action from the provided parameters.
      *
@@ -1043,11 +1023,8 @@ class EuroDNSApi
         $i = 1;
         // Loop through name servers and generate XML
         foreach ($nameserversArray as $key => $val) {
-            // @phpstan-ignore-next-line
-            $host = isset($val['host']) ? $val['host'] : $val;
-
             // Check if the host is not empty
-            if (!empty($host)) {
+            if (!empty($val)) {
                 // Generate XML for the name server
                 $ns .= "
                     <nameserver:{$type}>
@@ -1279,44 +1256,6 @@ class EuroDNSApi
 
         // Return an associative array with first and last names
         return compact('firstName', 'lastName');
-    }
-
-    /**
-     * Function to set contact parameter details based on ContactParams and type.
-     *
-     * ToDo: Validate if method is required, as it is not used.
-     *
-     * @param  ContactParams  $contactParams  - The contact parameters.
-     * @param  string  $type  - The type of contact ('create', 'billing', 'tech', 'admin').
-     *
-     * @return array - An array representing the contact parameters.
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function setContactParams(ContactParams $contactParams, string $type): array
-    {
-        // Extract first and last names from the provided name or organization
-        $nameParts = $this->getNameParts($contactParams->name ?? $contactParams->organisation);
-
-        // Construct and return an array representing the contact parameters
-        return [
-            "contact{$type}" => [
-                'addressMailing' => [
-                    'address1' => $contactParams->address1,
-                    'city' => $contactParams->city,
-                    'country' => Utils::normalizeCountryCode($contactParams->country_code),
-                    'postalCode' => $contactParams->postcode,
-                    'state' => $contactParams->state ?: '',
-                ],
-                'organization' => $contactParams->organisation ?: '',
-                'nameFirst' => $nameParts['firstName'],
-                'nameLast' => $nameParts['lastName'] ?: $nameParts['firstName'],
-                'email' => $contactParams->email,
-                'phone' => Utils::internationalPhoneToEpp($contactParams->phone),
-            ]
-        ];
     }
 
     /**
