@@ -1346,39 +1346,6 @@ class EuroDNSApi
     }
 
     /**
-     * Function to parse contact details for contact update from the provided array.
-     *
-     * ToDo: Validate if method is required, as it is not used.
-     *
-     * @param array $contact - The array representing contact details.
-     *
-     * @return array - An array containing parsed contact information for contact update.
-     *
-     * @phpstan-ignore method.unused
-     */
-    private function parseContactUpdate(array $contact)
-    {
-        // Retrieve the first contact from the array
-        $contact = $contact[0];
-
-        // Return an array with parsed contact details for contact update
-        return [
-            'organisation' => (string)$contact['organization'] ?: null,
-            'name' => $contact['name'],
-            'address1' => (string)$contact['address1'],
-            'city' => (string)$contact['city'],
-            'state' => (string)$contact['state'] ?: null,
-            'postcode' => (string)$contact['postcode'],
-            'country_code' => $contact['country_code'],
-            'email' => (string)$contact['email'],
-            'phone' => (string)$contact['phone'],
-            'type' => null,       // Specify the type as null for contact update
-            'password' => null,   // Specify the password as null for contact update
-            'id' => null          // Specify the id as null for contact update
-        ];
-    }
-
-    /**
      * Function to parse nameservers from the provided array.
      *
      * @param array $nameservers - The array representing nameservers.
