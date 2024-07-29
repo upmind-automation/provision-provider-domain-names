@@ -823,7 +823,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         try {
-            $connection = new NominetConnection();
+            $connection = new NominetConnection(true);
             $connection->setPsrLogger($this->getLogger());
 
             $connection->setHostname(
