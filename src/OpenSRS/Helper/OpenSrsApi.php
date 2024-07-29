@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\OpenSRS\Helper;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -289,7 +290,7 @@ class OpenSrsApi
     {
         $search = ['&', '<', '>', "'", '"'];
         $replace = ['&amp;', '&lt;', '&gt;', '&apos;', '&quot;'];
-        $string = str_replace($search, $replace, $string);
+        $string = Str::replace($search, $replace, $string);
         $string = utf8_encode($string);
 
         return $string;
