@@ -463,7 +463,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         try {
             if (!isset($this->connection) || !$this->connection->isConnected() || !$this->connection->isLoggedin()) {
-                $connection = new EppConnection();
+                $connection = new EppConnection(true);
                 $connection->setPsrLogger($this->getLogger());
 
                 // Set connection data
