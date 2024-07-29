@@ -121,7 +121,7 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->api;
         }
 
-        return $this->api = new EuroDNSApi($this->configuration, null);
+        return $this->api = new EuroDNSApi($this->configuration, $this->getLogger());
     }
 
     /**
