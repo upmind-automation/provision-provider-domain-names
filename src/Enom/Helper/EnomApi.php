@@ -30,10 +30,6 @@ use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 ⣷⣦⣙⠛⠿⢿⣿⣿⡿⠿⠿⠟⢛⣛⣛⡛⠻⠿⠿⠿⣿⣿⣿⣿⠿⠟⢛⣡⣾
  */
 
-/**
- * Class EnomCommand
- * @package Upmind\ProvisionProviders\DomainNames\Enom\Helper
- */
 class EnomApi
 {
     /**
@@ -61,9 +57,10 @@ class EnomApi
     /**
      * Get domain info
      *
-     * @param string $sld
-     * @param string $tld
-     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainInfo(string $sld, string $tld): array
     {
@@ -102,9 +99,12 @@ class EnomApi
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
      * @return ContactData[]
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainContacts(string $sld, string $tld): array
     {
@@ -141,7 +141,7 @@ class EnomApi
 
         foreach ($result->GetAllDomains->children() as $childTagName => $childTagData) {
             // Process only domain records
-            if ($childTagName == 'DomainDetail') {
+            if ($childTagName === 'DomainDetail') {
                 // Get TLD and SLD
                 $parts = Utils::getSldTld((string) $childTagData->DomainName);
 
@@ -159,11 +159,12 @@ class EnomApi
     }
 
     /**
-     * The EPP code itself is not returned (no way to obtain it from eNom), but will be sent to the email if the code exists.
+     * The EPP code itself is not returned (no way to obtain it from eNom),
+     * but will be sent to the email if the code exists.
      *
-     * @param string $sld
-     * @param string $tld
-     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getEppCode(string $sld, string $tld): void
     {
@@ -180,9 +181,10 @@ class EnomApi
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
-     * @return string
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Random\RandomException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setDomainPassword(string $sld, string $tld): string
     {
@@ -260,10 +262,9 @@ class EnomApi
     }
 
     /**
-     * @param string $sld
-     * @param string $tld
-     * @param $contactParams
-     * @param string $type
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function createUpdateDomainContact(
         string $sld,
@@ -409,10 +410,6 @@ class EnomApi
         return $orderId;
     }
 
-    /**
-     * @param array $nameServers
-     * @return array
-     */
     private function parseNameservers(array $nameServers): array
     {
         $result = [];
@@ -624,11 +621,11 @@ class EnomApi
     }
 
     /**
-     * @param \SimpleXMLElement $rawContactData
-     * @param   string  $type   Contact Type (Registrant, Tech, Admin, Billing)
-     * @return ContactData
+     * @param string  $type   Contact Type (Registrant, Tech, Admin, Billing)
+     *
+     * @throws \InvalidArgumentException
      */
-    private function parseContact(\SimpleXMLElement $rawContactData, string $type): ContactData
+    private function parseContact(SimpleXMLElement $rawContactData, string $type): ContactData
     {
         // Check if our contact type is valid
         self::validateContactType($type);
@@ -648,9 +645,7 @@ class EnomApi
     }
 
     /**
-     * @param string $type
-     *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function validateContactType(string $type): void
     {
@@ -662,11 +657,9 @@ class EnomApi
     /**
      * Send request and return the response.
      *
-     * @param array $params
-     *
-     * @return SimpleXMLElement
-     *
-     * @throws ProvisionFunctionError
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function makeRequest(array $params): SimpleXMLElement
     {
@@ -717,11 +710,7 @@ class EnomApi
     /**
      * Parse and process the XML Response
      *
-     * @param string $result
-     *
-     * @return SimpleXMLElement
-     *
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function parseResponseData(string $result): SimpleXMLElement
     {
@@ -750,10 +739,6 @@ class EnomApi
         return $xml;
     }
 
-    /**
-     * @param array $xmlErrors
-     * @return string
-     */
     private function formatEnomErrorMessage(array $xmlErrors): string
     {
         if (empty($xmlErrors)) {

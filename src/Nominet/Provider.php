@@ -11,29 +11,21 @@ use Upmind\ProvisionProviders\DomainNames\Category as DomainNames;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppCheckDomainRequest;
-use Metaregistrar\EPP\eppCheckDomainResponse;
 use Metaregistrar\EPP\eppCheckRequest;
-use Metaregistrar\EPP\eppCheckResponse;
 use Metaregistrar\EPP\eppContact;
 use Metaregistrar\EPP\eppContactHandle;
 use Metaregistrar\EPP\eppContactPostalInfo;
-use Metaregistrar\EPP\eppCreateContactResponse;
 use Metaregistrar\EPP\eppCreateDomainRequest;
-use Metaregistrar\EPP\eppCreateDomainResponse;
 use Metaregistrar\EPP\eppCreateHostRequest;
-use Metaregistrar\EPP\eppCreateHostResponse;
 use Metaregistrar\EPP\eppDomain;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppHost;
 use Metaregistrar\EPP\eppInfoContactRequest;
 use Metaregistrar\EPP\eppInfoDomainRequest;
-use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\eppPollRequest;
 use Metaregistrar\EPP\eppRenewRequest;
-use Metaregistrar\EPP\eppRenewResponse;
 use Metaregistrar\EPP\eppResponse;
 use Metaregistrar\EPP\eppUpdateContactRequest;
-use Metaregistrar\EPP\eppUpdateContactResponse;
 use Metaregistrar\EPP\eppUpdateDomainRequest;
 use Throwable;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -60,11 +52,9 @@ use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
 use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppCreateContactRequest as NominetEppCreateContactRequest;
 use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppInfoContactResponse as NominetEppInfoContactResponse;
 use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppReleaseRequest;
-use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppReleaseResponse;
 use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\NominetConnection;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Upmind\ProvisionProviders\DomainNames\Nominet\Data\NominetConfiguration;
-use Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppPollResponse;
 
 class Provider extends DomainNames implements ProviderInterface
 {
@@ -74,7 +64,7 @@ class Provider extends DomainNames implements ProviderInterface
     protected $configuration;
 
     /**
-     * @var NominetConnection
+     * @var \Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\NominetConnection|null
      */
     protected $connection;
 
@@ -115,31 +105,17 @@ class Provider extends DomainNames implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/nominet-logo@2x.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Operation not supported');
-
-        $domains = Arr::get($params, 'domains');
-
-        try {
-            $checkDomains = [];
-            foreach ($domains as $domain) {
-                $checkDomains[] = Utils::getDomain(Arr::get($domain, 'sld'), Arr::get($domain, 'tld'));
-            }
-
-            $checkedDomains = $this->_checkDomains($checkDomains);
-            $domainsIt = count($domains);
-            $responseDomains = [];
-            while (--$domainsIt >= 0) {
-                $responseDomains[] = array_merge($domains[$domainsIt], $checkedDomains[$domainsIt]);
-            }
-
-            return $this->okResult('Domains checked.', $responseDomains);
-        } catch (eppException $e) {
-            $this->_eppExceptionHandler($e, $params->toArray());
-        }
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(PollParams $params): PollResult
     {
         $connection = $this->epp();
@@ -157,7 +133,7 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             while (count($notifications) < $params->limit && (time() - $startTime) < $timeLimit) {
                 // get oldest message from queue
-                /** @var eppPollResponse $pollResponse */
+                /** @var \Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppPollResponse $pollResponse */
                 $pollResponse = $connection->request(new eppPollRequest(eppPollRequest::POLL_REQ, 0));
                 $countRemaining = $pollResponse->getMessageCount();
 
@@ -192,14 +168,14 @@ class Provider extends DomainNames implements ProviderInterface
                     ->setCreatedAt($messageDateTime)
                     ->setExtra(['xml' => $pollResponse->saveXML()]);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $data = [];
 
             if (isset($pollResponse)) {
                 $data['last_xml'] = $pollResponse->saveXML();
             }
 
-            return $this->errorResult('Error encountered while polling for domain notifications', $data, [], $e);
+            $this->errorResult('Error encountered while polling for domain notifications', $data, [], $e);
         }
 
         return new PollResult([
@@ -208,6 +184,10 @@ class Provider extends DomainNames implements ProviderInterface
         ]);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function register(RegisterDomainParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -249,6 +229,9 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function transfer(TransferParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -260,6 +243,9 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(RenewParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -272,6 +258,9 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -283,6 +272,9 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -310,11 +302,18 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getEppCode(EppParams $params): EppCodeResult
     {
-        throw $this->errorResult('Operation not supported for this type of domain name');
+        $this->errorResult('Operation not supported for this type of domain name');
     }
 
+    /**
+     * @throws \DOMException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -323,7 +322,7 @@ class Provider extends DomainNames implements ProviderInterface
             $domain = new eppDomain($domainName);
             $transfer = new eppReleaseRequest($domain, $params->ips_tag);
 
-            /** @var eppReleaseResponse */
+            /** @var \Upmind\ProvisionProviders\DomainNames\Nominet\EppExtension\eppReleaseResponse $result */
             $result = $this->epp()->request($transfer);
             return $this->okResult($result->getResultMessage());
         } catch (eppException $e) {
@@ -331,6 +330,10 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -365,28 +368,34 @@ class Provider extends DomainNames implements ProviderInterface
         }
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setLock(LockParams $params): DomainResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
     /**
      * Check availability for domain names
      *
-     * @param array $domains
-     * @return array
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _checkDomains(array $domains): array
     {
         $result = [];
         $check = new eppCheckDomainRequest($domains);
 
-        /** @var eppCheckDomainResponse */
+        /** @var \Metaregistrar\EPP\eppCheckDomainResponse $response */
         $response = $this->epp()->request($check);
         $checks = $response->getCheckedDomains();
 
@@ -416,6 +425,9 @@ class Provider extends DomainNames implements ProviderInterface
      * @param string $registrantID
      * @param array|null $nameservers [['host' => 'ns1.ns.com', 'ip' => '1.2.3.4', 'status' => '2']]
      * @return void
+     *
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _createDomain(
         string $domainName,
@@ -435,10 +447,14 @@ class Provider extends DomainNames implements ProviderInterface
         $domain->setPeriodUnit('y');
 
         $create = new eppCreateDomainRequest($domain);
-        /** @var eppCreateDomainResponse */
-        $response = $this->epp()->request($create);
+
+        $this->epp()->request($create);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function setNameservers(
         eppDomain $domain,
         array $nameservers
@@ -464,15 +480,9 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Creates contact and returns its ID
      *
-     * @param string $email
-     * @param string $telephone
-     * @param string $name
-     * @param string $organization
-     * @param string $address
-     * @param string $postcode
-     * @param string $city
-     * @param string $countryCode
-     * @return string
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _createContact(
         string $email,
@@ -507,7 +517,7 @@ class Provider extends DomainNames implements ProviderInterface
             $contact->setNominetContactType($nominetContactType, $tradingName, $companyNumber);
         }
 
-        /** @var eppCreateContactResponse $response */
+        /** @var \Metaregistrar\EPP\eppCreateContactResponse $response */
         $response = $this->epp()->request($contact);
         return $response->getContactId();
     }
@@ -515,10 +525,13 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Implements all changes to domain - contacts and nameservers
      *
-     * @param string $domainName
-     * @param string|null $registrant
-     * @param array|null $nameservers
+     * @param  string  $domainName
+     * @param  string|null  $registrantId
+     * @param  array|null  $nameservers
      * @return string
+     *
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _updateDomain(
         string $domainName,
@@ -533,7 +546,7 @@ class Provider extends DomainNames implements ProviderInterface
         // If new nameservers are given, get the old ones to remove them
         if (isset($nameservers)) {
             $info = new eppInfoDomainRequest(new eppDomain($domainName));
-            /** @var eppInfoDomainResponse $response */
+            /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
             $response = $this->epp()->request($info);
 
             if ($oldNameservers = $response->getDomainNameservers()) {
@@ -558,12 +571,21 @@ class Provider extends DomainNames implements ProviderInterface
             $removeInfo ?? null,
             $updateInfo ?? null
         );
-        /** @var eppUpdateDomainResponse $response */
+
+        /** @var \Metaregistrar\EPP\eppUpdateDomainResponse $response */
         $response = $this->epp()->request($update);
 
         return $response->getResultMessage();
     }
 
+    /**
+     * @param  string  $domainName
+     * @param  string  $msg
+     * @return DomainResult
+     *
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function _getDomain(
         string $domainName,
         string $msg = 'Domain info obtained'
@@ -571,13 +593,12 @@ class Provider extends DomainNames implements ProviderInterface
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain, eppInfoDomainRequest::HOSTS_ALL);
 
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $this->epp()->request($info);
 
         $returnNs = [];
         $nameservers = $response->getDomainNameservers();
         if (isset($nameservers)) {
-            /** @var eppHost $nameserver */
             foreach ($nameservers as $i => $nameserver) {
                 $ips = $nameserver->getIpAddresses();
                 $returnNs['ns' . ($i + 1)] = [
@@ -613,12 +634,23 @@ class Provider extends DomainNames implements ProviderInterface
         ])->setMessage($msg);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function _contactInfo(string $contactID): NominetEppInfoContactResponse
     {
         $check = new eppInfoContactRequest(new eppContactHandle($contactID), false);
+
+        /** @var NominetEppInfoContactResponse */
         return $this->epp()->request($check);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function _updateContact(
         string $contactID,
         string $email,
@@ -650,7 +682,7 @@ class Provider extends DomainNames implements ProviderInterface
         );
         $update = new eppUpdateContactRequest(new eppContactHandle($contactID), null, null, $updateInfo);
 
-        /** @var eppUpdateContactResponse $response */
+        /** @var \Metaregistrar\EPP\eppUpdateContactResponse $response */
         $response = $this->epp()->request($update);
         return $response->getResultMessage();
     }
@@ -668,7 +700,9 @@ class Provider extends DomainNames implements ProviderInterface
      * Check which of the given hosts/nameservers are not created yet.
      *
      * @param array $hosts
-     * @return bool[]|array<string,bool> True means host needs to be created
+     * @return bool[]|array<string,bool>|null True means host needs to be created
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function checkUncreatedHosts(array $hosts): ?array
     {
@@ -679,7 +713,8 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             $check = new eppCheckRequest($checkHost);
-            /** @var eppCheckResponse $response */
+
+            /** @var \Metaregistrar\EPP\eppCheckResponse $response */
             $response = $this->epp()->request($check);
 
             return $response->getCheckedHosts();
@@ -694,21 +729,22 @@ class Provider extends DomainNames implements ProviderInterface
      * @param string $host
      * @param string|null $ip
      * @return void
+     *
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function createHost(string $host, string $ip = null): void
     {
         $create = new eppCreateHostRequest(new eppHost($host, $ip));
 
-        /** @var eppCreateHostResponse */
-        $response = $this->epp()->request($create);
+        $this->epp()->request($create);
     }
 
     /**
      * Renew domain
      *
-     * @param string $domainName
-     * @param int $renew_years
-     * @return void
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function _renewDomain(string $domainName, int $renew_years): void
     {
@@ -717,14 +753,13 @@ class Provider extends DomainNames implements ProviderInterface
         $domain->setPeriodUnit('y');
         $domain->setPeriod($renew_years);
 
-        /** @var eppInfoDomainResponse $response */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $this->epp()->request($info);
         $expireAt = date('Y-m-d', strtotime($response->getDomainExpirationDate()));
 
         $renew = new eppRenewRequest($domain, $expireAt);
 
-        /** @var eppRenewResponse $response */
-        $response = $this->epp()->request($renew);
+        $this->epp()->request($renew);
     }
 
     /**
@@ -732,10 +767,10 @@ class Provider extends DomainNames implements ProviderInterface
      * requirements. If a GB postcode is given, this method will ensure a space
      * is inserted in the correct place.
      *
-     * @param string $postCode Postal code e.g., SW152QT
-     * @param string $countryCode 2-letter iso code e.g., GB
+     * @param string|null $postCode Postal code e.g., SW152QT
+     * @param string|null $countryCode 2-letter iso code e.g., GB
      *
-     * @return string Post code e.g., SW15 2QT
+     * @return string|null Post code e.g., SW15 2QT
      */
     protected function normalizePostCode(?string $postCode, ?string $countryCode = 'GB'): ?string
     {
@@ -756,8 +791,10 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @throws ProvisionFunctionError
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     * /
      */
     private function _eppExceptionHandler(eppException $exception, array $data = [], array $debug = []): void
     {
@@ -773,9 +810,12 @@ class Provider extends DomainNames implements ProviderInterface
                 $errorMessage = $exception->getMessage();
         }
 
-        throw $this->errorResult(sprintf('Registry Error: %s', $errorMessage), $data, $debug, $exception);
+        $this->errorResult(sprintf('Registry Error: %s', $errorMessage), $data, $debug, $exception);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function epp(): NominetConnection
     {
         if (isset($this->connection)) {
@@ -783,7 +823,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         try {
-            $connection = new NominetConnection(!!$this->configuration->debug);
+            $connection = new NominetConnection(true);
             $connection->setPsrLogger($this->getLogger());
 
             $connection->setHostname(
@@ -815,7 +855,7 @@ class Provider extends DomainNames implements ProviderInterface
                     $errorMessage = 'Connection error; check whitelisted IPs';
             }
 
-            throw $this->errorResult(trim(sprintf('%s %s', $e->getCode() ?: null, $errorMessage)), [], [], $e);
+            $this->errorResult(trim(sprintf('%s %s', $e->getCode() ?: null, $errorMessage)), [], [], $e);
         } catch (ErrorException $e) {
             if (Str::containsAll($e->getMessage(), ['stream_socket_client()', 'SSL'])) {
                 // this usually means they've not whitelisted our IPs
@@ -824,7 +864,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $errorMessage = 'Unexpected provider connection error';
             }
 
-            throw $this->errorResult($errorMessage, [], [], $e);
+            $this->errorResult($errorMessage, [], [], $e);
         }
     }
 }

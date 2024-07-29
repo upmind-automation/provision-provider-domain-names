@@ -23,16 +23,24 @@
         }
     },
     "require": {
-        "upmind/provision-provider-base": "^3.7",
-        "metaregistrar/php-epp-client": "^1.0.12",
-        "hexonet/php-sdk": "^5.0",
-        "propaganistas/laravel-phone": "^4.2",
-        "guzzlehttp/guzzle": "^6.3|^7.0",
-        "pragmarx/countries": "^0.8.2",
+        "php": "8.1 - 8.3",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "ext-simplexml": "*",
+        "ext-xml": "*",
         "africc/php-epp2": "^1.0",
-        "upmind/domainnameapi-sdk": "^1.0",
+        "centralnic-reseller/php-sdk": "^8.0",
         "fakerphp/faker": "^1.0",
-        "centralnic-reseller/php-sdk": "^8.0"
+        "guzzlehttp/guzzle": "^6.3|^7.0",
+        "metaregistrar/php-epp-client": "^1.0.12",
+        "pragmarx/countries": "^0.8.2",
+        "propaganistas/laravel-phone": "^4.2 || ^5.0",
+        "upmind/domainnameapi-sdk": "^1.1",
+        "upmind/provision-provider-base": "^4.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
     },
     "extra": {
         "laravel": {
@@ -40,6 +48,9 @@
                 "Upmind\\ProvisionProviders\\DomainNames\\LaravelServiceProvider"
             ]
         }
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true

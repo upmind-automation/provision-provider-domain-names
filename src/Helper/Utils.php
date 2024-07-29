@@ -19,6 +19,8 @@ class Utils
      *
      * @param string|null $date
      * @param string|null $format
+     * @param string|null $adjustHours
+     *
      * @return string|null Formatted date, or null
      */
     public static function formatDate(?string $date, ?string $format = null, ?string $adjustHours = null): ?string
@@ -272,6 +274,8 @@ class Utils
      * @param string|null $countryCode Country code, if known
      *
      * @return string International format phone number, if possible
+     *
+     * @throws \Throwable
      */
     public static function localPhoneToInternational(string $number, ?string $countryCode, bool $orFail = true): string
     {

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Requests;
 
-use Metaregistrar\EPP\eppContactHandle;
-use Metaregistrar\EPP\eppDomain;
-
 /**
  *         ,_     _
  *        |\\_,-~/
@@ -28,6 +25,8 @@ class EppTransferRequest extends \Metaregistrar\EPP\eppTransferRequest
      * Add the hexonet ACTION=USERTRANSFER extension (for internal domain transfers).
      *
      * @link https://wiki.hexonet.net/wiki/EPP:TransferDomain
+     *
+     * @throws \DOMException
      */
     public function addUserTransferAction(): void
     {

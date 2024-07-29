@@ -12,8 +12,6 @@ use Upmind\DomainNameApiSdk\ClientFactory;
 use Upmind\DomainNameApiSdk\SDK\ArrayType\ArrayOfstring;
 use Upmind\DomainNameApiSdk\SDK\EnumType\ContactType;
 use Upmind\DomainNameApiSdk\SDK\StructType\BaseMethodResponse;
-use Upmind\DomainNameApiSdk\SDK\StructType\CheckAvailability;
-use Upmind\DomainNameApiSdk\SDK\StructType\CheckAvailabilityRequest;
 use Upmind\DomainNameApiSdk\SDK\StructType\ContactInfo;
 use Upmind\DomainNameApiSdk\SDK\StructType\DisableTheftProtectionLock;
 use Upmind\DomainNameApiSdk\SDK\StructType\DisableTheftProtectionLockRequest;
@@ -69,7 +67,7 @@ class Provider extends DomainNames implements ProviderInterface
     protected $configuration;
 
     /**
-     * @var DomainNameApiSdkClient
+     * @var DomainNameApiSdkClient|null
      */
     protected $apiClient;
 
@@ -99,25 +97,26 @@ class Provider extends DomainNames implements ProviderInterface
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/domainnameapi-logo.png');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Operation not supported');
-
-        $request = (new CheckAvailabilityRequest())
-            ->setDomainNameList(new ArrayOfstring(array_fill(0, count($params->tlds), $params->sld)))
-            ->setTldList(new ArrayOfstring(array_map(fn ($tld) => Utils::normalizeTld($tld), $params->tlds)))
-            ->setPeriod(10);
-        $response = $this->api()->CheckAvailability(new CheckAvailability($request));
-        $result = $response->getCheckAvailabilityResult();
-
-        $this->assertResultSuccess($result);
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function register(RegisterDomainParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -145,18 +144,26 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->RegisterWithContactInfo(new RegisterWithContactInfo($request));
         $result = $response->getRegisterWithContactInfoResult();
 
-        if (!$domainInfo = $result->getDomainInfo()) {
-            if ($result->getErrorCode() == 2302) {
-                $errorMessage = 'Domain name already exists';
-            }
+        if ($result === null) {
+            $this->errorResult('Domain registration failed');
+        }
 
-            throw $this->handleApiErrorResult($result, $errorMessage ?? null);
+        $domainInfo = $result->getDomainInfo();
+
+        if (!$domainInfo) {
+            $this->handleApiErrorResult(
+                $result,
+                $result->getErrorCode() == 2302 ? 'Domain name already exists' : null
+            );
         }
 
         return $this->domainInfoToResult($domainInfo)
             ->setMessage('Domain registered successfully');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function transfer(TransferParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -174,11 +181,18 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->Transfer(new Transfer($request));
         $result = $response->getTransferResult();
 
+        if ($result === null) {
+            $this->errorResult('Domain transfer failed');
+        }
+
         $this->assertResultSuccess($result);
 
-        return $this->errorResult('Domain transfer initiated');
+        $this->errorResult('Domain transfer initiated');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function renew(RenewParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -189,12 +203,19 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->Renew(new Renew($renewRequest));
         $result = $response->getRenewResult();
 
+        if ($result === null) {
+            $this->errorResult('Domain renewal failed');
+        }
+
         $this->assertResultSuccess($result);
 
         return $this->getDomainResult($domain)
             ->setMessage('Domain renewed successfully');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -202,6 +223,9 @@ class Provider extends DomainNames implements ProviderInterface
         return $this->getDomainResult($domain);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -219,9 +243,16 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->ModifyNameServer(new ModifyNameServer($request));
         $result = $response->getModifyNameServerResult();
 
+        if ($result === null) {
+            $this->errorResult('Nameservers update failed');
+        }
+
         $this->assertResultSuccess($result);
 
-        $returnNameservers = collect($nameservers)
+        /** @var \Illuminate\Support\Collection $returnNameserversCollection */
+        $returnNameserversCollection = collect($nameservers);
+
+        $returnNameservers = $returnNameserversCollection
             ->mapWithKeys(fn ($ns, $i) => ['ns' . ($i + 1) => $ns])
             ->toArray();
 
@@ -229,6 +260,9 @@ class Provider extends DomainNames implements ProviderInterface
             ->setMessage('Nameservers are changed');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function getEppCode(EppParams $params): EppCodeResult
     {
         $domainInfo = $this->getDomainInfo(Utils::getDomain($params->sld, $params->tld));
@@ -236,11 +270,17 @@ class Provider extends DomainNames implements ProviderInterface
         return EppCodeResult::create(['epp_code' => $domainInfo->getAuth()]);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
@@ -256,11 +296,18 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->SaveContacts(new SaveContacts($request));
         $result = $response->getSaveContactsResult();
 
+        if ($result === null) {
+            $this->errorResult('Registrant contact update failed');
+        }
+
         $this->assertResultSuccess($result);
 
         return $this->getContactResults($domain)['registrant']->setMessage('Registrant contact updated');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setLock(LockParams $params): DomainResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
@@ -283,6 +330,10 @@ class Provider extends DomainNames implements ProviderInterface
             $result = $response->getDisableTheftProtectionLockResult();
         }
 
+        if ($result === null) {
+            $this->errorResult('Domain lock operation failed');
+        }
+
         $this->assertResultSuccess($result);
 
         return $domainResult
@@ -290,17 +341,26 @@ class Provider extends DomainNames implements ProviderInterface
             ->setLocked(!!$params->lock);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('Operation not supported');
+        $this->errorResult('Operation not supported');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function getDomainResult(string $domain, bool $assertActive = false): DomainResult
     {
         return $this->domainInfoToResult($this->getDomainInfo($domain, $assertActive))
             ->setMessage('Domain info retrieved');
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function getDomainInfo(string $domain, bool $assertActive = false): DomainInfo
     {
         $getDetailsRequest = (new GetDetailsRequest())
@@ -308,12 +368,16 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->GetDetails(new GetDetails($getDetailsRequest));
         $result = $response->getGetDetailsResult();
 
+        if ($result === null) {
+            $this->errorResult('Domain not found');
+        }
+
         if (!$domainInfo = $result->getDomainInfo()) {
-            throw $this->handleApiErrorResult($result);
+            $this->handleApiErrorResult($result);
         }
 
         if ($assertActive && $domainInfo->getStatus() !== 'Active') {
-            throw $this->errorResult(sprintf('Domain is %s', $domainInfo->getStatus()), [
+            $this->errorResult(sprintf('Domain is %s', $domainInfo->getStatus()), [
                 'domain' => $domain,
                 'statuses' => [
                     $domainInfo->getStatus(),
@@ -327,6 +391,8 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @return ContactResult[]|array<string,ContactResult>
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function getContactResults(string $domainName): array
     {
@@ -335,8 +401,12 @@ class Provider extends DomainNames implements ProviderInterface
         $response = $this->api()->GetContacts(new GetContacts($request));
         $result = $response->getGetContactsResult();
 
+        if ($result === null) {
+            $this->errorResult('Domain Contact details not found');
+        }
+
         if (!$result->getRegistrantContact()) {
-            throw $this->handleApiErrorResult($result);
+            $this->handleApiErrorResult($result);
         }
 
         return [
@@ -386,13 +456,24 @@ class Provider extends DomainNames implements ProviderInterface
         return array_map(fn ($value) => in_array($value, $empty, true) ? null : $value, $data);
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     protected function domainInfoToResult(DomainInfo $domainInfo): DomainResult
     {
         $contacts = $this->getContactResults($domainInfo->getDomainName());
-        $nameservers = collect($domainInfo->getNameServerList()->getString())
+
+        $nameServersList = $domainInfo->getNameServerList();
+
+        // Empty array if nameServersList is null.
+        /** @var \Illuminate\Support\Collection $nameServersCollection */
+        $nameServersCollection = collect($nameServersList !== null ? $nameServersList->getString() : []);
+        $nameservers = $nameServersCollection
             ->mapWithKeys(fn ($host, $i) => ['ns' . ($i + 1) => ['host' => $host]]);
 
-        $statuses = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()])
+        /** @var \Illuminate\Support\Collection $statusesCollection */
+        $statusesCollection = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()]);
+        $statuses = $statusesCollection
             ->map(fn ($status) => ucfirst(strtolower($status)))
             ->unique()
             ->values()
@@ -422,6 +503,9 @@ class Provider extends DomainNames implements ProviderInterface
         return Carbon::parse($date)->toDateTimeString();
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     protected function contactParamsToSoap(ContactParams $params): ContactInfo
     {
         @[$firstName, $lastName] = explode(' ', $params->name ?: $params->organisation, 2);
@@ -450,7 +534,7 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function assertResultSuccess(BaseMethodResponse $result, ?string $errorMessage = null): void
     {
@@ -460,15 +544,15 @@ class Provider extends DomainNames implements ProviderInterface
     }
 
     /**
-     * @throws ProvisionFunctionError
-     *
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function handleApiErrorResult(BaseMethodResponse $result, ?string $errorMessage = null): void
     {
         $errorMessage = $errorMessage ?: sprintf('Provider error: %s', $this->getApiErrorResultMessage($result));
 
-        throw $this->errorResult($errorMessage, [
+        $this->errorResult($errorMessage, [
             'error_code' => $result->getErrorCode(),
             'operation_result' => $result->getOperationResult(),
             'operation_message' => $result->getOperationMessage(),
@@ -492,7 +576,7 @@ class Provider extends DomainNames implements ProviderInterface
             $this->configuration->username,
             $this->configuration->password,
             $this->configuration->sandbox ? ClientFactory::ENV_TEST : ClientFactory::ENV_LIVE,
-            $this->configuration->debug ? $this->getLogger() : null
+            $this->getLogger()
         );
     }
 }

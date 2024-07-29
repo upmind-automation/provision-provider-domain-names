@@ -4,16 +4,9 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension;
 
-use Metaregistrar\EPP\eppCreateContactResponse;
-use Metaregistrar\EPP\eppInfoContactRequest;
-use Metaregistrar\EPP\eppPollRequest;
 use Metaregistrar\EPP\eppConnection as BaseEppConnection;
 use Psr\Log\LoggerInterface;
 
-/**
- * Class EppConnection
- * @package Upmind\ProvisionProviders\DomainNames\CentralNicReseller\EppExtension
- */
 class EppConnection extends BaseEppConnection
 {
     /**
@@ -22,15 +15,14 @@ class EppConnection extends BaseEppConnection
     protected LoggerInterface $logger;
 
     /**
-     * EppConnection constructor.
-     * @param bool $logging
-     * @param string|null $settingsFile
+     * @throws \Metaregistrar\EPP\eppException
      */
-    public function __construct(bool $logging = false, string $settingsFile = null)
+    public function __construct(bool $logging = true, string $settingsFile = null)
     {
         // Call parent's constructor
         parent::__construct($logging, $settingsFile);
-        parent::useExtension('keysys-1.0');
+
+        $this->useExtension('keysys-1.0');
     }
 
     /**
@@ -46,8 +38,6 @@ class EppConnection extends BaseEppConnection
 
     /**
      * Writes a log message to the log file or PSR-3 logger.
-     *
-     * @inheritdoc
      */
     public function writeLog($text, $action)
     {

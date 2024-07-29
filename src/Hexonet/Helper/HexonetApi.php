@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Hexonet\Helper;
 
-use HEXONET\APIClient as HexonetApiClient;
-use HEXONET\Response as HexonetResponse;
+use CNIC\ClientFactory;
+use CNIC\HEXONET\SessionClient as HexonetApiClient;
+use CNIC\HEXONET\Response as HexonetResponse;
 use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactResult;
@@ -31,37 +31,37 @@ use Upmind\ProvisionProviders\DomainNames\Hexonet\Data\Configuration;
 class HexonetApi
 {
     /**
-     * @var HexonetApiClient
+     * @var \CNIC\HEXONET\SessionClient
      */
     protected $client;
 
+    /**
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function __construct(Configuration $configuration, LoggerInterface $logger)
     {
-        $this->client = self::establishConnection($configuration, $logger);
+        $this->client = $this->establishConnection($configuration, $logger);
     }
 
     /**
      * Authenticate and establish a connection with the Domain Provider API and login.
      *
-     * @throws ProvisionFunctionError
+     * @throws \Exception
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     protected function establishConnection(Configuration $configuration, LoggerInterface $logger): HexonetApiClient
     {
-        // Init Client
-        $client = new HexonetApiClient();
-        $client->setCredentials($configuration->username, $configuration->password);
-
-        // Set Environment
-        if ($configuration->sandbox) {
-            $client->useOTESystem();
-            $client->setURL('https://api-ote.ispapi.net/api/call.cgi');
-        }
-
-        // Set Logging and Logger Handler
-        if ($configuration->debug) {
-            $client->enableDebugMode(true);
-            $client->setCustomLogger(new HexonetLogger($logger));
-        }
+        $client = ClientFactory::getClient(
+            [
+                'registrar' => 'HEXONET',
+                'username' => $configuration->username,
+                'password' => $configuration->password,
+                'sandbox' => $configuration->sandbox,
+                'logging' => true,
+            ],
+            new HexonetLogger($logger)
+        );
 
         // Login
         $loginRequest = $client->login();
@@ -81,9 +81,7 @@ class HexonetApi
     /**
      * Run a command against the API
      *
-     * @param string $command
-     * @param array $parameters
-     * @return HexonetResponse
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function runCommand(string $command, array $parameters = []): HexonetResponse
     {
@@ -118,15 +116,14 @@ class HexonetApi
      */
     public function terminateConnection(): void
     {
-        $logoutRequest = $this->client->logout();
-
-        // if (!$logoutRequest->isSuccess()) {
-        //     throw new RuntimeException('There was a problem while terminating the Hexonet HTTPS API Session!');
-        // }
+        $this->client->logout();
     }
 
     /**
      * @link https://github.com/centralnicgroup-public/hexonet-api-documentation/blob/master/API/DOMAIN/TRANSFERDOMAIN.md
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer(
         string $domain,
@@ -138,10 +135,12 @@ class HexonetApi
         ?ContactParams $billingContact = null,
         ?bool $userTransfer = null
     ): array {
-        $userTransfer = $userTransfer ?? Arr::get(
-            $this->checkTransfer($domain, $eppCode),
-            'PROPERTY.USERTRANSFERREQUIRED.0'
-        );
+        if ($userTransfer === null) {
+            $userTransfer = (bool) Arr::get(
+                $this->checkTransfer($domain, $eppCode),
+                'PROPERTY.USERTRANSFERREQUIRED.0'
+            );
+        }
 
         $params = [
             'action' => $userTransfer ? 'USERTRANSFER' : 'REQUEST',
@@ -173,6 +172,8 @@ class HexonetApi
      * Note, this function is way slower than the EPP equivalent for some reason!
      *
      * https://github.com/centralnicgroup-public/hexonet-api-documentation/blob/master/API/DOMAIN/TRANSFER/CHECKDOMAINTRANSFER.md
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function checkTransfer(string $domain, ?string $eppCode = null): array
     {
@@ -217,6 +218,9 @@ class HexonetApi
         return $check;
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function markDomainRenewalAsPaid(string $domain): array
     {
         return $this->runCommand('PayDomainRenewal', [
@@ -224,6 +228,9 @@ class HexonetApi
         ])->getHash();
     }
 
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function statusDomain(string $domain): array
     {
         $result = $this->runCommand('StatusDomain', [
@@ -256,6 +263,10 @@ class HexonetApi
         return $nameservers;
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
     public function updateRegistrant(
         string $domain,
         ContactParams $contact
@@ -265,18 +276,15 @@ class HexonetApi
             'ownercontact0' => $this->transformContactParams($contact),
         ];
 
-        $result = $this->runCommand('ModifyDomain', $params); // nothing useful in the result
+        $this->runCommand('ModifyDomain', $params); // nothing useful in the result
 
         return ContactResult::create($contact);
-
-        throw ProvisionFunctionError::create('update registrant')->withData(['result' => $result->getHash()]);
     }
 
     /**
      * Returns an associative array with contacts
      *
-     * @param array $filters
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getContacts(array $filters = []): array
     {
@@ -312,9 +320,7 @@ class HexonetApi
     /**
      * Unlocks/Locks a domain for transfer
      *
-     * @param string $domain
-     * @param bool  $lock
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setTransferLock(string $domain, bool $lock): array
     {
@@ -335,6 +341,8 @@ class HexonetApi
      * @param string $domain
      * @param bool $autoRenew [true - autorenew; false - autoexpire]
      * @return array
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setRenewalMode(string $domain, bool $autoRenew): array
     {
@@ -344,7 +352,7 @@ class HexonetApi
             'renewalMode' => ($autoRenew) ? 'AUTORENEW' : 'AUTOEXPIRE'
         ];
 
-        $setRenewal = $this->runCommand('SetDomainRenewalMode', $additionalParams);
+        $this->runCommand('SetDomainRenewalMode', $additionalParams);
 
         return $additionalParams;
     }
@@ -352,8 +360,7 @@ class HexonetApi
     /**
      * Returns domain list from the account
      *
-     * @param array|null    $filters
-     * @return array
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function listDomains(?array $filters = []): array
     {
@@ -388,6 +395,8 @@ class HexonetApi
     /**
      * Transform the given contact params to a params array in the correct format
      * for the Hexonet API.
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function transformContactParams(ContactParams $contact): array
     {
@@ -397,7 +406,7 @@ class HexonetApi
         return [
             'name' => $name,
             'firstname' => $firstName,
-            'lastname' => $lastName ?? $firstName,
+            'lastname' => !empty($lastName) ? $lastName : $firstName,
             'organization' => $contact->organisation,
             'email' => $contact->email,
             'phone' => Utils::internationalPhoneToEpp($contact->phone),

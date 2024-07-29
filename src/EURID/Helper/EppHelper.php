@@ -5,66 +5,36 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\EURID\Helper;
 
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Upmind\ProvisionBase\Helper;
-use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
-use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
 use Metaregistrar\EPP\authEppInfoDomainRequest;
-use Metaregistrar\EPP\authEppInfoDomainResponse;
-use Metaregistrar\EPP\euridEppInfoDomainResponse;
-use Metaregistrar\EPP\rrpproxyEppRenewalmodeRequest;
 use Metaregistrar\EPP\eppCheckDomainRequest;
-use Metaregistrar\EPP\eppCheckDomainResponse;
-use Metaregistrar\EPP\eppCheckHostResponse;
-use Metaregistrar\EPP\eppCheckHostRequest;
-use Metaregistrar\EPP\eppCheckRequest;
 use Metaregistrar\EPP\eppPollRequest;
 use Metaregistrar\EPP\eppContact;
 use Metaregistrar\EPP\eppContactHandle;
 use Metaregistrar\EPP\eppContactPostalInfo;
-use Metaregistrar\EPP\eppCreateContactResponse;
 use Metaregistrar\EPP\eppCreateDomainRequest;
-use Metaregistrar\EPP\eppCreateDomainResponse;
-use Metaregistrar\EPP\eppCreateHostRequest;
-use Metaregistrar\EPP\eppCreateResponse;
 use Metaregistrar\EPP\eppDomain;
-use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppHost;
 use Metaregistrar\EPP\eppInfoContactRequest;
-use Metaregistrar\EPP\eppInfoContactResponse;
 use Metaregistrar\EPP\eppInfoDomainRequest;
-use Metaregistrar\EPP\eppInfoDomainResponse;
 use Metaregistrar\EPP\eppRenewRequest;
-use Metaregistrar\EPP\eppRenewResponse;
 use Metaregistrar\EPP\eppTransferRequest;
 use Metaregistrar\EPP\eppTransferResponse;
 use Metaregistrar\EPP\eppUpdateContactRequest;
-use Metaregistrar\EPP\eppUpdateContactResponse;
 use Metaregistrar\EPP\eppUpdateDomainRequest;
-use Metaregistrar\EPP\eppUpdateDomainResponse;
-use Metaregistrar\EPP\eppUpdateResponse;
-use Metaregistrar\EPP\eppResponse;
 use Metaregistrar\EPP\euridEppContact;
 use Metaregistrar\EPP\euridEppCreateContactRequest;
 use Metaregistrar\EPP\euridEppPollRequest;
 use Metaregistrar\EPP\euridEppPollResponse;
-use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\Requests\EppUpdateAuthInfoRequest;
 use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\EppConnection;
 use Upmind\ProvisionProviders\DomainNames\EURID\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\EURID\EppExtension\euridEppTransferDomainRequest;
 
-/**
- * Class EppHelper
- *
- * @package Upmind\ProvisionProviders\DomainNames\EURID\Helper
- */
 class EppHelper
 {
     protected EppConnection $connection;
@@ -80,6 +50,9 @@ class EppHelper
         $this->configuration = $configuration;
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function poll(int $limit, ?Carbon $since): array
     {
         $notifications = [];
@@ -93,7 +66,7 @@ class EppHelper
 
         while (count($notifications) < $limit && (time() - $startTime) < $timeLimit) {
             // get oldest message from queue
-            /** @var euridEppPollResponse $pollResponse */
+            /** @var \Metaregistrar\EPP\euridEppPollResponse $pollResponse */
             $pollResponse = $this->connection->request(new euridEppPollRequest(eppPollRequest::POLL_REQ, 0));
             $countRemaining = $pollResponse->getMessageCount();
 
@@ -124,7 +97,7 @@ class EppHelper
 
             $notifications[] = DomainNotification::create()
                 ->setId($messageId)
-                ->setType($action == 'AWAY'
+                ->setType($action === 'AWAY'
                     ? DomainNotification::TYPE_TRANSFER_OUT
                     : DomainNotification::TYPE_TRANSFER_IN)
                 ->setMessage($message)
@@ -139,11 +112,14 @@ class EppHelper
         ];
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function checkMultipleDomains(array $domains): array
     {
         $check = new eppCheckDomainRequest($domains);
 
-        /** @var eppCheckDomainResponse */
+        /** @var \Metaregistrar\EPP\eppCheckDomainResponse $response */
         $response = $this->connection->request($check);
 
         $checks = $response->getCheckedDomains();
@@ -179,12 +155,15 @@ class EppHelper
         return $result;
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function getDomainInfo(string $domainName): array
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var euridEppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\euridEppInfoDomainResponse $response */
         $response = $this->connection->request($info);
 
         $registrantId = $response->getDomainRegistrant();
@@ -226,10 +205,14 @@ class EppHelper
         ];
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function getContactInfo(string $contactId): ContactData
     {
         $request = new eppInfoContactRequest(new eppContactHandle($contactId), false);
 
+        /** @var \Metaregistrar\EPP\eppInfoContactResponse $response */
         $response = $this->connection->request($request);
 
         return ContactData::create([
@@ -262,6 +245,9 @@ class EppHelper
         return $result;
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function renew(string $domainName, int $period): void
     {
         $domainData = new eppDomain($domainName);
@@ -269,7 +255,7 @@ class EppHelper
         $domainData->setPeriodUnit('y');
 
         $info = new eppInfoDomainRequest($domainData);
-        /** @var eppInfoDomainResponse $response */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $this->connection->request($info);
 
         $expiresAt = Utils::formatDate($response->getDomainExpirationDate(), 'Y-m-d');
@@ -279,17 +265,23 @@ class EppHelper
         $this->connection->request($renewRequest);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function getEppCode(string $domainName, bool $updateCode = false): ?string
     {
         $domain = new eppDomain($domainName);
         $info = new authEppInfoDomainRequest($domain, null, $updateCode);
 
-        /** @var authEppInfoDomainResponse $response */
+        /** @var \Metaregistrar\EPP\authEppInfoDomainResponse $response */
         $response = $this->connection->request($info);
 
         return $response->getDomainAuthInfo();
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function updateNameservers(string $domainName, array $nameservers): void
     {
         $attachedHosts = $this->getHosts($domainName);
@@ -322,20 +314,22 @@ class EppHelper
             new eppDomain($domainName),
             $addInfo,
             $removeInfo ?? null,
-            $updateInfo ?? null,
+            null,
             true
         );
 
-        /** @var eppUpdateDomainResponse $response */
         $this->connection->request($update);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function getHosts(string $domainName): array
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $this->connection->request($info);
 
         $nameservers = $response->getDomainNameservers();
@@ -350,12 +344,16 @@ class EppHelper
         return $attachedHosts;
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     public function updateRegistrantContact(string $domainName, ContactParams $params): ContactData
     {
         $domain = new eppDomain($domainName);
         $info = new eppInfoDomainRequest($domain);
 
-        /** @var eppInfoDomainResponse */
+        /** @var \Metaregistrar\EPP\eppInfoDomainResponse $response */
         $response = $this->connection->request($info);
         $registrantId = $response->getDomainRegistrant();
 
@@ -370,6 +368,9 @@ class EppHelper
         return $this->getContactInfo($registrantId);
     }
 
+    /**
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     private function setUpdateContactParams(ContactParams $params): eppContact
     {
         $telephone = null;
@@ -384,8 +385,12 @@ class EppHelper
 
         $name = $params->name ?: $params->organisation;
         @[$firstName, $lastName] = explode(' ', $name, 2);
-        $lastName ??= $firstName;
-        $name = $firstName . ' ' . $lastName;
+
+        $name = $firstName;
+
+        if (!empty($lastName)) {
+            $name .= ' ' . $lastName;
+        }
 
         $postalInfo = new eppContactPostalInfo(
             $name,
@@ -400,6 +405,9 @@ class EppHelper
         return new eppContact($postalInfo, $params->email, $telephone);
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function register(
         string $domainName,
         int    $period,
@@ -426,7 +434,7 @@ class EppHelper
         // Create the domain
         $create = new eppCreateDomainRequest($domain, true);
 
-        /** @var eppCreateDomainResponse */
+        /** @var \Metaregistrar\EPP\eppCreateDomainResponse $response */
         $response = $this->connection->request($create);
 
         return [
@@ -441,6 +449,10 @@ class EppHelper
         return Helper::generateStrictPassword($length, true, true, true, '!@#$%^*_');
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     */
     public function createContact(ContactParams $params, string $type): string
     {
         $telephone = null;
@@ -470,12 +482,15 @@ class EppHelper
 
         $contact = new euridEppCreateContactRequest($contactInfo);
 
-        /** @var eppCreateContactResponse $response */
+        /** @var \Metaregistrar\EPP\eppCreateContactResponse $response */
         $response = $this->connection->request($contact);
 
         return $response->getContactId();
     }
 
+    /**
+     * @throws \Metaregistrar\EPP\eppException
+     */
     public function initiateTransfer(
         string $domainName,
         int $renewYears,

@@ -26,9 +26,7 @@ use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollResult;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
-use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
-use Upmind\ProvisionProviders\DomainNames\Data\Nameserver;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
@@ -65,10 +63,12 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(PollParams $params): PollResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
@@ -126,7 +126,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         $expires = $faker->getExpiresAt();
         while ($expires->isPast()) {
-            $expires = $expires->addYears(1);
+            $expires = $expires->addYear();
         }
 
         return $result->setMessage('Demo domain transfer complete')
@@ -150,7 +150,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         $expires = $faker->getExpiresAt();
         while ($expires->lessThan(Carbon::now()->subMonths(3))) {
-            $expires = $expires->addYears(1);
+            $expires = $expires->addYear();
         }
 
         return $result->setMessage('Demo domain renewed')
@@ -209,21 +209,25 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
-        throw $this->errorResult('Not implemented');
+        $this->errorResult('Not implemented');
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
         $faker = $this->getFaker($params->sld, $params->tld);
 
         if (Str::endsWith($faker->getDomain(), '.uk')) {
-            throw $this->errorResult('Operation not available for this TLD');
+            $this->errorResult('Operation not available for this TLD');
         }
 
         return EppCodeResult::create()
@@ -233,13 +237,15 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
         $faker = $this->getFaker($params->sld, $params->tld);
 
         if (!Str::endsWith($faker->getDomain(), '.uk')) {
-            throw $this->errorResult('Operation not available for this TLD');
+            $this->errorResult('Operation not available for this TLD');
         }
 
         return ResultData::create()

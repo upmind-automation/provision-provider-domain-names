@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Namecheap\Helper;
 
-use Carbon\Carbon;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use RuntimeException;
@@ -57,6 +55,10 @@ class NamecheapApi
      * @param  string  $domainList
      *
      * @return array
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function checkMultipleDomains(string $domainList): array
     {
@@ -83,6 +85,7 @@ class NamecheapApi
                 'tld' => Utils::getTld($domainName),
                 'can_register' => $available,
                 'can_transfer' => !$available,
+                /** @phpstan-ignore-next-line */
                 'is_premium' => $domain->attributes()->IsPremiumName === "true",
             ]);
         }
@@ -97,6 +100,11 @@ class NamecheapApi
      * @param  string  $nameServers
      *
      * @return void
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(string $domainName, int $years, array $contacts, string $nameServers): void
     {
@@ -120,6 +128,10 @@ class NamecheapApi
      * @param  string  $eppCode
      *
      * @return string
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer(string $domainName, string $eppCode): string
     {
@@ -140,6 +152,10 @@ class NamecheapApi
      * @param  int  $period
      *
      * @return void
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(string $domainName, int $period): void
     {
@@ -157,6 +173,10 @@ class NamecheapApi
      * @param  int  $period
      *
      * @return void
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function reactivate(string $domainName, int $period): void
     {
@@ -173,6 +193,11 @@ class NamecheapApi
      * @param  string  $domainName
      *
      * @return array
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainInfo(string $domainName): array
     {
@@ -204,10 +229,11 @@ class NamecheapApi
     }
 
     /**
-     * @param  string  $domainName
-     * @param  ContactData  $contactParams
-     *
-     * @return array
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \InvalidArgumentException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(string $domainName, ContactParams $contactParams): ContactData
     {
@@ -238,6 +264,10 @@ class NamecheapApi
      * @param  string  $nameservers
      *
      * @return array
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateNameservers(string $sld, string $tld, string $nameservers): array
     {
@@ -266,6 +296,10 @@ class NamecheapApi
      * @param  bool  $lock
      *
      * @return void
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setRegistrarLock(string $domainName, bool $lock): void
     {
@@ -282,7 +316,11 @@ class NamecheapApi
      * @param  string  $sld
      * @param  string  $tld
      *
-     * @return SimpleXMLElement
+     * @return \SimpleXMLElement
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function getDNSList(string $sld, string $tld): SimpleXMLElement
     {
@@ -299,6 +337,10 @@ class NamecheapApi
      * @param  string  $domainName
      *
      * @return bool
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getRegistrarLockStatus(string $domainName): bool
     {
@@ -320,7 +362,11 @@ class NamecheapApi
     /**
      * @param  string  $domainName
      *
-     * @return SimpleXMLElement
+     * @return \SimpleXMLElement
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function getContacts(string $domainName): SimpleXMLElement
     {
@@ -336,6 +382,10 @@ class NamecheapApi
      * @param  string  $domainName
      *
      * @return array|null
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function getDomainTransferOrders(string $domainName): ?array
     {
@@ -373,9 +423,11 @@ class NamecheapApi
      *
      * @param  array  $params
      *
-     * @return SimpleXMLElement
+     * @return \SimpleXMLElement
      *
-     * @throws ProvisionFunctionError
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function makeRequest(array $params): SimpleXMLElement
     {
@@ -404,8 +456,9 @@ class NamecheapApi
      *
      * @param  string  $result
      *
-     * @return SimpleXMLElement
-     * @throws ProvisionFunctionError
+     * @return \SimpleXMLElement
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private function parseResponseData(string $result): SimpleXMLElement
     {
@@ -472,10 +525,12 @@ class NamecheapApi
     }
 
     /**
-     * @param  SimpleXMLElement  $contact
+     * @param  \SimpleXMLElement  $contact
      * @param  string  $type
      *
      * @return ContactData
+     *
+     * @throws \InvalidArgumentException
      */
     private function parseContact(SimpleXMLElement $contact, string $type): ContactData
     {
@@ -498,7 +553,7 @@ class NamecheapApi
     /**
      * @param  string  $type
      *
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public static function validateContactType(string $type): void
     {
@@ -508,7 +563,7 @@ class NamecheapApi
     }
 
     /**
-     * @param  SimpleXMLElement  $DnsDetails
+     * @param \SimpleXMLElement  $DnsDetails
      *
      * @return array
      */
@@ -540,8 +595,8 @@ class NamecheapApi
     }
 
     /**
-     * @param  SimpleXMLElement  $contact
-     * @param  string  $type
+     * @param \SimpleXMLElement  $contact
+     * @param string  $type
      *
      * @return array
      */
@@ -566,6 +621,8 @@ class NamecheapApi
      * @param  string  $type
      *
      * @return array
+     *
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     private function setContactParams(ContactParams $contactParams, string $type): array
     {

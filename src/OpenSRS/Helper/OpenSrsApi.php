@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\OpenSRS\Helper;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -85,8 +86,7 @@ class OpenSrsApi
     }
 
     /**
-     * @param string $type
-     * @param array $rawContactData
+     * @throws \RuntimeException
      */
     private static function validateContactType(string $type, array $rawContactData): void
     {
@@ -117,8 +117,10 @@ class OpenSrsApi
 
     /**
      * @param array $rawContactData
-     * @param   string  $type   Contact Type (owner, tech, admin, billing)
+     * @param string $type Contact Type (owner, tech, admin, billing)
      * @return ContactData
+     *
+     * @throws \RuntimeException
      */
     public static function parseContact(array $rawContactData, string $type): ContactData
     {
@@ -161,10 +163,11 @@ class OpenSrsApi
     /**
      * Send request and return the response.
      *
-     * @param array $params
+     * @param  array  $params
      * @return array
      *
-     * @throws ProvisionFunctionError
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function makeRequest(array $params): array
     {
@@ -247,6 +250,7 @@ class OpenSrsApi
             foreach ($array as $k => $v) {
                 ++$indent;
                 /* don't encode some types of stuff */
+                /** @phpstan-ignore-next-line  */
                 if ((gettype($v) == 'resource') || (gettype($v) == 'user function') || (gettype($v) == 'unknown type')) {
                     continue;
                 }
@@ -279,14 +283,14 @@ class OpenSrsApi
      *
      * Quotes special XML characters.
      *
-     * @param   string      string to quote
+     * @param string $string string to quote
      * @return string quoted string
      */
     private static function quoteXmlChars($string): string
     {
         $search = ['&', '<', '>', "'", '"'];
         $replace = ['&amp;', '&lt;', '&gt;', '&apos;', '&quot;'];
-        $string = str_replace($search, $replace, $string);
+        $string = Str::replace($search, $replace, $string);
         $string = utf8_encode($string);
 
         return $string;
@@ -298,7 +302,7 @@ class OpenSrsApi
      * Determines if an array is associative or not, since PHP
      * doesn't really distinguish between the two, but Perl/OPS does.
      *
-     * @param   array       array to check
+     * @param array $array array to check
      * @return bool true if the array is associative
      */
     private static function isAssoc(array &$array): bool
@@ -328,7 +332,7 @@ class OpenSrsApi
      * @param string $result
      * @return array
      *
-     * @throws ProvisionFunctionError
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     private static function parseResponseData(string $result): array
     {
@@ -336,7 +340,7 @@ class OpenSrsApi
 
         // Check the XML for errors
         if (!isset($data['is_success'])) {
-            throw static::errorResult('Registrar API Response Error', ['response' => $result, 'data' => $data]);
+            static::errorResult('Registrar API Response Error', ['response' => $result, 'data' => $data]);
         }
 
         if ((int)$data['is_success'] === 0 && !in_array($data['response_code'], [200, 212])) {
@@ -346,7 +350,7 @@ class OpenSrsApi
                 $errorMessage = 'Registrar API Authentication Error';
             }
 
-            throw static::errorResult($errorMessage, $data);
+            static::errorResult($errorMessage, $data);
         }
 
         return $data;
@@ -361,9 +365,9 @@ class OpenSrsApi
      * @param array $debug Error debug
      * @param Throwable|null $previous Encountered exception
      *
-     * @throws ProvisionFunctionError
-     *
      * @return no-return
+     *
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public static function errorResult($message, $data = [], $debug = [], ?Throwable $previous = null): void
     {
@@ -479,6 +483,8 @@ class OpenSrsApi
     /**
      * @param array $xmlErrors
      * @return string
+     *
+     * @phpstan-ignore method.unused
      */
     private static function formatOpenSrsErrorMessage(array $xmlErrors): string
     {

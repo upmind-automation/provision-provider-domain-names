@@ -13,7 +13,6 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $ips_tag IPS tag of the account
  * @property-read string $password Password of the account
  * @property-read bool|null $sandbox Used for switching to testing environment
- * @property-read bool|null $debug Whether or not to debug log
  */
 class NominetConfiguration extends DataSet
 {
@@ -23,7 +22,6 @@ class NominetConfiguration extends DataSet
             'ips_tag' => ['required', 'string', 'min:2', 'max:16'],
             'password' => ['required', 'string', 'min:6'],
             'sandbox' => ['boolean'],
-            'debug' => ['boolean'],
         ]);
     }
 }

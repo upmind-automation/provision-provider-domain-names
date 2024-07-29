@@ -7,8 +7,6 @@ namespace Upmind\ProvisionProviders\DomainNames\Ricta;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionProviders\DomainNames\CoccaEpp\Client;
 use Upmind\ProvisionProviders\DomainNames\CoccaEpp\Provider as CoccaEppProvider;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainInfoParams;
-use Upmind\ProvisionProviders\DomainNames\Data\DomainResult;
 use Upmind\ProvisionProviders\DomainNames\Ricta\Data\Configuration;
 
 class Provider extends CoccaEppProvider

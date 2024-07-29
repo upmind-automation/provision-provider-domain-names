@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension;
 
-use Illuminate\Support\Arr;
 use Metaregistrar\EPP\eppConnection as BaseEppConnection;
 use Metaregistrar\EPP\eppTransferResponse;
 use Psr\Log\LoggerInterface;
@@ -32,27 +31,22 @@ use Upmind\ProvisionProviders\DomainNames\Hexonet\EppExtension\Responses\EppQuer
 class EppConnection extends BaseEppConnection
 {
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface|null
      */
     protected $logger;
 
-    /**
-     * EppConnection constructor.
-     * @param bool $logging
-     * @param string|null $settingsFile
-     */
     public function __construct(bool $logging = false, string $settingsFile = null)
     {
         // Call parent's constructor
         parent::__construct($logging, $settingsFile);
 
         // Add Extension for USERTRANSFER transfer action / CheckDomainTransfer command for Hexonet
-        parent::addExtension('keyvalue', 'http://schema.ispapi.net/epp/xml/keyvalue-1.0');
+        $this->addExtension('keyvalue', 'http://schema.ispapi.net/epp/xml/keyvalue-1.0');
 
         // Add response handler for our custom transfer request(s)
-        parent::addCommandResponse(EppTransferRequest::class, eppTransferResponse::class);
-        parent::addCommandResponse(EppCheckTransferRequest::class, EppCheckTransferResponse::class);
-        parent::addCommandResponse(EppQueryTransferListRequest::class, EppQueryTransferListResponse::class);
+        $this->addCommandResponse(EppTransferRequest::class, eppTransferResponse::class);
+        $this->addCommandResponse(EppCheckTransferRequest::class, EppCheckTransferResponse::class);
+        $this->addCommandResponse(EppQueryTransferListRequest::class, EppQueryTransferListResponse::class);
     }
 
     /**
@@ -61,6 +55,7 @@ class EppConnection extends BaseEppConnection
     public function setPsrLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
+        $this->logging = isset($logger);
         if (isset($logger)) {
             $this->logFile = '/dev/null';
         }
@@ -68,8 +63,6 @@ class EppConnection extends BaseEppConnection
 
     /**
      * Writes a log message to the log file or PSR-3 logger.
-     *
-     * @inheritdoc
      */
     public function writeLog($text, $action)
     {
