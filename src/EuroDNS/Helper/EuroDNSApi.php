@@ -1237,28 +1237,6 @@ class EuroDNSApi
     }
 
     /**
-     * Function to extract first and last names from a full name.
-     *
-     * @param string|null $name - The full name to be split into first and last names.
-     *
-     * @return array - An associative array containing 'firstName' and 'lastName'.
-     */
-    private function getNameParts(?string $name): array
-    {
-        // Split the full name into parts using space as a delimiter
-        $nameParts = explode(" ", $name);
-
-        // Extract the first name (removing it from the array)
-        $firstName = array_shift($nameParts);
-
-        // Rejoin the remaining parts to get the last name
-        $lastName = implode(" ", $nameParts);
-
-        // Return an associative array with first and last names
-        return compact('firstName', 'lastName');
-    }
-
-    /**
      * Function to parse contact details from the provided array.
      *
      * @param array $contact - The array representing contact details.
