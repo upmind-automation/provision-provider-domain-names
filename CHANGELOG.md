@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
+
+- Update library for PHP 8 + Base lib v4
+
 ## [v2.12.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.7) - 2024-07-24
 
 - Update DomainNameApi/Provider::contactParamsToSoap() fix for invalid/empty values

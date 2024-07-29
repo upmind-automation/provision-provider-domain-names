@@ -96,6 +96,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
  - [Codeline](https://codeline.fi/)
  - [PEWEO](https://www.peweo.com/)
  - [Dan](https://github.com/domainregistrar)
+-  [Roussetos Karafyllakis](https://github.com/RoussKS)
  - [All Contributors](../../contributors)
 
 ## License
