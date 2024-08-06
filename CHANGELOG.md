@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.8](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.8) - 2024-08-06
+
+- Update Enom/Provider::updateNameservers() to return the param's NS, to avoid race condition
+  where Enom does not immediately return the new NS when a "Get Info" is then called
+
 ## [v2.12.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.7) - 2024-07-24
 
 - Update DomainNameApi/Provider::contactParamsToSoap() fix for invalid/empty values
