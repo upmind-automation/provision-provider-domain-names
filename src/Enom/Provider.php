@@ -330,13 +330,18 @@ class Provider extends DomainNames implements ProviderInterface
 
         try {
             // Attempt to update domain name servers
-            $nameservers = $this->api()->modifyNameServers(
+            $this->api()->modifyNameServers(
                 $params->sld,
                 $params->tld,
                 $nameServers
             );
 
-            return NameserversResult::create($nameservers)
+            return NameserversResult::create()
+                ->setNs1($params->ns1 ?? null)
+                ->setNs2($params->ns2 ?? null)
+                ->setNs3($params->ns3 ?? null)
+                ->setNs4($params->ns4 ?? null)
+                ->setNs5($params->ns5 ?? null)
                 ->setMessage(sprintf('Name servers for %s domain were updated!', $domain));
         } catch (\Throwable $e) {
             $this->handleException($e, $params);
