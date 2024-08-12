@@ -108,7 +108,7 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         $auParams = [];
-        if ($params->tld == "au") {
+        if (str_contains("au", $params->tld)) {
             $auParams = $params->additional_fields;
         }
 
