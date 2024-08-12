@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Upmind\ProvisionProviders\DomainNames\NRGConsole\Helper;
+namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper;
 
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
 
-class NRGConsoleResponse
+class TPPWholesaleResponse
 {
     protected string $response;
 
@@ -167,7 +167,6 @@ class NRGConsoleResponse
                 $r['Status'] = 'OK';
                 $r['Minimum'] = (int)$values['Minimum'];
                 $r['Maximum'] = (int)$values['Maximum'];
-
             }
 
             $result[] = $r;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Upmind\ProvisionProviders\DomainNames\NRGConsole\Helper;
+namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -15,12 +15,12 @@ use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\DomainNotification;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
-use Upmind\ProvisionProviders\DomainNames\NRGConsole\Data\Configuration;
+use Upmind\ProvisionProviders\DomainNames\TPPWholesale\Data\Configuration;
 
 /**
- * NRGConsole Domains API client.
+ * TPPWholesale Domains API client.
  */
-class NRGConsoleApi
+class TPPWholesaleApi
 {
     /**
      * Contact Types
@@ -71,8 +71,7 @@ class NRGConsoleApi
         array|string|null $query = null,
         ?array            $body = null,
         string            $method = 'POST'
-    ): Promise
-    {
+    ): Promise {
         $requestParams = [];
 
         if ($command !== '/auth.pl' && gettype($query) !== 'string') {
@@ -101,7 +100,7 @@ class NRGConsoleApi
                     return null;
                 }
 
-                return new NRGConsoleResponse((string)$result);
+                return new TPPWholesaleResponse((string)$result);
             });
 
         return $promise;
@@ -115,8 +114,7 @@ class NRGConsoleApi
         array|string|null $query = null,
         ?array            $body = null,
         string            $method = 'POST'
-    ): ?NRGConsoleResponse
-    {
+    ): ?TPPWholesaleResponse {
         return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
 

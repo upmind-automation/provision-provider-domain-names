@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Upmind\ProvisionProviders\DomainNames\NRGConsole;
+namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -31,18 +31,18 @@ use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
 use Upmind\ProvisionProviders\DomainNames\Data\TransferParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateDomainContactParams;
 use Upmind\ProvisionProviders\DomainNames\Data\UpdateNameserversParams;
-use Upmind\ProvisionProviders\DomainNames\NRGConsole\Data\Configuration;
+use Upmind\ProvisionProviders\DomainNames\TPPWholesale\Data\Configuration;
 use Upmind\ProvisionProviders\DomainNames\Helper\Utils;
-use Upmind\ProvisionProviders\DomainNames\NRGConsole\Helper\NRGConsoleApi;
+use Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper\TPPWholesaleApi;
 
 /**
- * NRGConsole provider.
+ * TPPWholesale provider.
  */
 class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected NRGConsoleApi|null $api = null;
+    protected TPPWholesaleApi|null $api = null;
 
     public function __construct(Configuration $configuration)
     {
@@ -52,9 +52,9 @@ class Provider extends DomainNames implements ProviderInterface
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
-            ->setName('NRGConsole')
+            ->setName('TPPWholesale')
             ->setDescription('Register, transfer, and manage NRG Console domain names')
-            ->setLogoUrl('https://api.upmind.io/images/logos/provision/nrgconsole-logo.svg');
+            ->setLogoUrl('https://api.upmind.io/images/logos/provision/tpp-wholesale-logo.png');
     }
 
     /**
@@ -182,10 +182,10 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         return [
-            NRGConsoleApi::CONTACT_TYPE_REGISTRANT => $registrantID,
-            NRGConsoleApi::CONTACT_TYPE_ADMIN => $adminID,
-            NRGConsoleApi::CONTACT_TYPE_TECH => $techID,
-            NRGConsoleApi::CONTACT_TYPE_BILLING => $billingID,
+            TPPWholesaleApi::CONTACT_TYPE_REGISTRANT => $registrantID,
+            TPPWholesaleApi::CONTACT_TYPE_ADMIN => $adminID,
+            TPPWholesaleApi::CONTACT_TYPE_TECH => $techID,
+            TPPWholesaleApi::CONTACT_TYPE_BILLING => $billingID,
         ];
     }
 
@@ -235,10 +235,10 @@ class Provider extends DomainNames implements ProviderInterface
         }
 
         return [
-            NRGConsoleApi::CONTACT_TYPE_REGISTRANT => $registrantID,
-            NRGConsoleApi::CONTACT_TYPE_ADMIN => $adminID,
-            NRGConsoleApi::CONTACT_TYPE_TECH => $techID,
-            NRGConsoleApi::CONTACT_TYPE_BILLING => $billingID,
+            TPPWholesaleApi::CONTACT_TYPE_REGISTRANT => $registrantID,
+            TPPWholesaleApi::CONTACT_TYPE_ADMIN => $adminID,
+            TPPWholesaleApi::CONTACT_TYPE_TECH => $techID,
+            TPPWholesaleApi::CONTACT_TYPE_BILLING => $billingID,
         ];
     }
 
@@ -468,7 +468,7 @@ class Provider extends DomainNames implements ProviderInterface
         throw $e;
     }
 
-    protected function api(): NRGConsoleApi
+    protected function api(): TPPWholesaleApi
     {
         if (isset($this->api)) {
             return $this->api;
@@ -478,21 +478,18 @@ class Provider extends DomainNames implements ProviderInterface
             'base_uri' => $this->resolveAPIURL(),
             'headers' => [
                 'Content-Type' => 'application/json',
-                'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/NRGConsoleApi',
+                'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/TPPWholesaleApi',
             ],
             'connect_timeout' => 10,
             'timeout' => 60,
-            'verify' => !$this->configuration->sandbox,
             'handler' => $this->getGuzzleHandlerStack(),
         ]);
 
-        return $this->api = new NRGConsoleApi($client, $this->configuration);
+        return $this->api = new TPPWholesaleApi($client, $this->configuration);
     }
 
     public function resolveAPIURL(): string
     {
-        return $this->configuration->sandbox
-            ? 'https://theconsole.uat.a2development.net'
-            : 'https://theconsole.tppwholesale.com.au';
+        return 'https://' . ($this->configuration->api_hostname ?: 'theconsole.tppwholesale.com.au');
     }
 }

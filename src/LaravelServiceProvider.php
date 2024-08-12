@@ -33,7 +33,7 @@ use Upmind\ProvisionProviders\DomainNames\InternetBS\Provider as InternetBS;
 use Upmind\ProvisionProviders\DomainNames\EuroDNS\Provider as EuroDNS;
 use Upmind\ProvisionProviders\DomainNames\InternetX\Provider as InternetX;
 use Upmind\ProvisionProviders\DomainNames\EURID\Provider as EURID;
-use Upmind\ProvisionProviders\DomainNames\NRGConsole\Provider as NRGConsole;
+use Upmind\ProvisionProviders\DomainNames\TPPWholesale\Provider as TPPWholesale;
 
 class LaravelServiceProvider extends ProvisionServiceProvider
 {
@@ -70,6 +70,6 @@ class LaravelServiceProvider extends ProvisionServiceProvider
         $this->bindProvider('domain-names', 'eurodns', EuroDNS::class);
         $this->bindProvider('domain-names', 'internetx', InternetX::class);
         $this->bindProvider('domain-names', 'eurid', EURID::class);
-        $this->bindProvider('domain-names', 'nrgconsole', NRGConsole::class);
+        $this->bindProvider('domain-names', 'tpp-wholesale', TPPWholesale::class);
     }
 }
