@@ -18,7 +18,7 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read RegisterContactParams $tech Tech contact data
  * @property-read RegisterContactParams $admin Admin contact data
  * @property-read NameserversParams $nameservers Nameservers
- * @property-read array $additional_fields Additional fields
+ * @property-read array|null $additional_fields Additional fields
  */
 class RegisterDomainParams extends DataSet
 {
@@ -33,7 +33,7 @@ class RegisterDomainParams extends DataSet
             'tech' => ['required', RegisterContactParams::class],
             'admin' => ['required', RegisterContactParams::class],
             'nameservers' => ['required', NameserversParams::class],
-            'additional_fields' => ['array'],
+            'additional_fields' => ['nullable', 'array'],
         ]);
     }
 }
