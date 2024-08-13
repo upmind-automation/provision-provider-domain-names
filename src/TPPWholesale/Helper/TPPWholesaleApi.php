@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactParams;
@@ -212,7 +213,7 @@ class TPPWholesaleApi
 
         if (count($nameservers) > 0) {
             foreach ($nameservers as $i => $ns) {
-                $result['ns' . ($i + 1)] = ['host' => (string)$ns['name']];
+                $result['ns' . ($i + 1)] = ['host' => $ns];
             }
         }
 
@@ -406,15 +407,18 @@ class TPPWholesaleApi
         $maximum = $parsedResponse["Maximum"];
 
         if ($minimum == -1 || $maximum == -1) {
-            throw ProvisionFunctionError::create('Domain renewal for the TLD are disabled for the reseller account.');
+            throw ProvisionFunctionError::create('Domain renewal for this domain has been disabled')
+                ->withData(['check_response' => $response]);
         }
 
         if ($period > $maximum) {
-            $period = $maximum;
+            throw ProvisionFunctionError::create('Requested renewal period is too long')
+                ->withData(['check_response' => $response]);
         }
 
         if ($period < $minimum) {
-            $period = $minimum;
+            throw ProvisionFunctionError::create('Requested renewal period is too short')
+                ->withData(['check_response' => $response]);
         }
 
         $params["Period"] = $period;
