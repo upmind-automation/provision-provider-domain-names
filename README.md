@@ -61,6 +61,7 @@ The following providers are currently implemented:
   - [Internet.bs](https://internetbs.net/internet-bs-api.pdf)
   - [EuroDNS](https://whois.eurodns.com/doc/domain/info)
   - [InternetX](https://help.internetx.com/display/APIXMLEN/Domain+tasks)
+  - [TPP Wholesale](https://www.tppwholesale.com.au/api/)
 
 ## Functions
 
