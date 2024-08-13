@@ -30,7 +30,6 @@ class TPPWholesaleApi
     public const CONTACT_TYPE_TECH = 'tech';
     public const CONTACT_TYPE_BILLING = 'billing';
 
-
     protected Client $client;
 
     protected Configuration $configuration;
@@ -67,10 +66,10 @@ class TPPWholesaleApi
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function asyncRequest(
-        string            $command,
+        string $command,
         array|string|null $query = null,
-        ?array            $body = null,
-        string            $method = 'POST'
+        ?array $body = null,
+        string $method = 'POST'
     ): Promise {
         $requestParams = [];
 
@@ -110,10 +109,10 @@ class TPPWholesaleApi
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function makeRequest(
-        string            $command,
+        string $command,
         array|string|null $query = null,
-        ?array            $body = null,
-        string            $method = 'POST'
+        ?array $body = null,
+        string $method = 'POST'
     ): ?TPPWholesaleResponse {
         return $this->asyncRequest($command, $query, $body, $method)->wait();
     }
@@ -436,7 +435,6 @@ class TPPWholesaleApi
         return $response->parseTransferResponse();
     }
 
-
     /**
      * @param string[] $domainList
      *
@@ -468,10 +466,10 @@ class TPPWholesaleApi
         $res = $response->parseDACResponse();
 
         foreach ($res as $result) {
-            $available = True;
+            $available = true;
 
             if ($result["Status"] == "ERR") {
-                $available = False;
+                $available = false;
             }
 
             $transferred = !$available;

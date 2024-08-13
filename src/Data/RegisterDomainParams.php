@@ -33,7 +33,7 @@ class RegisterDomainParams extends DataSet
             'tech' => ['required', RegisterContactParams::class],
             'admin' => ['required', RegisterContactParams::class],
             'nameservers' => ['required', NameserversParams::class],
-            'additional_fields'=> ['array'],
+            'additional_fields' => ['array'],
         ]);
     }
 }

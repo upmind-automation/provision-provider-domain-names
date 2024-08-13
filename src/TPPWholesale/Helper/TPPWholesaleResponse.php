@@ -6,7 +6,6 @@ namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper;
 
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
-
 class TPPWholesaleResponse
 {
     protected string $response;
@@ -253,7 +252,7 @@ class TPPWholesaleResponse
                                 ->withData([
                                     'response' => $this->response,
                                 ]);
-                        } else if ($value == 1) {
+                        } elseif ($value == 1) {
                             return "Unlock";
                         } else {
                             return "Lock";
@@ -297,7 +296,6 @@ class TPPWholesaleResponse
 
         return null;
     }
-
 
     /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
