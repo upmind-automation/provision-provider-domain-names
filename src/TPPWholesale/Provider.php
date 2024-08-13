@@ -314,7 +314,7 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            return $this->getInfoDomainResult($domainName, 'Domain data obtained');
+            return $this->getInfoDomainResult($domainName, 'Domain data obtained', true);
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -325,13 +325,18 @@ class Provider extends DomainNames implements ProviderInterface
      */
     private function getInfoDomainResult(
         string $domainName,
-        string $message = 'Domain info obtained successfully'
+        string $message = 'Domain info obtained successfully',
+        bool $orReturnOrderStatus = false
     ): DomainResult {
         try {
             $domainInfo = $this->api()->getDomainInfo($domainName);
 
             return DomainResult::create($domainInfo)->setMessage($message);
         } catch (Throwable $e) {
+            if (!$orReturnOrderStatus) {
+                $this->handleException($e);
+            }
+
             try {
                 $orderData = $this->api()->getDomainOrderInfo($domainName, null);
             } catch (Throwable $e2) {
@@ -339,12 +344,8 @@ class Provider extends DomainNames implements ProviderInterface
                 $this->handleException($e);
             }
 
-            $this->errorResult(
-                sprintf('Domain Order %s: %s', $orderData['status'], $orderData['description']),
-                $orderData,
-                [],
-                $e
-            );
+            $message = sprintf('Domain %s %s: %s', $orderData['type'], $orderData['status'], $orderData['description']);
+            $this->errorResult($message, $orderData, [], $e);
         }
     }
 
@@ -355,8 +356,10 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $orderData = $this->api()->getDomainOrderInfo($domainName, $orderId);
 
+        $message = sprintf('Domain %s %s: %s', $orderData['type'], $orderData['status'], $orderData['description']);
+
         return DomainResult::create()
-            ->setMessage(sprintf('Domain Registration %s: %s', $orderData['status'], $orderData['description']))
+            ->setMessage($message)
             ->setId((string)$orderId ?: 'unknown')
             ->setDomain($domainName)
             ->setStatuses([$orderData['status']]);
