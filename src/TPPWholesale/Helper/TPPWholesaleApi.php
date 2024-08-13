@@ -194,8 +194,13 @@ class TPPWholesaleApi
      *
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-    public function register(string $domainName, int $period, array $contacts, array $nameServers, array $auParams): string
-    {
+    public function register(
+        string $domainName,
+        int $period,
+        array $contacts,
+        array $nameServers,
+        ?array $additionalFields
+    ): string {
         $params = [
             'Type' => 'Domains',
             'Object' => 'Domain',
@@ -208,40 +213,14 @@ class TPPWholesaleApi
             'BillingContactID' => $contacts[self::CONTACT_TYPE_BILLING],
         ];
 
-        $query = "";
-        foreach ($params as $key => $value) {
-            $query .= "&" . $key . "=" . $value;
-        }
+        $query = http_build_query($params);
 
         foreach ($nameServers as $n) {
-            $query .= "&Host=" . $n;
+            $query .= '&' . http_build_query(['Host' => $n]);
         }
 
-        foreach ($auParams as $item) {
-            if (isset($item['RegistrantName'])) {
-                $query .= "&RegistrantName=" . $item['RegistrantName'];
-            }
-            if (isset($item['RegistrantID'])) {
-                $query .= "&RegistrantID=" . $item['RegistrantID'];
-            }
-            if (isset($item['RegistrantIDType'])) {
-                $query .= "&RegistrantIDType=" . $item['RegistrantIDType'];
-            }
-            if (isset($item['EligibilityType'])) {
-                $query .= "&EligibilityType=" . $item['EligibilityType'];
-            }
-            if (isset($item['EligibilityReason'])) {
-                $query .= "&EligibilityReason=" . $item['EligibilityReason'];
-            }
-            if (isset($item['EligibilityID'])) {
-                $query .= "&EligibilityID=" . $item['EligibilityID'];
-            }
-            if (isset($item['EligibilityIDType'])) {
-                $query .= "&EligibilityIDType=" . $item['EligibilityIDType'];
-            }
-            if (isset($item['EligibilityName'])) {
-                $query .= "&EligibilityName=" . $item['EligibilityName'];
-            }
+        if ($additionalFields) {
+            $query .= '&' . http_build_query($additionalFields);
         }
 
         $response = $this->makeRequest("/order.pl", $query);
