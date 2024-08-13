@@ -95,34 +95,37 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
-        $domainName = Utils::getDomain($params->sld, $params->tld);
-
-        $checkResult = $this->api()->checkMultipleDomains([$domainName]);
-
-        if (count($checkResult) < 1) {
-            $this->errorResult('Empty domain availability check result');
-        }
-
-        if (!$checkResult[0]->can_register) {
-            $this->errorResult($checkResult[0]->description);
-        }
-
-        $auParams = [];
-        if (str_contains("au", $params->tld)) {
-            $auParams = $params->additional_fields;
-        }
-
-        $contacts = $this->getRegisterParams($params);
-
         try {
+            $domainName = Utils::getDomain($params->sld, $params->tld);
+
+            $checkResult = $this->api()->checkMultipleDomains([$domainName]);
+
+            if (count($checkResult) < 1) {
+                $this->errorResult('Empty domain availability check result');
+            }
+
+            if (!$checkResult[0]->can_register) {
+                $this->errorResult($checkResult[0]->description);
+            }
+
+            $contacts = $this->getRegisterParams($params);
+
             $orderID = $this->api()->register(
                 $domainName,
                 intval($params->renew_years),
                 $contacts,
                 $params->nameservers->pluckHosts(),
-                $auParams,
+                $params->additional_fields,
             );
-            $this->errorResult('Domain creation initiated', [], ['order_id' => $orderID]);
+            try {
+                return $this->getInfoDomainResult($domainName, 'Domain registered');
+            } catch (Throwable $e) {
+                return $this->getOrderDomainResult($domainName, (int)$orderID)
+                    ->setNs($params->nameservers)
+                    ->setCreatedAt(null)
+                    ->setUpdatedAt(null)
+                    ->setExpiresAt(null);
+            }
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -254,7 +257,7 @@ class Provider extends DomainNames implements ProviderInterface
         $eppCode = $params->epp_code ?: '0000';
 
         try {
-            return $this->_getInfo($domainName, 'Domain active in registrar account');
+            return $this->getInfoDomainResult($domainName, 'Domain active in registrar account');
         } catch (Throwable $e) {
             // initiate transfer ...
         }
@@ -295,7 +298,7 @@ class Provider extends DomainNames implements ProviderInterface
 
         try {
             $this->api()->renew($domainName, $period);
-            return $this->_getInfo($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
+            return $this->getInfoDomainResult($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -310,7 +313,7 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            return $this->_getInfo($domainName, 'Domain data obtained');
+            return $this->getInfoDomainResult($domainName, 'Domain data obtained');
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -319,11 +322,43 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-    private function _getInfo(string $domainName, string $message = 'Domain info obtained successfully'): DomainResult
-    {
-        $domainInfo = $this->api()->getDomainInfo($domainName);
+    private function getInfoDomainResult(
+        string $domainName,
+        string $message = 'Domain info obtained successfully'
+    ): DomainResult {
+        try {
+            $domainInfo = $this->api()->getDomainInfo($domainName);
 
-        return DomainResult::create($domainInfo)->setMessage($message);
+            return DomainResult::create($domainInfo)->setMessage($message);
+        } catch (Throwable $e) {
+            try {
+                $orderData = $this->api()->getDomainOrderInfo($domainName, null);
+            } catch (Throwable $e2) {
+                // throw original error...
+                $this->handleException($e);
+            }
+
+            $this->errorResult(
+                sprintf('Domain Order %s: %s', $orderData['status'], $orderData['description']),
+                $orderData,
+                [],
+                $e
+            );
+        }
+    }
+
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
+    private function getOrderDomainResult(string $domainName, ?int $orderId = null): DomainResult
+    {
+        $orderData = $this->api()->getDomainOrderInfo($domainName, $orderId);
+
+        return DomainResult::create()
+            ->setMessage(sprintf('Domain Registration %s: %s', $orderData['status'], $orderData['description']))
+            ->setId((string)$orderId ?: 'unknown')
+            ->setDomain($domainName)
+            ->setStatuses([$orderData['status']]);
     }
 
     /**
@@ -386,16 +421,16 @@ class Provider extends DomainNames implements ProviderInterface
         try {
             $currentLockStatus = $this->api()->getRegistrarLockStatus($domainName);
             if (!$lock && !$currentLockStatus) {
-                return $this->_getInfo($domainName, sprintf('Domain %s already unlocked', $domainName));
+                return $this->getInfoDomainResult($domainName, sprintf('Domain %s already unlocked', $domainName));
             }
 
             if ($lock && $currentLockStatus) {
-                return $this->_getInfo($domainName, sprintf('Domain %s already locked', $domainName));
+                return $this->getInfoDomainResult($domainName, sprintf('Domain %s already locked', $domainName));
             }
 
             $this->api()->setRegistrarLock($domainName, $lock);
 
-            return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
+            return $this->getInfoDomainResult($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
         } catch (Throwable $e) {
             $this->handleException($e);
         }

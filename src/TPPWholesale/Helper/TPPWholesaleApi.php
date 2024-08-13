@@ -161,6 +161,34 @@ class TPPWholesaleApi
     }
 
     /**
+     * @throws \InvalidArgumentException if neither domain nor orderId are provided
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
+    public function getDomainOrderInfo(?string $domain, ?int $orderId): array
+    {
+        $params = [
+            'Type' => 'Domains',
+            'Object' => 'Order',
+            'Action' => 'OrderStatus',
+        ];
+
+        if (!empty($orderId)) {
+            $params['OrderID'] = $orderId;
+
+            $response = $this->makeRequest("/query.pl", $params);
+            return $response->parseDomainOrderResponse();
+        }
+
+        if (empty($domain)) {
+            throw new InvalidArgumentException('Either domain or order ID must be provided');
+        }
+
+        $params['Domain'] = $domain;
+        $response = $this->makeRequest("/query.pl", $params);
+        return $response->parseDomainOrderResponse();
+    }
+
+    /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */

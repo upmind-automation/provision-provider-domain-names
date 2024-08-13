@@ -345,4 +345,46 @@ class TPPWholesaleResponse
 
         return $result;
     }
+
+    /**
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
+    public function parseDomainOrderResponse(): array
+    {
+        if (str_starts_with($this->response, "ERR:")) {
+            $this->throwResponseError();
+        }
+
+        [$key, $message] = explode(": ", $this->response, 2);
+        if (str_starts_with($message, "ERR:")) {
+            $this->throwResponseError($message);
+        }
+
+        if (str_contains($message, 'OK:')) {
+            [, $message] = explode(': ', $message, 2);
+        }
+
+        if (is_numeric($key)) {
+            // Search was for an order id
+            $orderId = $key;
+            [$status, $description] = explode(',', $message, 2);
+
+            return [
+                'orderId' => $orderId,
+                'status' => $status,
+                'description' => $description,
+            ];
+        }
+
+        // Search was for a domain name
+        $domain = $key;
+        [$orderType, $status, $description] = explode(',', $message, 3);
+
+        return [
+            'domain' => $domain,
+            'orderType' => $orderType,
+            'status' => $status,
+            'description' => $description,
+        ];
+    }
 }
