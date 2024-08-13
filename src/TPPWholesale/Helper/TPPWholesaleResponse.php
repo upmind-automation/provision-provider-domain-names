@@ -6,7 +6,7 @@ namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper;
 
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
-class TPPWholesaleResponse
+class TPPWholesaleResponse implements \JsonSerializable
 {
     protected string $response;
 
@@ -386,5 +386,10 @@ class TPPWholesaleResponse
             'status' => $status,
             'description' => $description,
         ];
+    }
+
+    public function jsonSerialize(): string
+    {
+        return  $this->response;
     }
 }
