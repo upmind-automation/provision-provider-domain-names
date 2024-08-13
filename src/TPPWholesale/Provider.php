@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Throwable;
 use GuzzleHttp\Exception\RequestException;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
@@ -369,6 +370,10 @@ class Provider extends DomainNames implements ProviderInterface
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
+
+        if (Str::endsWith($domainName, '.nz')) {
+            $this->errorResult('Operation not supported for .nz domains');
+        }
 
         try {
             $this->api()->updateRegistrantContact($domainName, $params->contact);
