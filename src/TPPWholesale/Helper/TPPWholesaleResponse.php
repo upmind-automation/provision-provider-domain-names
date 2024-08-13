@@ -44,12 +44,12 @@ class TPPWholesaleResponse
             502 => "Invalid credit card number",
             503 => "Invalid credit card expiry date",
             504 => "Credit Card amount plus the current pre-paid balance is not sufficient to cover the cost of the order",
-            505 => "Error with credit card transaction at bank. Please Note: This error code will always be followed by a comma then a description of the error",
-            600 => "Error with one or more fields when creating a Domain Contact. Please Note: This error code will always be followed by a comma then a space separated list of fields that have failed.",
-            601 => "Error with one or more fields when creating, renewing or transferring a Domain. Please Note: This error code will always be followed by a comma then a space separated list of fields that have failed.",
-            602 => "Error with one or more fields associated with a Host. Please Note: This error code will always be followed by a comma then a space separated list of fields that have failed.",
-            603 => "Error with one or more fields associated with eligibility fields. Please Note: This error code will always be followed by a comma then a space separated list of fields that have failed.",
-            604 => "Error with one or more fields associated with a Nameserver. Please Note: This error code will always be followed by a comma then a space separated list of fields that have failed.",
+            505 => "Error with credit card transaction at bank", // This error code will always be followed by a comma then a description of the error
+            600 => "Error with one or more fields when creating a Domain Contact", // This error code will always be followed by a comma then a space separated list of fields that have failed.
+            601 => "Error with one or more fields when creating, renewing or transferring a Domain", // This error code will always be followed by a comma then a space separated list of fields that have failed.
+            602 => "Error with one or more fields associated with a Host", // This error code will always be followed by a comma then a space separated list of fields that have failed.
+            603 => "Error with one or more fields associated with eligibility fields", // This error code will always be followed by a comma then a space separated list of fields that have failed.
+            604 => "Error with one or more fields associated with a Nameserver", // This error code will always be followed by a comma then a space separated list of fields that have failed.
             610 => "Error connecting to registry",
             611 => "Domain cannot be Renewed or Transferred",
             612 => "Locking is not available for this domain",
@@ -60,8 +60,11 @@ class TPPWholesaleResponse
 
     /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     *
+     * @return never
+     * @return no-return
      */
-    private function error(string $message, int $errorCode): void
+    private function throwError(string $message, int $errorCode): void
     {
         throw ProvisionFunctionError::create(sprintf('Provider API Error: %d: %s ', $errorCode, $message))
             ->withData([
@@ -71,18 +74,23 @@ class TPPWholesaleResponse
 
     /**
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     *
+     * @return never
+     * @return no-return
      */
-    private function getResponseErrorMessage(): void
+    private function throwResponseError(): void
     {
         list(, $errorData) = explode("ERR: ", $this->response, 2);
         if (str_contains($errorData, ',')) {
             list($errorCode, $errorDescription) = explode(",", $errorData, 2);
-        } else {
+        }
+
+        if (!isset($errorCode) || in_array($errorCode, [600, 601, 602, 603, 604])) {
             $errorCode = $errorData;
             $errorDescription = $this->errorMessage((int)$errorCode);
         }
 
-        $this->error($errorDescription, (int)$errorCode);
+        $this->throwError($errorDescription, (int)$errorCode);
     }
 
     /**
@@ -92,7 +100,7 @@ class TPPWholesaleResponse
     {
         $sessionId = "";
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $sessionId) = explode("OK: ", $this->response, 2);
         }
@@ -108,7 +116,7 @@ class TPPWholesaleResponse
         $parsedArray = [];
 
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             $lines = explode("\n", trim($this->response));
             if (trim(array_shift($lines)) === "OK:") {
@@ -182,7 +190,7 @@ class TPPWholesaleResponse
         $result = [];
         list(, $data) = explode(": ", $this->response, 2);
         if (str_starts_with($data, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $successData) = explode("OK: ", $data, 2);
             parse_str(str_replace('&', '&', $successData), $values);
@@ -201,7 +209,7 @@ class TPPWholesaleResponse
     {
         $result = "";
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $result) = explode(": ", $this->response, 2);
         }
@@ -216,7 +224,7 @@ class TPPWholesaleResponse
     {
         $result = "";
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $result) = explode(": ", $this->response, 2);
         }
@@ -230,7 +238,7 @@ class TPPWholesaleResponse
     public function parseRenewalOrderResponse(): void
     {
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         }
     }
 
@@ -240,7 +248,7 @@ class TPPWholesaleResponse
     public function parseLockStatusResponse(): ?string
     {
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             $lines = explode("\n", trim($this->response));
             if (trim(array_shift($lines)) === "OK:") {
@@ -271,7 +279,7 @@ class TPPWholesaleResponse
     public function parseLockResponse(): void
     {
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         }
     }
 
@@ -281,7 +289,7 @@ class TPPWholesaleResponse
     public function parseEppResponse(): ?string
     {
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             $lines = explode("\n", trim($this->response));
             if (trim(array_shift($lines)) === "OK:") {
@@ -304,7 +312,7 @@ class TPPWholesaleResponse
     {
         $result = "";
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $result) = explode(": ", $this->response, 2);
         }
@@ -318,7 +326,7 @@ class TPPWholesaleResponse
     public function parseUpdateContactResponse(): void
     {
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         }
     }
 
@@ -329,7 +337,7 @@ class TPPWholesaleResponse
     {
         $result = "";
         if (str_starts_with($this->response, "ERR:")) {
-            $this->getResponseErrorMessage();
+            $this->throwResponseError();
         } else {
             list(, $result) = explode(": ", $this->response, 2);
         }
