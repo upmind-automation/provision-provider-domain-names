@@ -403,12 +403,38 @@ class Provider extends DomainNames implements ProviderInterface
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
         try {
-            $orderID = $this->api()->updateNameservers(
+            $domainInfo = $this->getInfoDomainResult($domainName);
+
+            if ($domainInfo->locked) {
+                $this->errorResult('Domain must be unlocked first');
+            }
+
+            $newHosts = $params->pluckHosts();
+            $existingHosts = $domainInfo->ns->pluckHosts();
+
+            sort($newHosts);
+            sort($existingHosts);
+
+            if ($newHosts === $existingHosts) {
+                return NameserversResult::create($domainInfo->ns->toArray())
+                    ->setMessage(sprintf('These nameservers are already set', $domainName));
+            }
+
+            $this->api()->updateNameservers(
                 $domainName,
                 $params->pluckHosts(),
             );
 
-            $this->errorResult('Updating hosts initiated', [], ['order_id' => $orderID]);
+            $nameserverResultData = [];
+            for ($i = 1; $i <= 5; $i++) {
+                $ns = $params->{"ns$i"};
+                if ($ns) {
+                    $nameserverResultData["ns$i"] = $ns;
+                }
+            }
+
+            return NameserversResult::create($nameserverResultData)
+                ->setMessage(sprintf('Nameservers for %s domain were updated!', $domainName));
         } catch (Throwable $e) {
             $this->handleException($e);
         }
