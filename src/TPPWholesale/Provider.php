@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\ResultData;
@@ -531,6 +532,13 @@ class Provider extends DomainNames implements ProviderInterface
             );
         }
 
+        if ($e instanceof TransferException) {
+            $this->errorResult('Provider API Connection Error', [
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+            ], [], $e);
+        }
+
         throw $e;
     }
 
@@ -547,7 +555,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/TPPWholesaleApi',
             ],
             'connect_timeout' => 10,
-            'timeout' => 60,
+            'timeout' => 30,
             'handler' => $this->getGuzzleHandlerStack(),
         ]);
 
