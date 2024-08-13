@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale;
 
-use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -75,7 +74,7 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $sld = Utils::normalizeSld($params->sld);
         $domains = array_map(
-            fn ($tld) => $sld . "." . Utils::normalizeTld($tld),
+            fn($tld) => $sld . "." . Utils::normalizeTld($tld),
             $params->tlds
         );
 
