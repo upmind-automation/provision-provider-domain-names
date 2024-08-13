@@ -42,7 +42,7 @@ class TPPWholesaleApi
         $this->getSessionID();
     }
 
-    private function getSessionID(): void
+    private function getSessionID(bool $keepAlive = false): void
     {
         $params = [
             'AccountNo' => $this->configuration->accountNo,
@@ -54,12 +54,14 @@ class TPPWholesaleApi
 
         $this->sessionID = $response->parseAuthResponse();
 
-        $params = [
-            'Type' => 'Domains',
-            'Action' => 'KeepAlive',
-        ];
+        if ($keepAlive) {
+            $params = [
+                'Type' => 'Domains',
+                'Action' => 'KeepAlive',
+            ];
 
-        $this->makeRequest("/query.pl", $params);
+            $this->makeRequest("/query.pl", $params);
+        }
     }
 
     /**
