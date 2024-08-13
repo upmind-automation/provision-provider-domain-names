@@ -7,6 +7,7 @@ return (new PhpCsFixer\Config())
     ->setFinder($finder)
     ->setRules([
         '@PSR12' => true,
+        'type_declaration_spaces' => true,
         'array_syntax' => ['syntax' => 'short'],
         'concat_space' => ['spacing' => 'one'],
         'binary_operator_spaces' => ['default' => 'single_space'],
