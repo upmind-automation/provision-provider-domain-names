@@ -250,7 +250,6 @@ class OpenSrsApi
             foreach ($array as $k => $v) {
                 ++$indent;
                 /* don't encode some types of stuff */
-                /** @phpstan-ignore-next-line  */
                 if ((gettype($v) == 'resource') || (gettype($v) == 'user function') || (gettype($v) == 'unknown type')) {
                     continue;
                 }
