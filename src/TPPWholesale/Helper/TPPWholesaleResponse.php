@@ -336,12 +336,15 @@ class TPPWholesaleResponse implements \JsonSerializable
      */
     public function parseTransferResponse(): string
     {
-        $result = "";
         if (str_starts_with($this->response, "ERR:")) {
+            if (str_contains($this->response, '601') && str_contains($this->response, 'existing order')) {
+                $this->throwError('Theres an existing order for this domain', 601);
+            }
+
             $this->throwResponseError();
-        } else {
-            list(, $result) = explode(": ", $this->response, 2);
         }
+
+        list(, $result) = explode(": ", $this->response, 2);
 
         return $result;
     }
@@ -355,7 +358,10 @@ class TPPWholesaleResponse implements \JsonSerializable
             $this->throwResponseError();
         }
 
-        [$key, $message] = explode(": ", $this->response, 2);
+        $responses = explode("\n", $this->response);
+
+        // return the most recent available order data
+        [$key, $message] = explode(": ", $responses[0], 2);
         if (str_starts_with($message, "ERR:")) {
             $this->throwResponseError($message);
         }
@@ -371,8 +377,10 @@ class TPPWholesaleResponse implements \JsonSerializable
 
             return [
                 'orderId' => $orderId,
+                'type' => 'order',
                 'status' => $status,
                 'description' => $description,
+                'response' => $this,
             ];
         }
 
@@ -380,11 +388,18 @@ class TPPWholesaleResponse implements \JsonSerializable
         $domain = $key;
         [$orderType, $status, $description] = explode(',', $message, 3);
 
+        $type = match ($orderType) {
+            'transferral2' => 'Transfer',
+            'registration2' => 'Registration',
+            default => 'Order'
+        };
+
         return [
             'domain' => $domain,
-            'orderType' => $orderType,
+            'type' => $type,
             'status' => $status,
             'description' => $description,
+            'response' => $this,
         ];
     }
 
