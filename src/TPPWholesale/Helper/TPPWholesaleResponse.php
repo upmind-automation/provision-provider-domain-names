@@ -54,6 +54,7 @@ class TPPWholesaleResponse
             611 => "Domain cannot be Renewed or Transferred",
             612 => "Locking is not available for this domain",
             613 => "Domain Status prevents changing of domain lock",
+            615 => "Nameserver host delegation failed", // This seems to return some random json data as the error message
             default => "Unknown error",
         };
     }
@@ -78,14 +79,14 @@ class TPPWholesaleResponse
      * @return never
      * @return no-return
      */
-    private function throwResponseError(): void
+    private function throwResponseError(?string $response = null): void
     {
-        list(, $errorData) = explode("ERR: ", $this->response, 2);
+        list(, $errorData) = explode("ERR: ", $response ?? $this->response, 2);
         if (str_contains($errorData, ',')) {
             list($errorCode, $errorDescription) = explode(",", $errorData, 2);
         }
 
-        if (!isset($errorCode) || in_array($errorCode, [600, 601, 602, 603, 604])) {
+        if (!isset($errorCode) || in_array($errorCode, [600, 601, 602, 603, 604, 615])) {
             $errorCode = $errorData;
             $errorDescription = $this->errorMessage((int)$errorCode);
         }
