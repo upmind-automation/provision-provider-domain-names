@@ -81,6 +81,8 @@ class TPPWholesaleResponse implements \JsonSerializable
      */
     private function throwResponseError(?string $response = null): void
     {
+        $errorDescription = 'Unknown error';
+
         list(, $errorData) = explode("ERR: ", $response ?? $this->response, 2);
         if (str_contains($errorData, ',')) {
             list($errorCode, $errorDescription) = explode(",", $errorData, 2);

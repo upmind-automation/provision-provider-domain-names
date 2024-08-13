@@ -420,7 +420,7 @@ class Provider extends DomainNames implements ProviderInterface
 
             if ($newHosts === $existingHosts) {
                 return NameserversResult::create($domainInfo->ns->toArray())
-                    ->setMessage(sprintf('These nameservers are already set', $domainName));
+                    ->setMessage('These nameservers are already set');
             }
 
             $this->api()->updateNameservers(

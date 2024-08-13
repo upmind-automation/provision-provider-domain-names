@@ -94,7 +94,7 @@ class TPPWholesaleApi
 
         /** @var \GuzzleHttp\Promise\Promise $promise */
         $promise = $this->client->requestAsync($method, "/api{$command}", $requestParams)
-            ->then(function (Response $response) use ($command) {
+            ->then(function (Response $response) {
                 $result = $response->getBody()->getContents();
                 $response->getBody()->close();
 
