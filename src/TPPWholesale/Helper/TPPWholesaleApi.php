@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionProviders\DomainNames\Data\ContactData;
@@ -30,6 +31,32 @@ class TPPWholesaleApi
     public const CONTACT_TYPE_ADMIN = 'admin';
     public const CONTACT_TYPE_TECH = 'tech';
     public const CONTACT_TYPE_BILLING = 'billing';
+
+    /**
+     * 1 Australian Company Number (ACN)
+     */
+    public const AU_REGISTRANT_ID_TYPE_ACN = 1;
+    /**
+     * 2 Australian Business Number (ABN)
+     */
+    public const AU_REGISTRANT_ID_TYPE_ABN = 2;
+    /**
+     * 3 Other - Used to record an Incorporated Association number
+     */
+    public const AU_REGISTRANT_ID_TYPE_OTHER = 3;
+
+    /**
+     * 1 Australian Company Number (ACN)
+     */
+    public const AU_ELIGIBILITY_ID_TYPE_ACN = 1;
+    /**
+     * 12 Australian Business Number (ABN).
+     */
+    public const AU_ELIGIBILITY_ID_TYPE_ABN = 12;
+    /**
+     * 11 Other - Used to record an Incorporated Association number.
+     */
+    public const AU_ELIGIBILITY_ID_TYPE_OTHER = 11;
 
     protected Client $client;
 
@@ -251,11 +278,48 @@ class TPPWholesaleApi
         }
 
         if ($additionalFields) {
+            if (Str::endsWith($domainName, '.au')) {
+                $additionalFields = $this->getAuAdditionalFields($additionalFields);
+            }
+
             $query .= '&' . http_build_query($additionalFields);
         }
 
         $response = $this->makeRequest("/order.pl", $query);
         return $response->parseCreateDomainResponse();
+    }
+
+    /**
+     * Attempt to fill RegistrantID and RegistrantIDType fields from EligibilityID and EligibilityIDType fields.
+     */
+    private function getAuAdditionalFields(array $additionalFields): array
+    {
+        if (empty($additionalFields['RegistrantID']) && !empty($additionalFields['EligibilityID'])) {
+            $additionalFields['RegistrantID'] = $additionalFields['EligibilityID'];
+        }
+
+        if (empty($additionalFields['RegistrantIDType']) && !empty($additionalFields['EligibilityIDType'])) {
+            $registrantIdType = $this->auEligibilityIdTypeToRegistrantIdType($additionalFields['EligibilityIDType']);
+            $additionalFields['RegistrantIDType'] = $registrantIdType;
+        }
+
+        return $additionalFields;
+    }
+
+    /**
+     * Get the corresponding RegistrantIDType for the given EligibilityIDType.
+     */
+    private function auEligibilityIdTypeToRegistrantIdType(int $eligibilityIdType): int
+    {
+        switch ($eligibilityIdType) {
+            case self::AU_ELIGIBILITY_ID_TYPE_ACN:
+                return self::AU_REGISTRANT_ID_TYPE_ACN;
+            case self::AU_ELIGIBILITY_ID_TYPE_ABN:
+                return self::AU_REGISTRANT_ID_TYPE_ABN;
+            case self::AU_ELIGIBILITY_ID_TYPE_OTHER: // fall-through
+            default:
+                return self::AU_REGISTRANT_ID_TYPE_OTHER;
+        }
     }
 
     /**
