@@ -46,9 +46,9 @@ class TPPWholesaleApi
     private function getSessionID(bool $keepAlive = false): void
     {
         $params = [
-            'AccountNo' => $this->configuration->accountNo,
-            'UserId' => $this->configuration->userId,
-            'Password' => $this->configuration->password,
+            'AccountNo' => $this->configuration->account_no,
+            'UserId' => $this->configuration->api_login,
+            'Password' => $this->configuration->api_password,
         ];
 
         $response = $this->makeRequest("/auth.pl", $params);

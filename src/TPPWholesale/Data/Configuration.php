@@ -10,9 +10,9 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
 /**
  * TPPWholesale configuration.
  *
- * @property-read string $accountNo Account NO
- * @property-read string $userId User ID
- * @property-read string $password Password
+ * @property-read string $account_no Account NO field found in API Login Credentials
+ * @property-read string $api_login Login field found in API Login Credentials
+ * @property-read string $api_password Password Password field found in API Login Credentials
  * @property-read string|null $api_hostname Optionally override API hostname
  */
 class Configuration extends DataSet
@@ -20,9 +20,9 @@ class Configuration extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
-            'accountNo' => ['required', 'string', 'min:6'],
-            'userId' => ['required', 'string', 'min:6'],
-            'password' => ['required', 'string', 'min:3'],
+            'account_no' => ['required', 'string', 'min:6'],
+            'api_login' => ['required', 'string', 'min:6'],
+            'api_password' => ['required', 'string', 'min:3'],
             'api_hostname' => ['domain_name'],
         ]);
     }
