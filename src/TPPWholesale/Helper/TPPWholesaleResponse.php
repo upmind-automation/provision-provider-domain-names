@@ -17,45 +17,83 @@ class TPPWholesaleResponse implements \JsonSerializable
 
     private function errorMessage(int $errorCode): string
     {
-        return match ($errorCode) {
-            100 => "Missing parameters",
-            102 => "Authentication Failure",
-            105 => "Request coming from incorrect IP address. IP Lock error. See section 1.1",
-            201 => "Invalid or not supplied 'Type' parameter",
-            202 => "Your Account has not been enabled for this 'Type'",
-            203 => "Invalid or not supplied 'Action/Object parameter/s'",
-            301 => "Invalid Order ID",
-            302 => "Domain not supplied",
-            303 => "Domain Pricing table not set up for your account",
-            304 => "Domain not available for Registration. When this code is returned a reason is also returned.",
-            305 => "Domain is not renewable. When this code is returned a reason is also returned.",
-            306 => "Domain is not transferable. When this code is returned a reason is also returned.",
-            307 => "Incorrect Domain Password",
-            308 => "Domain UserID or Password not supplied",
-            309 => "Invalid Domain Extension",
-            310 => "Domain does not exist, has been deleted or transferred away",
-            311 => "Domain does not exist in your reseller profile",
-            312 => "Supplied UserID and Password do not match the domain",
-            313 => "The account does not exist in your reseller profile",
-            314 => "Only .au domains can have their registrant name details changed",
-            401 => "Connection to Registry failed - retry",
-            500 => "Pre-Paid balance is not enough to cover order cost",
-            501 => "Invalid credit card type. See Appendix G",
-            502 => "Invalid credit card number",
-            503 => "Invalid credit card expiry date",
-            504 => "Credit Card amount plus the current pre-paid balance is not sufficient to cover the cost of the order",
-            505 => "Error with credit card transaction at bank", // This error code will always be followed by a comma then a description of the error
-            600 => "Error with one or more fields when creating a Domain Contact", // This error code will always be followed by a comma then a space separated list of fields that have failed.
-            601 => "Error with one or more fields when creating, renewing or transferring a Domain", // This error code will always be followed by a comma then a space separated list of fields that have failed.
-            602 => "Error with one or more fields associated with a Host", // This error code will always be followed by a comma then a space separated list of fields that have failed.
-            603 => "Error with one or more fields associated with eligibility fields", // This error code will always be followed by a comma then a space separated list of fields that have failed.
-            604 => "Error with one or more fields associated with a Nameserver", // This error code will always be followed by a comma then a space separated list of fields that have failed.
-            610 => "Error connecting to registry",
-            611 => "Domain cannot be Renewed or Transferred",
-            612 => "Locking is not available for this domain",
-            613 => "Domain Status prevents changing of domain lock",
-            615 => "Nameserver host delegation failed", // This seems to return some random json data as the error message
-            default => "Unknown error",
+        switch ($errorCode) {
+            case 100:
+                return "Missing parameters";
+            case 102:
+                return "Authentication Failure";
+            case 105:
+                return "Request coming from incorrect IP address. IP Lock error. See section 1.1";
+            case 201:
+                return "Invalid or not supplied 'Type' parameter";
+            case 202:
+                return "Your Account has not been enabled for this 'Type'";
+            case 203:
+                return "Invalid or not supplied 'Action/Object parameter/s'";
+            case 301:
+                return "Invalid Order ID";
+            case 302:
+                return "Domain not supplied";
+            case 303:
+                return "Domain Pricing table not set up for your account";
+            case 304:
+                return "Domain not available for Registration. When this code is returned a reason is also returned.";
+            case 305:
+                return "Domain is not renewable. When this code is returned a reason is also returned.";
+            case 306:
+                return "Domain is not transferable. When this code is returned a reason is also returned.";
+            case 307:
+                return "Incorrect Domain Password";
+            case 308:
+                return "Domain UserID or Password not supplied";
+            case 309:
+                return "Invalid Domain Extension";
+            case 310:
+                return "Domain does not exist, has been deleted or transferred away";
+            case 311:
+                return "Domain does not exist in your reseller profile";
+            case 312:
+                return "Supplied UserID and Password do not match the domain";
+            case 313:
+                return "The account does not exist in your reseller profile";
+            case 314:
+                return "Only .au domains can have their registrant name details changed";
+            case 401:
+                return "Connection to Registry failed - retry";
+            case 500:
+                return "Pre-Paid balance is not enough to cover order cost";
+            case 501:
+                return "Invalid credit card type. See Appendix G";
+            case 502:
+                return "Invalid credit card number";
+            case 503:
+                return "Invalid credit card expiry date";
+            case 504:
+                return "Credit Card amount plus the current pre-paid balance is not sufficient to cover the cost of the order";
+            case 505:
+                return "Error with credit card transaction at bank"; // This error code will always be followed by a comma then a description of the error
+            case 600:
+                return "Error with one or more fields when creating a Domain Contact"; // This error code will always be followed by a comma then a space separated list of fields that have failed
+            case 601:
+                return "Error with one or more fields when creating, renewing or transferring a Domain"; // This error code will always be followed by a comma then a space separated list of fields that have failed
+            case 602:
+                return "Error with one or more fields associated with a Host"; // This error code will always be followed by a comma then a space separated list of fields that have failed
+            case 603:
+                return "Error with one or more fields associated with eligibility fields"; // This error code will always be followed by a comma then a space separated list of fields that have failed
+            case 604:
+                return "Error with one or more fields associated with a Nameserver"; // This error code will always be followed by a comma then a space separated list of fields that have failed
+            case 610:
+                return "Error connecting to registry";
+            case 611:
+                return "Domain cannot be Renewed or Transferred";
+            case 612:
+                return "Locking is not available for this domain";
+            case 613:
+                return "Domain Status prevents changing of domain lock";
+            case 615:
+                return "Nameserver host delegation failed"; // This seems to return some random json data as the error message
+            default:
+                return "Unknown error";
         };
     }
 
@@ -390,11 +428,17 @@ class TPPWholesaleResponse implements \JsonSerializable
         $domain = $key;
         [$orderType, $status, $description] = explode(',', $message, 3);
 
-        $type = match ($orderType) {
-            'transferral2' => 'Transfer',
-            'registration2' => 'Registration',
-            default => 'Order'
-        };
+        switch ($orderType) {
+            case 'transferral2':
+                $type = 'Transfer';
+                break;
+            case 'registration2':
+                $type = 'Registration';
+                break;
+            default:
+                $type = 'Order';
+                break;
+        }
 
         return [
             'domain' => $domain,

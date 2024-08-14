@@ -109,11 +109,12 @@ class TPPWholesaleApi
     }
 
     /**
+     * @param array|string|null $query
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function makeRequest(
         string $command,
-        array|string|null $query = null,
+        $query = null,
         ?array $body = null,
         string $method = 'POST'
     ): ?TPPWholesaleResponse {

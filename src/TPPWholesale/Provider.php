@@ -43,7 +43,7 @@ class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    protected TPPWholesaleApi|null $api = null;
+    protected ?TPPWholesaleApi $api = null;
 
     public function __construct(Configuration $configuration)
     {
