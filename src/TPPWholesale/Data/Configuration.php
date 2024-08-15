@@ -20,8 +20,8 @@ class Configuration extends DataSet
     public static function rules(): Rules
     {
         return new Rules([
-            'account_no' => ['required', 'string', 'min:6'],
-            'api_login' => ['required', 'string', 'min:6'],
+            'account_no' => ['required', 'string'],
+            'api_login' => ['required', 'string'],
             'api_password' => ['required', 'string', 'min:3'],
             'api_hostname' => ['domain_name'],
         ]);

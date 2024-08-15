@@ -53,7 +53,7 @@ class Provider extends DomainNames implements ProviderInterface
     public static function aboutProvider(): AboutData
     {
         return AboutData::create()
-            ->setName('TPPWholesale')
+            ->setName('TPP Wholesale')
             ->setDescription('Register, transfer, and manage NRG Console domain names')
             ->setLogoUrl('https://api.upmind.io/images/logos/provision/tpp-wholesale-logo.png');
     }
