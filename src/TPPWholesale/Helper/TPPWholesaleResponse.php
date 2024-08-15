@@ -417,7 +417,7 @@ class TPPWholesaleResponse implements \JsonSerializable
 
             return [
                 'orderId' => $orderId,
-                'type' => 'order',
+                'type' => 'Order',
                 'status' => $status,
                 'description' => $description,
                 'response' => $this,
@@ -434,6 +434,9 @@ class TPPWholesaleResponse implements \JsonSerializable
                 break;
             case 'registration2':
                 $type = 'Registration';
+                break;
+            case 'renewal2':
+                $type = 'Renewal';
                 break;
             default:
                 $type = 'Order';

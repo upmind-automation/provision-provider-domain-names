@@ -344,7 +344,12 @@ class Provider extends DomainNames implements ProviderInterface
                 $this->handleException($e);
             }
 
-            $message = sprintf('Domain %s %s: %s', $orderData['type'], $orderData['status'], $orderData['description']);
+            $message = sprintf(
+                'Domain Inactive - %s %s: %s',
+                $orderData['type'],
+                $orderData['status'],
+                $orderData['description']
+            );
             $this->errorResult($message, $orderData, [], $e);
         }
     }
