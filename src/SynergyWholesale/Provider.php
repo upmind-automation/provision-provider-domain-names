@@ -272,12 +272,27 @@ class Provider extends DomainNames implements ProviderInterface
     protected function handleException(Throwable $e): void
     {
         if ($e instanceof SoapFault) {
-            throw $this->errorResult(
-                sprintf('Provider API Error [%s]: %s', $e->getMessage(), ""),
-                ['response_data' => []],
-                [],
-                $e
-            );
+            $errorMessage = sprintf('Provider API Soap Error [%s]', $e->faultcode);
+            $errorData = [
+                'error' => [
+                    'exception' => get_class($e),
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage(),
+                    'soap_fault' => [
+                        'code' => $e->faultcode,
+                        'string' => $e->faultstring,
+                        'detail' => $e->detail,
+                        'actor' => $e->faultactor,
+                        'headerfault' => $e->headerfault,
+                    ],
+                ],
+            ];
+
+            if (Str::contains($e->getMessage(), 'Parsing WSDL')) {
+                $errorMessage = 'Provider API Soap Connection Error';
+            }
+
+            throw $this->errorResult($errorMessage, $errorData, [], $e);
         }
 
         throw $e;
