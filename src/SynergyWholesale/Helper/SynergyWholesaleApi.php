@@ -73,7 +73,7 @@ class SynergyWholesaleApi
 
 
     /**
-     * @param array|stdClass $result
+     * @param array|\stdClass $result
      */
     private function parseResponseData(string $command, $result): array
     {
