@@ -268,6 +268,9 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @throws Throwable
+     *
+     * @return no-return
+     * @return never
      */
     protected function handleException(Throwable $e): void
     {
@@ -292,7 +295,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $errorMessage = 'Provider API Soap Connection Error';
             }
 
-            throw $this->errorResult($errorMessage, $errorData, [], $e);
+            $this->errorResult($errorMessage, $errorData, [], $e);
         }
 
         throw $e;
