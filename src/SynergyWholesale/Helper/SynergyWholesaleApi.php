@@ -48,8 +48,8 @@ class SynergyWholesaleApi
             $requestParams = $params;
         }
 
-        $requestParams['apiKey'] = $this->configuration->apiKey;
-        $requestParams['resellerID'] = $this->configuration->resellerID;
+        $requestParams['apiKey'] = $this->configuration->api_key;
+        $requestParams['resellerID'] = $this->configuration->reseller_id;
 
         $response = $this->client->__soapCall($command, array($requestParams));
 

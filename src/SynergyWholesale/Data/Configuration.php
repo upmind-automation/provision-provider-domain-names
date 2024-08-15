@@ -10,20 +10,16 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
 /**
  * SynergyWholesale configuration
  *
- * @property-read string $apiKey apiKey
- * @property-read string $resellerID resellerID
- * @property-read bool|null $sandbox Use OTE
- * @property-read bool|null $debug Enable debug logging
+ * @property-read string $reseller_id resellerID
+ * @property-read string $api_key apiKey
  */
 class Configuration extends DataSet
 {
     public static function rules(): Rules
     {
         return new Rules([
-            'apiKey' => ['required', 'string'],
-            'resellerID' => ['required', 'string'],
-            'sandbox' => ['boolean'],
-            'debug' => ['boolean'],
+            'reseller_id' => ['required', 'string'],
+            'api_key' => ['required', 'string'],
         ]);
     }
 }
