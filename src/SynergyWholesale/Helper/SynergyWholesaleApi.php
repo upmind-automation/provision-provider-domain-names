@@ -35,10 +35,13 @@ class SynergyWholesaleApi
 
     protected Configuration $configuration;
 
-    public function __construct(SoapClient $client, Configuration $configuration)
+    protected LoggerInterface $logger;
+
+    public function __construct(SoapClient $client, Configuration $configuration, LoggerInterface $logger)
     {
         $this->client = $client;
         $this->configuration = $configuration;
+        $this->logger = $logger;
     }
 
 
@@ -51,7 +54,17 @@ class SynergyWholesaleApi
         $requestParams['apiKey'] = $this->configuration->api_key;
         $requestParams['resellerID'] = $this->configuration->reseller_id;
 
+        $this->logger->debug('SynergyWholesale API Request', [
+            'command' => $command,
+            'params' => $requestParams,
+        ]);
+
         $response = $this->client->__soapCall($command, array($requestParams));
+        $responseData = json_decode(json_encode($response), true);
+
+        $this->logger->debug('SynergyWholesale API Response', [
+            'result' => $responseData,
+        ]);
 
         return $this->parseResponseData($response);
     }

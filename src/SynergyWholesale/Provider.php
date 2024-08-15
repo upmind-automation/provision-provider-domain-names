@@ -289,9 +289,12 @@ class Provider extends DomainNames implements ProviderInterface
             return $this->api;
         }
 
-        $client = new SoapClient("https://api.synergywholesale.com/?wsdl");
+        try {
+            $client = new SoapClient("https://api.synergywholesale.com/?wsdl");
 
-        return $this->api = new SynergyWholesaleApi($client, $this->configuration);
+            return $this->api = new SynergyWholesaleApi($client, $this->configuration, $this->getLogger());
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
-
 }
