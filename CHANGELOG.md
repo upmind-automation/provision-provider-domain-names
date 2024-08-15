@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.10](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.10) - 2024-08-15
+
+- Remove invalid length validation rules from TPP Wholesale configuration
+
 ## [v2.12.9](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.9) - 2024-08-13
 
 - Add optional `additional_fields` to RegisterDomainParams
