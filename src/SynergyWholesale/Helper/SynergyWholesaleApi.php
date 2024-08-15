@@ -113,6 +113,7 @@ class SynergyWholesaleApi
             'domainList' => [$domainName],
         ];
         $response = $this->makeRequest($command, $params)["domainList"][0];
+        $this->parseResponseData($response);
 
         return [
             'id' => $response['domainRoid'],
