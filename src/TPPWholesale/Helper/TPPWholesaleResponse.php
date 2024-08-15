@@ -379,7 +379,7 @@ class TPPWholesaleResponse implements \JsonSerializable
 
             return [
                 'orderId' => $orderId,
-                'type' => 'order',
+                'type' => 'Order',
                 'status' => $status,
                 'description' => $description,
                 'response' => $this,
@@ -393,6 +393,7 @@ class TPPWholesaleResponse implements \JsonSerializable
         $type = match ($orderType) {
             'transferral2' => 'Transfer',
             'registration2' => 'Registration',
+            'renewal2' => 'Renewal',
             default => 'Order'
         };
 
