@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.15.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.15.0) - 2024-08-15
+
+- Implement Synergy Wholesale provider
+
 ## [v2.14.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.14.1) - 2024-08-15
 
 - Remove invalid length validation rules from TPP Wholesale configuration
@@ -19,6 +23,10 @@ All notable changes to the package will be documented in this file.
 ## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
 
 - Update library for PHP 8 + Base lib v4
+
+## [v2.12.11](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.11) - 2024-08-15
+
+- Implement Synergy Wholesale provider
 
 ## [v2.12.10](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.10) - 2024-08-15
 
