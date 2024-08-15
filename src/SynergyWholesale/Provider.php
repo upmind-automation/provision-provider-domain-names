@@ -90,19 +90,6 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $domainName = Utils::getDomain($params->sld, $params->tld);
 
-        if (!$this->configuration->sandbox) { // DAC requests always fail in sandbox
-            $checkResult = $this->api()->checkMultipleDomains([$domainName]);
-
-            if (count($checkResult) < 1) {
-                throw $this->errorResult('Empty domain availability check result');
-            }
-
-            if (!$checkResult[0]->can_register) {
-                throw $this->errorResult('This domain is not available to register');
-            }
-        }
-
-
         if (!Arr::has($params, 'registrant.register')) {
             throw $this->errorResult('Registrant contact data is required!');
         }
