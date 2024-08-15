@@ -400,15 +400,15 @@ class SynergyWholesaleApi
     private function parseContact(array $contact): ContactData
     {
         return ContactData::create([
-            'organisation' => (string)$contact['organisation'] ?: null,
+            'organisation' => $contact['organisation'] ?? null,
             'name' => $contact['firstname'] . ' ' . $contact['lastname'],
-            'address1' => (string)$contact['address1'],
-            'city' => (string)$contact['suburb'],
-            'state' => (string)$contact['state'] ?: null,
-            'postcode' => (string)$contact['postcode'],
-            'country_code' => Utils::normalizeCountryCode((string)$contact['country']),
-            'email' => (string)$contact['email'],
-            'phone' => (string)$contact['phone'],
+            'address1' => $contact['address1'],
+            'city' => $contact['suburb'],
+            'state' => $contact['state'] ?? null,
+            'postcode' => $contact['postcode'],
+            'country_code' => Utils::normalizeCountryCode($contact['country']),
+            'email' => $contact['email'],
+            'phone' => $contact['phone'],
         ]);
     }
 
