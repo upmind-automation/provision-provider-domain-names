@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\SynergyWholesale\Helper;
 use Carbon\Carbon;
 use SoapClient;
 use Illuminate\Support\Arr;
+use Psr\Log\LoggerInterface;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\DataSet\SystemInfo;
@@ -72,7 +73,7 @@ class SynergyWholesaleApi
 
     private function parseResponseData($result)
     {
-        $parsedResult = json_decode(json_encode($result), true);
+        $parsedResult = is_array($result) ? $result : json_decode(json_encode($result), true);
 
         if (!$parsedResult) {
             throw ProvisionFunctionError::create('Unknown Provider API Error')
@@ -82,7 +83,7 @@ class SynergyWholesaleApi
         }
 
         if ($error = $this->getResponseErrorMessage($parsedResult)) {
-            throw ProvisionFunctionError::create($error)
+            throw ProvisionFunctionError::create(sprintf('Provider API Error: %s', $error))
                 ->withData([
                     'response' => $parsedResult,
                 ]);
