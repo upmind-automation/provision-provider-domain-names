@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\SynergyWholesale\Helper;
 use Carbon\Carbon;
 use SoapClient;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -67,11 +68,14 @@ class SynergyWholesaleApi
             'result' => $responseData,
         ]);
 
-        return $this->parseResponseData($response);
+        return $this->parseResponseData($command, $response);
     }
 
 
-    private function parseResponseData($result)
+    /**
+     * @param array|stdClass $result
+     */
+    private function parseResponseData(string $command, $result): array
     {
         $parsedResult = is_array($result) ? $result : json_decode(json_encode($result), true);
 
@@ -82,7 +86,7 @@ class SynergyWholesaleApi
                 ]);
         }
 
-        if ($error = $this->getResponseErrorMessage($parsedResult)) {
+        if ($error = $this->getResponseErrorMessage($command, $parsedResult)) {
             throw ProvisionFunctionError::create(sprintf('Provider API Error: %s', $error))
                 ->withData([
                     'response' => $parsedResult,
@@ -93,12 +97,17 @@ class SynergyWholesaleApi
     }
 
 
-    private function getResponseErrorMessage($responseData)
+    private function getResponseErrorMessage(string $command, array $responseData)
     {
         if ($responseData['status'] != "OK") {
             $errorMessage = 'Unknown error';
             if (isset($responseData['errorMessage'])) {
                 $errorMessage = $responseData['errorMessage'];
+            }
+
+            $prettyCommand = ucwords(str_replace('_', ' ', Str::snake($command)));
+            if (Str::startsWith($errorMessage, $prettyCommand . ' Failed - ')) {
+                $errorMessage = Str::after($errorMessage, $prettyCommand . ' Failed - ');
             }
         }
 
@@ -112,8 +121,8 @@ class SynergyWholesaleApi
         $params = [
             'domainList' => [$domainName],
         ];
-        $response = $this->makeRequest($command, $params)["domainList"][0];
-        $this->parseResponseData($response);
+        $response = $this->makeRequest($command, $params)['domainList'][0];
+        $this->parseResponseData($command, $response);
 
         return [
             'id' => $response['domainRoid'],
