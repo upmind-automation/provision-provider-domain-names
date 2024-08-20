@@ -12,6 +12,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
+use Upmind\ProvisionBase\Helper;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
 use Upmind\ProvisionBase\Provider\DataSet\DataSet;
@@ -624,12 +625,37 @@ class Provider extends DomainNames implements ProviderInterface
                 ]
             ]);
 
+            $eppCode = $domainRaw['attributes']['domain_auth_info'] ?? null;
+
+            if (empty($eppCode)) {
+                $eppCode = $this->resetEppCode($sld, $tld);
+            }
+
             return EppCodeResult::create([
-                'epp_code' => $domainRaw['attributes']['domain_auth_info']
+                'epp_code' => $eppCode,
             ])->setMessage('EPP/Auth code obtained');
         } catch (\Throwable $e) {
             return $this->handleError($e, $params);
         }
+    }
+
+    private function resetEppCode(string $sld, string $tld): string
+    {
+        $eppCode = Helper::generateStrictPassword(16, true, true, false);
+
+        $this->api()->makeRequest([
+            'action' => 'modify',
+            'object' => 'DOMAIN',
+            'protocol' => 'XCP',
+            'attributes' => [
+                'domain' => Utils::getDomain($sld, $tld),
+                'affect_domains' => 0,
+                'data' => 'domain_auth_info',
+                'domain_auth_info' => $eppCode,
+            ],
+        ]);
+
+        return $eppCode;
     }
 
     /**
