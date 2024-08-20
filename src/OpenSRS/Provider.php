@@ -7,6 +7,7 @@ namespace Upmind\ProvisionProviders\DomainNames\OpenSRS;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
@@ -253,14 +254,18 @@ class Provider extends DomainNames implements ProviderInterface
 
         $domain = Utils::getDomain($sld, $tld);
 
-        $checkPendingResult = $this->api()->makeRequest([
-            'action' => 'get_transfers_in',
-            'object' => 'DOMAIN',
-            'protocol' => 'XCP',
-            'attributes' => [
-                'domain' => $domain,
-            ],
-        ]);
+        try {
+            $checkPendingResult = $this->api()->makeRequest([
+                'action' => 'get_transfers_in',
+                'object' => 'DOMAIN',
+                'protocol' => 'XCP',
+                'attributes' => [
+                    'domain' => $domain,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            $this->handleError($e, $params);
+        }
 
         foreach ($checkPendingResult['attributes']['transfers'] ?? [] as $transfer) {
             if (!empty($transfer['completed_date'])) {
@@ -792,11 +797,20 @@ class Provider extends DomainNames implements ProviderInterface
      * @throws ProvisionFunctionError
      *
      * @return no-return
+     * @return never
      */
     protected function handleError(Throwable $e, $params): void
     {
         if ($e instanceof ProvisionFunctionError) {
             throw $e;
+        }
+
+        if ($e instanceof TransferException) {
+            $this->errorResult('Provider API Connection Failed', [
+                'exception' => get_class($e),
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            ], [], $e);
         }
 
         throw $e; // i dont want to just blindly copy any unknown error message into a the result
