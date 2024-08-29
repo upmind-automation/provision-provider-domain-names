@@ -298,6 +298,16 @@ class Provider extends DomainNames implements ProviderInterface
         $period = intval($params->renew_years);
 
         try {
+            try {
+                $order = $this->api()->getDomainOrderInfo($domainName, null);
+            } catch (Throwable $e) {
+                $order = null;
+            }
+
+            if (isset($order['type']) && $order['type'] === 'Renewal' && $order['status'] === 'Scheduled') {
+                $this->errorResult('A scheduled domain renewal order already exists');
+            }
+
             $this->api()->renew($domainName, $period);
             return $this->getInfoDomainResult($domainName, sprintf('Renewal for %s domain was successful!', $domainName));
         } catch (Throwable $e) {
