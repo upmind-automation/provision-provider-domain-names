@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.13](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.13) - 2024-08-29
+
+- Update TppWholesale renew() to throw an error if a scheduled renewal order already exists
+
 ## [v2.12.12](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.12) - 2024-08-20
 
 - Update OpenSRS provider with exception handling for connection errors
