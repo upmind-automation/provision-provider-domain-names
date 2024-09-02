@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.15](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.15) - 2024-09-02
+
+- Add `whois_privacy` to Register/Transfer params and DomainResult data
+- Implement whois_privacy for LogicBoxes, OpenProvider + OpenSRS
+
 ## [v2.12.14](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.14) - 2024-09-02
 
 - Update TPPWholesaleApi::checkMultipleDomains()
