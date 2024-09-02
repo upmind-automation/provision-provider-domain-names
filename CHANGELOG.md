@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.16](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.16) - 2024-09-03
+
+- Fix LogicBoxes _getDomain() whois_privacy bool cast
+
 ## [v2.12.15](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.15) - 2024-09-02
 
 - Add `whois_privacy` to Register/Transfer params and DomainResult data
