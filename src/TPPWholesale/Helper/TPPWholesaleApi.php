@@ -542,31 +542,54 @@ class TPPWholesaleApi
         $response = $this->makeRequest("/query.pl", $query);
         $res = $response->parseDACResponse();
 
+        // Now ensure only one result per domain.
+        // Sort by error code descending, so that 601 (order already exists)
+        // gets overwritten by lower error codes, or available=true results
+        // when we key by domain name then reset the keys.
+        $res = collect($res)
+            ->sort(function ($a, $b) {
+                return ($b['ErrorCode'] ?? 0) <=> ($a['ErrorCode'] ?? 0);
+            })
+            ->keyBy('Domain')
+            ->values()
+            ->all();
+
         foreach ($res as $result) {
             $available = true;
+            $transferrable = false;
+            $description = $result["ErrorDescription"] ?? null;
 
-            if ($result["Status"] == "ERR") {
-                $available = false;
+            if ($result["Status"] === "ERR") {
+                if ((int)$result['ErrorCode'] === 304) {
+                    // already registered
+                    $available = false;
+                    $transferrable = true;
+                }
+
+                if ((int)$result["ErrorCode"] === 309) {
+                    // TLD not supported
+                    $available = false;
+                    $transferrable = false;
+                }
+
+                if ((int)$result['ErrorCode'] === 601) {
+                    // an order already exists, but the fastest horse wins... still available!
+                    $available = true;
+                    $transferrable = false;
+                }
             }
 
-            $transferred = !$available;
-
-            $description = sprintf(
+            $description ??= sprintf(
                 'Domain is %s to register',
                 $available ? 'available' : 'not available'
             );
 
-            if ($result["Status"] == "ERR" && $result["ErrorCode"] == 309) {
-                $description = $result["ErrorDescription"];
-                $transferred = false;
-            }
-
             $dacDomains[] = DacDomain::create([
                 'domain' => $result['Domain'],
-                'description' => $description,
+                'description' => ucfirst(trim($description)),
                 'tld' => Utils::getTld($result['Domain']),
                 'can_register' => $available,
-                'can_transfer' => $transferred,
+                'can_transfer' => $transferrable,
                 'is_premium' => false,
             ]);
         }
