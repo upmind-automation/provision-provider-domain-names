@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
@@ -546,7 +547,7 @@ class TPPWholesaleApi
         // Sort by error code descending, so that 601 (order already exists)
         // gets overwritten by lower error codes, or available=true results
         // when we key by domain name then reset the keys.
-        $res = collect($res)
+        $res = (new Collection($res))
             ->sort(function ($a, $b) {
                 return ($b['ErrorCode'] ?? 0) <=> ($a['ErrorCode'] ?? 0);
             })
