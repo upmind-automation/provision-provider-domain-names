@@ -972,6 +972,15 @@ class Provider extends DomainNames implements ProviderInterface
             }
         }
 
+        $privacy = $domainData['isprivacyprotected'] ?? null;
+        if ($privacy === 'true') {
+            $privacy = true;
+        } elseif ($privacy === 'false') {
+            $privacy = false;
+        } elseif ($privacy !== null) {
+            $privacy = (bool) $privacy;
+        }
+
         $datetimeCreated = $domainData['creationtime'] ?? null; // On new order might be missing
         $datetimeEnd = $domainData['endtime'] ?? null; // On new order might be missing
         $info = DomainResult::create([
@@ -979,7 +988,7 @@ class Provider extends DomainNames implements ProviderInterface
             'domain' => $domainData['domainname'],
             'statuses' => array_merge([$domainData['currentstatus']], $domainData['domainstatus']),
             'locked' => in_array('transferlock', $domainData['orderstatus']) ? true : false,
-            'whois_privacy' => $domainData['isprivacyprotected'] ?? null,
+            'whois_privacy' => $privacy,
             // 'renew' => $domainData['recurring'] == 'false' ? false : true,
             'registrant' => $this->_parseContactInfo($domainData['registrantcontact']),
             'ns' => $ns,
