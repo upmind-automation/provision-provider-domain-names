@@ -98,12 +98,14 @@ class Provider extends DomainNames implements ProviderInterface
     public function register(RegisterDomainParams $params): DomainResult
     {
         $domain = Utils::getDomain(Arr::get($params, 'sld'), Arr::get($params, 'tld'));
+        $privacy = Utils::tldSupportsWhoisPrivacy($params->tld) && $params->whois_privacy;
+
         $data = [
             'domain-name' => $domain,
             'years' => Arr::get($params, 'renew_years'),
             'invoice-option' => 'NoInvoice',
-            // 'purchase-privacy' => true,
-            // 'protect-privacy' => true,
+            'purchase-privacy' => $privacy,
+            'protect-privacy' => $privacy,
             'auto-renew' => false,
         ];
 
@@ -266,6 +268,7 @@ class Provider extends DomainNames implements ProviderInterface
     public function transfer(TransferParams $params): DomainResult
     {
         $domain = Utils::getDomain(Arr::get($params, 'sld'), Arr::get($params, 'tld'));
+        $privacy = Utils::tldSupportsWhoisPrivacy($params->tld) && $params->whois_privacy;
 
         try {
             // check to see if domain is already active in the account
@@ -296,6 +299,8 @@ class Provider extends DomainNames implements ProviderInterface
             'tech-contact-id' => $this->_handelContact($contacts, 'tech', $customerId, $params->tld),
             'billing-contact-id' => $this->_handelContact($contacts, 'billing', $customerId, $params->tld),
             'invoice-option' => 'NoInvoice',
+            'purchase-privacy' => $privacy,
+            'protect-privacy' => $privacy,
             'auto-renew' => false,
         ], 'domains/transfer.json', 'POST');
 
@@ -345,10 +350,11 @@ class Provider extends DomainNames implements ProviderInterface
     public function renew(RenewParams $params): DomainResult
     {
         $domain = Utils::getDomain(Arr::get($params, 'sld'), Arr::get($params, 'tld'));
+        $info = $this->_getDomain($domain, null, false);
 
-        $newExpiry = $this->_renewDomain($domain, Arr::get($params, 'renew_years'));
+        $newExpiry = $this->_renewDomain($domain, Arr::get($params, 'renew_years'), $info->whois_privacy);
 
-        return $this->_getDomain($domain, 'The expire date is extended.')
+        return $info->setMessage('Domain renewed successfully')
             ->setExpiresAt($newExpiry);
     }
 
@@ -951,10 +957,11 @@ class Provider extends DomainNames implements ProviderInterface
      */
     protected function _getDomain(
         string $domainName,
-        string $msg = 'Domain data retrieved',
+        ?string $msg = 'Domain data retrieved',
         bool $assertActive = true
     ): DomainResult {
         $domainData = $this->_getDomainData($domainName);
+        $msg = $msg ?: 'Domain data retrieved';
 
         $ns = [];
         foreach (['ns1', 'ns2', 'ns3', 'ns4'] as $nsI) {
@@ -972,7 +979,8 @@ class Provider extends DomainNames implements ProviderInterface
             'domain' => $domainData['domainname'],
             'statuses' => array_merge([$domainData['currentstatus']], $domainData['domainstatus']),
             'locked' => in_array('transferlock', $domainData['orderstatus']) ? true : false,
-            'renew' => $domainData['recurring'] == 'false' ? false : true,
+            'whois_privacy' => $domainData['isprivacyprotected'] ?? null,
+            // 'renew' => $domainData['recurring'] == 'false' ? false : true,
             'registrant' => $this->_parseContactInfo($domainData['registrantcontact']),
             'ns' => $ns,
             'created_at' => $this->formatDate($datetimeCreated),
@@ -1061,7 +1069,7 @@ class Provider extends DomainNames implements ProviderInterface
             'city' => $contact['city'],
             'postcode' => $contact['zip'],
             'country_code' => $contact['country'],
-            'status' => $contact['contactstatus'],
+            // 'status' => $contact['contactstatus'],
         ];
     }
 
@@ -1142,7 +1150,7 @@ class Provider extends DomainNames implements ProviderInterface
      * @throws \Throwable
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-    protected function _renewDomain(string $domainName, int $renew_years): DateTimeInterface
+    protected function _renewDomain(string $domainName, int $renew_years, bool $privacy): DateTimeInterface
     {
         $domain = $this->_getDomain($domainName, 'The expire date is extended.');
         $this->_callApi(
@@ -1152,6 +1160,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'exp-date' => Carbon::parse($domain['expires_at'])->unix(),
                 'auto-renew' => $domain['renew'],
                 'invoice-option' => 'NoInvoice',
+                'purchase-privacy' => $privacy,
             ],
             'domains/renew.json'
         );

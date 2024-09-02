@@ -179,7 +179,7 @@ class Provider extends DomainNames implements ProviderInterface
                 'object' => 'DOMAIN',
                 'protocol' => 'XCP',
                 'attributes' => [
-                    //'f_whois_privacy' => '' // TODO - privacy
+                    'f_whois_privacy' => Utils::tldSupportsWhoisPrivacy($tld) && $params->whois_privacy,
                     'domain' => $domain,
                     'reg_username' => bin2hex(random_bytes(6)),
                     'reg_password' => bin2hex(random_bytes(6)),
@@ -320,6 +320,7 @@ class Provider extends DomainNames implements ProviderInterface
                     'change_contact' => 0,
                     'handle' => 'process',
                     'period' => $period,
+                    'f_whois_privacy' => Utils::tldSupportsWhoisPrivacy($tld) && $params->whois_privacy,
                     'reg_type' => 'transfer',
                     'custom_tech_contact' => 0,
                     'custom_nameservers' => 0,
@@ -452,6 +453,16 @@ class Provider extends DomainNames implements ProviderInterface
                     // 'active_contacts_only' => 1
                 ]
             ]);
+
+            $privacyRaw = $this->api()->makeRequest([
+                'action' => 'GET',
+                'object' => 'DOMAIN',
+                'protocol' => 'XCP',
+                'attributes' => [
+                    'domain' => Utils::getDomain($sld, $tld),
+                    'type' => 'whois_privacy_state',
+                ]
+            ]);
         } catch (ProvisionFunctionError $e) {
             if (
                 Str::contains($e->getMessage(), 'Authentication Error')
@@ -462,6 +473,14 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             throw $e;
+        }
+
+        $privacyState = $privacyRaw['attributes']['state'] ?? null;
+        if (in_array($privacyState, ['enabled', 'enabling'])) {
+            $privacy = true;
+        }
+        if (in_array($privacyState, ['disabled', 'disabling'])) {
+            $privacy = false;
         }
 
         $domainInfo = [
@@ -476,6 +495,7 @@ class Provider extends DomainNames implements ProviderInterface
             'updated_at' => $domainRaw['attributes']['registry_updatedate'] ?? $domainRaw['attributes']['registry_createdate'],
             'expires_at' => $domainRaw['attributes']['expiredate'],
             'locked' => boolval($statusRaw['attributes']['lock_state']),
+            'whois_privacy' => $privacy ?? null,
         ];
 
         return DomainResult::create($domainInfo)->setMessage($message);

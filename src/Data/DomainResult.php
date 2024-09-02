@@ -14,7 +14,8 @@ use Upmind\ProvisionBase\Provider\DataSet\Rules;
  * @property-read string $id Domain ID
  * @property-read string $domain Domain
  * @property-read string[] $statuses Active domain statuses
- * @property-read bool|null $locked
+ * @property-read bool|null $locked Transfer and/or update lock enabled
+ * @property-read bool|null $whois_privacy WHOIS privacy/protection enabled
  * @property-read ContactData|null $registrant Registrant contact
  * @property-read ContactData|null $billing Billing contact
  * @property-read ContactData|null $tech Tech contact
@@ -36,6 +37,7 @@ class DomainResult extends ResultData
             'statuses' => ['present', 'array'],
             'statuses.*' => ['filled', 'string'],
             'locked' => ['nullable', 'boolean'],
+            'whois_privacy' => ['nullable', 'boolean'],
             'registrant' => ['nullable', ContactData::class],
             'billing' => ['nullable', ContactData::class],
             'tech' => ['nullable', ContactData::class],

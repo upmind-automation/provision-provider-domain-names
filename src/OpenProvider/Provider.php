@@ -164,9 +164,10 @@ class Provider extends DomainNames implements ProviderInterface
         $data['period'] = Arr::get($params, 'renew_years', 1);
         $data['unit'] = 'y';
         $data['autorenew'] = 'off';
-        $data['is_private_whois_enabled'] = $this->configuration->disable_whois_privacy
-            ? false
-            : Utils::tldSupportsWhoisPrivacy($tld);
+        $data['is_private_whois_enabled'] = $params->whois_privacy ?? !$this->configuration->disable_whois_privacy;
+        if (!Utils::tldSupportsWhoisPrivacy($tld)) {
+            $data['is_private_whois_enabled'] = false;
+        }
 
         for ($i = 1; $i <= self::MAX_CUSTOM_NAMESERVERS; $i++) {
             if (Arr::has($params, 'nameservers.ns' . $i)) {
@@ -228,7 +229,7 @@ class Provider extends DomainNames implements ProviderInterface
             $customerId = $this->_handleCustomer($tld, Arr::get($params, 'registrant'), 'registrant');
         }
 
-        $initiate = $this->initiateTransfer($customerId, $tld, $sld, $eppCode);
+        $initiate = $this->initiateTransfer($customerId, $tld, $sld, $eppCode, $params->whois_privacy);
 
         $this->errorResult('Domain transfer initiated', [], ['transfer_order' => $initiate]);
     }
@@ -508,7 +509,8 @@ class Provider extends DomainNames implements ProviderInterface
             'domain' => Utils::getDomain(Arr::get($domainData, 'domain.name'), Arr::get($domainData, 'domain.extension')),
             'statuses' => $statuses,
             'locked' => $domainData['is_locked'],
-            'renew' => $renew,
+            // 'renew' => $renew,
+            'whois_privacy' => $domainData['is_private_whois_enabled'],
             'registrant' => $this->_parseContactInfo($domainData['owner_handle'], 'customers'),
             'billing' => $this->_parseContactInfo($domainData['billing_handle'], 'customers'),
             'admin' => $this->_parseContactInfo($domainData['admin_handle'], 'customers'),
@@ -889,7 +891,7 @@ class Provider extends DomainNames implements ProviderInterface
      * @throws \Throwable
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
-    private function initiateTransfer(string $customerId, string $tld, string $sld, $eppCode): array
+    private function initiateTransfer(string $customerId, string $tld, string $sld, $eppCode, ?bool $privacy): array
     {
         $params = [];
         $params['domain'] = [
@@ -908,6 +910,10 @@ class Provider extends DomainNames implements ProviderInterface
                 'name' => $hostname,
             ];
         }, Utils::lookupNameservers(Utils::getDomain($sld, $tld), false) ?: self::DEFAULT_NAMESERVERS);
+        $params['is_private_whois_enabled'] = $privacy ?? !$this->configuration->disable_whois_privacy;
+        if (!Utils::tldSupportsWhoisPrivacy($tld)) {
+            $params['is_private_whois_enabled'] = false;
+        }
 
         $transferOrder = $this->_callApi($params, 'domains/transfer', 'POST');
 
