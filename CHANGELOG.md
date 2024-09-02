@@ -2,7 +2,7 @@
 
 All notable changes to the package will be documented in this file.
 
-## [v2.15.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.15.4) - 2024-09-02
+## [v2.16.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.16.0) - 2024-09-02
 
 - Add `whois_privacy` to Register/Transfer params and DomainResult data
 - Implement whois_privacy for LogicBoxes, OpenProvider + OpenSRS
