@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.17](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.17) - 2024-09-09
+
+- Add `auto_renew` to DomainResult
+- Fix LogicBoxes _renewDomain() undefined index error
+
 ## [v2.12.16](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.16) - 2024-09-03
 
 - Fix LogicBoxes _getDomain() whois_privacy bool cast
