@@ -182,7 +182,6 @@ class EnomApi
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Random\RandomException
      * @throws \RuntimeException
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
