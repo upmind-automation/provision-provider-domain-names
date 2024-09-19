@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.17.1](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.1) - 2024-09-19
+
+- Remove existing order check from TPPWholesale renew()
+- Update APPWholesale register() to pass AccountOption EXTERNAL in API call
+
 ## [v2.17.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.0) - 2024-09-09
 
 - Add `auto_renew` to DomainResult
@@ -53,6 +58,11 @@ All notable changes to the package will be documented in this file.
 ## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
 
 - Update library for PHP 8 + Base lib v4
+
+## [v2.12.18](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.18) - 2024-09-19
+
+- Remove existing order check from TPPWholesale renew()
+- Update APPWholesale register() to pass AccountOption EXTERNAL in API call
 
 ## [v2.12.17](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.17) - 2024-09-09
 
