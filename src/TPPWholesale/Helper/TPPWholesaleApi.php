@@ -268,6 +268,7 @@ class TPPWholesaleApi
             'Action' => 'Create',
             'Domain' => $domainName,
             'Period' => $period,
+            'AccountOption' => 'EXTERNAL',
             'OwnerContactID' => $contacts[self::CONTACT_TYPE_REGISTRANT],
             'AdministrationContactID' => $contacts[self::CONTACT_TYPE_ADMIN],
             'TechnicalContactID' => $contacts[self::CONTACT_TYPE_TECH],
