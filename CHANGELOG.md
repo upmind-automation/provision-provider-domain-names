@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.19](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.19) - 2024-09-24
+
+- Fix DomainNameAPI type error in domainInfoToResult()
+
 ## [v2.12.18](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.18) - 2024-09-19
 
 - Remove existing order check from TPPWholesale renew()
