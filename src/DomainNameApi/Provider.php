@@ -393,7 +393,8 @@ class Provider extends DomainNames implements ProviderInterface
             ->mapWithKeys(fn ($host, $i) => ['ns' . ($i + 1) => ['host' => $host]]);
 
         $statuses = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()])
-            ->map(fn ($status) => ucfirst(strtolower($status)))
+            ->filter()
+            ->map(fn($status) => ucfirst(strtolower((string)$status)))
             ->unique()
             ->values()
             ->toArray();
