@@ -474,7 +474,8 @@ class Provider extends DomainNames implements ProviderInterface
         /** @var \Illuminate\Support\Collection $statusesCollection */
         $statusesCollection = collect([$domainInfo->getStatus() ?? 'Unknown', $domainInfo->getStatusCode()]);
         $statuses = $statusesCollection
-            ->map(fn ($status) => ucfirst(strtolower($status)))
+            ->filter()
+            ->map(fn($status) => ucfirst(strtolower((string)$status)))
             ->unique()
             ->values()
             ->toArray();
