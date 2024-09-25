@@ -727,13 +727,13 @@ class Provider extends DomainNames implements ProviderInterface
     protected function _handleApiErrorResponse(Response $response, $responseData): void
     {
         $errorData = [
-            'http_code' => $response->getStatusCode()
+            'http_code' => $response->getStatusCode(),
+            'response_data' => $responseData,
         ];
 
         if (!isset($responseData['code'])) {
-            $this->errorResult('Unexpected provider response', $errorData, [
-                'response_body' => $response->getBody()->__toString(),
-            ]);
+            $errorData['response_body'] = $response->getBody()->__toString();
+            $this->errorResult('Unexpected provider response', $errorData);
         }
 
         $message = 'Provider Error: ';
@@ -754,9 +754,7 @@ class Provider extends DomainNames implements ProviderInterface
                 $message .= ($responseData['desc'] ?? 'Unknown error');
         }
 
-        $this->errorResult($message, $errorData, [
-            'response_data' => $responseData,
-        ]);
+        $this->errorResult($message, $errorData);
     }
 
     /**
