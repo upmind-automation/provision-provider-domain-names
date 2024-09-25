@@ -4,8 +4,7 @@ All notable changes to the package will be documented in this file.
 
 ## [v2.17.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.3) - 2024-09-25
 
-- Update OpenProvider error handling, return api response data in provision result data"
-[main 9edfbff] Update OpenProvider error handling, return api response data in provision result data
+- Update OpenProvider error handling, return api response data in provision result data
 
 ## [v2.17.2](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.2) - 2024-09-24
 
