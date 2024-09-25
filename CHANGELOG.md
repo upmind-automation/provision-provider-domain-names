@@ -67,6 +67,10 @@ All notable changes to the package will be documented in this file.
 
 - Update library for PHP 8 + Base lib v4
 
+## [v2.12.20](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.20) - 2024-09-25
+
+- Update OpenProvider error handling, return api response data in provision result data
+
 ## [v2.12.19](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.19) - 2024-09-24
 
 - Fix DomainNameAPI type error in domainInfoToResult()
