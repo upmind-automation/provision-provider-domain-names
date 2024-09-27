@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.17.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.4) - 2024-09-27
+
+- Update DomainNameApi add specific error for when registrant contact is not set, and workaround
+  for updateRegistrantContact() when other contact types are also missing
+
 ## [v2.17.3](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.3) - 2024-09-25
 
 - Update OpenProvider error handling, return api response data in provision result data
@@ -66,6 +71,11 @@ All notable changes to the package will be documented in this file.
 ## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
 
 - Update library for PHP 8 + Base lib v4
+
+## [v2.12.21](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.21) - 2024-09-27
+
+- Update DomainNameApi add specific error for when registrant contact is not set, and workaround
+  for updateRegistrantContact() when other contact types are also missing
 
 ## [v2.12.20](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.20) - 2024-09-25
 
