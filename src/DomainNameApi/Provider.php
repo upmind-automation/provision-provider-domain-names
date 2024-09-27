@@ -86,6 +86,8 @@ class Provider extends DomainNames implements ProviderInterface
         ['host' => 'ns2.domainnameapi.com']
     ];
 
+    private const ERR_REGISTRANT_NOT_SET = 'Registrant contact details not set';
+
     public function __construct(DomainNameApiConfiguration $configuration)
     {
         $this->configuration = $configuration;
@@ -245,14 +247,42 @@ class Provider extends DomainNames implements ProviderInterface
     {
         $domain = Utils::getDomain($params->sld, $params->tld);
 
-        $contactResults = $this->getContactResults($domain);
+        try {
+            $contactResults = $this->getContactResults($domain);
+        } catch (ProvisionFunctionError $e) {
+            if ($e->getMessage() !== self::ERR_REGISTRANT_NOT_SET) {
+                throw $e;
+            }
 
+            $contactResults = [];
+        }
+
+        /**
+         * Due to some instances of domains having no contacts whatsoever, and DomainNameApi requiring all to be passed,
+         * we will fall back to the registrant contact for all contact types.
+         */
         $request = (new SaveContactsRequest())
             ->setDomainName($domain)
             ->setRegistrantContact($this->contactParamsToSoap($params->contact))
-            ->setAdministrativeContact($this->contactParamsToSoap(new ContactParams($contactResults['admin'], false)))
-            ->setTechnicalContact($this->contactParamsToSoap(new ContactParams($contactResults['tech'], false)))
-            ->setBillingContact($this->contactParamsToSoap(new ContactParams($contactResults['billing'], false)));
+            ->setAdministrativeContact($this->contactParamsToSoap($params->contact))
+            ->setTechnicalContact($this->contactParamsToSoap($params->contact))
+            ->setBillingContact($this->contactParamsToSoap($params->contact));
+        if (isset($contactResults['admin'])) {
+            $request->setAdministrativeContact(
+                $this->contactParamsToSoap(new ContactParams($contactResults['admin'], false))
+            );
+        }
+        if (isset($contactResults['tech'])) {
+            $request->setTechnicalContact(
+                $this->contactParamsToSoap(new ContactParams($contactResults['tech'], false))
+            );
+        }
+        if (isset($contactResults['billing'])) {
+            $request->setBillingContact(
+                $this->contactParamsToSoap(new ContactParams($contactResults['billing'], false))
+            );
+        }
+
         $response = $this->api()->SaveContacts(new SaveContacts($request));
         $result = $response->getSaveContactsResult();
 
@@ -336,7 +366,7 @@ class Provider extends DomainNames implements ProviderInterface
         $result = $response->getGetContactsResult();
 
         if (!$result->getRegistrantContact()) {
-            throw $this->handleApiErrorResult($result);
+            $this->handleApiErrorResult($result, self::ERR_REGISTRANT_NOT_SET);
         }
 
         return [
