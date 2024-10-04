@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Upmind\ProvisionProviders\DomainNames\TPPWholesale\Helper;
 
+use Illuminate\Support\Str;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
 class TPPWholesaleResponse implements \JsonSerializable
@@ -69,7 +70,7 @@ class TPPWholesaleResponse implements \JsonSerializable
     {
         throw ProvisionFunctionError::create(sprintf('Provider API Error: %d: %s ', $errorCode, $message))
             ->withData([
-                'response' => $this->response,
+                'response' => Str::limit($this->response, 500),
             ]);
     }
 
@@ -82,6 +83,10 @@ class TPPWholesaleResponse implements \JsonSerializable
     private function throwResponseError(?string $response = null): void
     {
         $errorDescription = 'Unknown error';
+
+        if (!Str::contains($this->response, "ERR:")) {
+            $this->throwError('Unknown error', 0);
+        }
 
         list(, $errorData) = explode("ERR: ", $response ?? $this->response, 2);
         if (str_contains($errorData, ',')) {
@@ -102,7 +107,7 @@ class TPPWholesaleResponse implements \JsonSerializable
     public function parseAuthResponse(): string
     {
         $sessionId = "";
-        if (str_starts_with($this->response, "ERR:")) {
+        if (str_starts_with($this->response, "ERR:") || !Str::contains($this->response, "OK:")) {
             $this->throwResponseError();
         } else {
             list(, $sessionId) = explode("OK: ", $this->response, 2);
