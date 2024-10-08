@@ -2,6 +2,11 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.17.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.5) - 2024-10-08
+
+- Update TPPWholesaleResponse to gracefully handle HTML responses
+- Add `account_id` and `account_option` to TPPWholesale configuration for register() and transfer()
+
 ## [v2.17.4](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.4) - 2024-09-27
 
 - Update DomainNameApi add specific error for when registrant contact is not set, and workaround
@@ -71,6 +76,11 @@ All notable changes to the package will be documented in this file.
 ## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
 
 - Update library for PHP 8 + Base lib v4
+
+## [v2.12.22](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.22) - 2024-10-08
+
+- Update TPPWholesaleResponse to gracefully handle HTML responses
+- Add `account_id` and `account_option` to TPPWholesale configuration for register() and transfer()
 
 ## [v2.12.21](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.21) - 2024-09-27
 
