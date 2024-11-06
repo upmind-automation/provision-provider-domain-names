@@ -174,7 +174,7 @@ class Provider extends DomainNames implements ProviderInterface
             }
 
             $registrantID = $this->api()->createContact(
-                $params->registrant->register, "organization", $params->additional_fields[0]
+                $params->registrant->register, "organization"
             );
         }
 

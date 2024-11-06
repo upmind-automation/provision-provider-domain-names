@@ -318,7 +318,7 @@ class NoridApi
             $params->organisation,
             $params->address1,
             '',
-            $params->postcode,
+            'NO-'.$params->postcode,
             eppContact::TYPE_LOC,
         );
 
@@ -458,7 +458,7 @@ class NoridApi
         return Helper::generateStrictPassword($length, true, true, true, '-_.');
     }
 
-    public function createContact(ContactParams $params, string $contactType = "role", string $organisationNumber = ""): string
+    public function createContact(ContactParams $params, string $contactType = "role"): string
     {
         $telephone = null;
         if ($params->phone) {
@@ -483,7 +483,7 @@ class NoridApi
             $org,
             $params->address1,
             '',
-            $params->postcode,
+            'NO-'.$params->postcode,
             eppContact::TYPE_LOC,
         );
 
@@ -492,7 +492,7 @@ class NoridApi
         $contactInfo->setExtType($contactType);
 
         if ($contactType == "organization") {
-            $contactInfo->setExtIdentity('organizationNumber', $organisationNumber);
+            $contactInfo->setExtIdentity('organizationNumber', $this->configuration->organisationNumber);
             $contactInfo->setExtMobilePhone($telephone);
         }
 
