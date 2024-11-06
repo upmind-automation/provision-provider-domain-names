@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Metaregistrar\EPP\eppException;
 use Metaregistrar\EPP\eppContactHandle;
 use SimpleXMLElement;
+use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 use Upmind\ProvisionBase\Provider\Contract\ProviderInterface;
 use Upmind\ProvisionBase\Provider\DataSet\AboutData;
@@ -420,7 +421,7 @@ class Provider extends DomainNames implements ProviderInterface
 
                     $this->errorResult(sprintf("Registry Error: %s Details: %s", $errorMessage, $details), $data, $debug, $exception);
 
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                 }
         }
 
