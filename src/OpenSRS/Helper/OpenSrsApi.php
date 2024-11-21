@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Upmind\ProvisionProviders\DomainNames\OpenSRS\Helper;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
@@ -171,6 +173,20 @@ class OpenSrsApi
      */
     public function makeRequest(array $params): array
     {
+        return $this->makeRequestAsync($params)->wait();
+    }
+
+    /**
+     * Send request and return the response.
+     *
+     * @param  array  $params
+     * @return PromiseInterface<array>
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
+     */
+    public function makeRequestAsync(array $params): PromiseInterface
+    {
         // Request Template
         $xmlDataBlock = self::array2xml($params);
 
@@ -185,7 +201,7 @@ class OpenSrsApi
             self::XML_INDENT . '</body>' . self::CRLF .
             '</OPS_envelope>';
 
-        $response = $this->client->request('POST', $this->getApiEndpoint(), [
+        return $this->client->requestAsync('POST', $this->getApiEndpoint(), [
             'body' => $xml,
             'headers' => [
                 'User-Agent' => 'Upmind/ProvisionProviders/DomainNames/OpenSRS',
@@ -194,24 +210,16 @@ class OpenSrsApi
                 'X-Signature' => md5(md5($xml . $this->configuration->key) . $this->configuration->key),
                 'Content-Length' => strlen($xml)
             ],
-        ]);
+        ])->then(function (Response $response) {
+            $result = $response->getBody()->getContents();
 
-        $result = $response->getBody()->getContents();
+            if (empty($result)) {
+                // Something bad happened...
+                throw new RuntimeException('Problem while sending OpenSRS request.');
+            }
 
-        // Init cUrl
-        if (empty($result)) {
-            $response->getBody()->close();
-
-            // Something bad happened...
-            throw new RuntimeException('Problem while sending OpenSRS request.');
-        }
-
-        $response->getBody()->close();
-
-        $responseData = self::parseResponseData($result);
-
-        // Return the result
-        return $responseData;
+            return self::parseResponseData($result);
+        });
     }
 
     /**
@@ -222,7 +230,9 @@ class OpenSrsApi
      */
     private static function array2xml(array $data): string
     {
-        return str_repeat(self::XML_INDENT, 2) . '<data_block>' . self::convertData($data, 3) . self::CRLF . str_repeat(self::XML_INDENT, 2) . '</data_block>';
+        return str_repeat(self::XML_INDENT, 2) . '<data_block>'
+            . self::convertData($data, 3)
+            . self::CRLF . str_repeat(self::XML_INDENT, 2) . '</data_block>';
     }
 
     /**
@@ -240,10 +250,10 @@ class OpenSrsApi
 
         if (is_array($array)) {
             if (self::isAssoc($array)) {        # HASH REFERENCE
-                $string .= self::CRLF . $spacer . '<dt_assoc>';
+                $string .= self::CRLF . $spacer . '<dt_assoc>' . self::CRLF;
                 $end = '</dt_assoc>';
             } else {                # ARRAY REFERENCE
-                $string .= self::CRLF . $spacer . '<dt_array>';
+                $string .= self::CRLF . $spacer . '<dt_array>' . self::CRLF;
                 $end = '</dt_array>';
             }
 
@@ -262,14 +272,14 @@ class OpenSrsApi
                 $string .= '>';
                 if (is_array($v) || is_object($v)) {
                     $string .= self::convertData($v, $indent + 1);
-                    $string .= self::XML_INDENT . $spacer . '</item>';
+                    $string .= self::XML_INDENT . $spacer . '</item>' . self::CRLF;
                 } else {
-                    $string .= self::quoteXmlChars($v) . '</item>';
+                    $string .= self::quoteXmlChars($v) . '</item>' . self::CRLF;
                 }
 
                 --$indent;
             }
-            $string .= self::XML_INDENT . $spacer . $end;
+            $string .= $spacer . $end;
         } else {
             $string .= self::XML_INDENT . $spacer . '<dt_scalar>' . self::quoteXmlChars($array) . '</dt_scalar>';
         }
