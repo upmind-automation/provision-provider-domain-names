@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\Utils as PromiseUtils;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
@@ -30,6 +32,7 @@ use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
+use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\RenewParams;
 use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
@@ -96,7 +99,52 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        $this->errorResult('Operation not supported');
+        $promises = array_map(function (string $tld) use ($params): PromiseInterface {
+            return $this->api()
+                ->makeRequestAsync([
+                    'action' => 'lookup',
+                    'object' => 'domain',
+                    'attributes' => [
+                        'domain' => Utils::getDomain($params->sld, $tld),
+                        'no_cache' => 0,
+                    ],
+                ])
+                ->then(function (array $result) use ($params, $tld): DacDomain {
+                    $register = $result['attributes']['status'] === 'available';
+                    $transfer = $result['attributes']['status'] === 'taken';
+                    $premium = isset($result['attributes']['reason']) && $result['attributes']['reason'] === 'Premium Name';
+
+                    $description = $result['attributes']['status'];
+                    if ($premium) {
+                        $description .= ' (Premium)';
+                    }
+
+                    return DacDomain::create()
+                        ->setDomain(Utils::getDomain($params->sld, $tld))
+                        ->setTld($tld)
+                        ->setCanRegister($register)
+                        ->setCanTransfer($transfer)
+                        ->setIsPremium($premium)
+                        ->setDescription($description);
+                })
+                ->otherwise(function (ProvisionFunctionError $e) use ($params, $tld): DacDomain {
+                    if (!Str::contains($e->getMessage(), "TLD not serviced")) {
+                        throw $e;
+                    }
+
+                    return DacDomain::create()
+                        ->setDomain(Utils::getDomain($params->sld, $tld))
+                        ->setTld($tld)
+                        ->setCanRegister(false)
+                        ->setCanTransfer(false)
+                        ->setIsPremium(false)
+                        ->setDescription('TLD not supported');
+                });
+        }, $params->tlds);
+
+        return new DacResult([
+            'domains' => PromiseUtils::all($promises)->wait(),
+        ]);
     }
 
     /**
