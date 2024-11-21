@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.17.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.6) - 2024-11-21
+
+- Implement OpenSRS/HRS domain availability check
+
 ## [v2.17.5](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.5) - 2024-10-08
 
 - Update TPPWholesaleResponse to gracefully handle HTML responses
@@ -76,6 +80,10 @@ All notable changes to the package will be documented in this file.
 ## [v2.13.0](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.13.0) - 2024-07-29
 
 - Update library for PHP 8 + Base lib v4
+
+## [v2.12.23](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.23) - 2024-11-21
+
+- Implement OpenSRS/HRS domain availability check
 
 ## [v2.12.22](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.22) - 2024-10-08
 
