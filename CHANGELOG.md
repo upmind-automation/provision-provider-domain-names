@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.12.23](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.23) - 2024-11-21
+
+- Implement OpenSRS/HRS domain availability check
+
 ## [v2.12.22](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.12.22) - 2024-10-08
 
 - Update TPPWholesaleResponse to gracefully handle HTML responses
