@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\Utils as PromiseUtils;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Throwable;
@@ -30,6 +32,7 @@ use Upmind\ProvisionProviders\DomainNames\Data\IpsTagParams;
 use Upmind\ProvisionProviders\DomainNames\Data\NameserversResult;
 use Upmind\ProvisionProviders\DomainNames\Data\RegisterDomainParams;
 use Upmind\ProvisionProviders\DomainNames\Data\AutoRenewParams;
+use Upmind\ProvisionProviders\DomainNames\Data\DacDomain;
 use Upmind\ProvisionProviders\DomainNames\Data\RenewParams;
 use Upmind\ProvisionProviders\DomainNames\Data\LockParams;
 use Upmind\ProvisionProviders\DomainNames\Data\PollParams;
@@ -96,49 +99,52 @@ class Provider extends DomainNames implements ProviderInterface
 
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
-        throw $this->errorResult('Operation not supported');
-
-        // Get Domains
-        $domains = [];
-
-        $max = 30;
-        $start = 0;
-
-        foreach (Arr::get($params, 'domains') as $domain) {
-            $domains[] = Utils::getDomain($domain['sld'], $domain['tld']);
-
-            $start++;
-
-            // Allow up to 30 domains in one check
-            if ($start == $max) {
-                break;
-            }
-        }
-
-        try {
-            $domainsCheck = [];
-
-            foreach ($domains as $domain) {
-                $lookupRaw = $this->api()->makeRequest([
-                    'action' => 'LOOKUP',
-                    'object' => 'DOMAIN',
-                    'protocol' => 'XCP',
+        $promises = array_map(function (string $tld) use ($params): PromiseInterface {
+            return $this->api()
+                ->makeRequestAsync([
+                    'action' => 'lookup',
+                    'object' => 'domain',
                     'attributes' => [
-                        'domain' => $domain,
-                    ]
-                ]);
+                        'domain' => Utils::getDomain($params->sld, $tld),
+                        'no_cache' => 0,
+                    ],
+                ])
+                ->then(function (array $result) use ($params, $tld): DacDomain {
+                    $register = $result['attributes']['status'] === 'available';
+                    $transfer = $result['attributes']['status'] === 'taken';
+                    $premium = isset($result['attributes']['reason']) && $result['attributes']['reason'] === 'Premium Name';
 
-                $domainsCheck[] = [
-                    'domain' => $domain,
-                    'available' => $lookupRaw['attributes']['status'] == 'taken' ? false : true,
-                    'reason' => ''
-                ];
-            }
+                    $description = $result['attributes']['status'];
+                    if ($premium) {
+                        $description .= ' (Premium)';
+                    }
 
-            return $this->okResult("Domain Check Results", $domainsCheck);
-        } catch (\Throwable $e) {
-            return $this->handleError($e, $params);
-        }
+                    return DacDomain::create()
+                        ->setDomain(Utils::getDomain($params->sld, $tld))
+                        ->setTld($tld)
+                        ->setCanRegister($register)
+                        ->setCanTransfer($transfer)
+                        ->setIsPremium($premium)
+                        ->setDescription($description);
+                })
+                ->otherwise(function (ProvisionFunctionError $e) use ($params, $tld): DacDomain {
+                    if (!Str::contains($e->getMessage(), "TLD not serviced")) {
+                        throw $e;
+                    }
+
+                    return DacDomain::create()
+                        ->setDomain(Utils::getDomain($params->sld, $tld))
+                        ->setTld($tld)
+                        ->setCanRegister(false)
+                        ->setCanTransfer(false)
+                        ->setIsPremium(false)
+                        ->setDescription('TLD not supported');
+                });
+        }, $params->tlds);
+
+        return new DacResult([
+            'domains' => PromiseUtils::all($promises)->wait(),
+        ]);
     }
 
     public function poll(PollParams $params): PollResult
