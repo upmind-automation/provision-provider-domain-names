@@ -2,6 +2,10 @@
 
 All notable changes to the package will be documented in this file.
 
+## [v2.17.7](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.7) - 2024-11-22
+
+- Update OpenSRS domain availability check to gracefully handle 'Invalid domain syntax' errors"
+
 ## [v2.17.6](https://github.com/upmind-automation/provision-provider-domain-names/releases/tag/v2.17.6) - 2024-11-21
 
 - Implement OpenSRS/HRS domain availability check
