@@ -571,31 +571,30 @@ class EuroDNSApi
      * Function to split the name into firstname and last name based on the space between them
      * if there is no speration then take firstname and last name as same
      */
+    private function splitName($fullName)
+    {
+        // Check if the full name is empty
+        if (empty($fullName)) {
+            return [
+                'first_name' => '',
+                'last_name' => ''
+            ];
+        }
+        // Explode the name by space
+        $nameParts = explode(' ', (string)$fullName);
 
-     private function splitName($fullName)
-     {
-         // Check if the full name is empty
-         if (empty($fullName)) {
-             return [
-                 'first_name' => '',
-                 'last_name' => ''
-             ];
-         }
-         // Explode the name by space
-         $nameParts = explode(' ', $fullName);
+        // Set first name and last name
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? $nameParts[0]; // If space is not there, use the whole name as the last name
 
-         // Set first name and last name
-         $firstName = isset($nameParts[0]) ? $nameParts[0] : '';
-         $lastName = isset($nameParts[1]) ? $nameParts[1] : $nameParts[0]; // If space is not there, use the whole name as the last name
+        // Create an array with first name and last name
+        $nameArray = [
+            'first_name' => $firstName,
+            'last_name' => $lastName
+        ];
 
-         // Create an array with first name and last name
-         $nameArray = [
-             'first_name' => $firstName,
-             'last_name' => $lastName
-         ];
-
-         return $nameArray;
-     }
+        return $nameArray;
+    }
 
     /**
       * Check if a string starts with a specific substring.

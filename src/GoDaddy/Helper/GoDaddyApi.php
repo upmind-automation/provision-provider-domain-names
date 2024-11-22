@@ -114,7 +114,11 @@ class GoDaddyApi
     }
 
     /**
-     * @param ContactParams[] $contacts
+     * @param array<string,ContactParams|null> $contacts
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function initiateTransfer(string $domainName, string $eppCode, array $contacts, int $period): string
     {
