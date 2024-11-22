@@ -322,11 +322,9 @@ class OpenSrsApi
             return true;
         }
 
-        if (is_array($array)) {
-            foreach ($array as $k => $v) {
-                if (!is_int($k)) {
-                    return true;
-                }
+        foreach ($array as $k => $v) {
+            if (!is_int($k)) {
+                return true;
             }
         }
 
