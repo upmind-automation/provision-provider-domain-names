@@ -128,17 +128,17 @@ class Provider extends DomainNames implements ProviderInterface
                         ->setDescription($description);
                 })
                 ->otherwise(function (ProvisionFunctionError $e) use ($params, $tld): DacDomain {
-                    if (!Str::contains($e->getMessage(), "TLD not serviced")) {
-                        throw $e;
+                    if (Str::contains($e->getMessage(), ['TLD not serviced', 'Invalid domain syntax'])) {
+                        return DacDomain::create()
+                            ->setDomain(Utils::getDomain($params->sld, $tld))
+                            ->setTld($tld)
+                            ->setCanRegister(false)
+                            ->setCanTransfer(false)
+                            ->setIsPremium(false)
+                            ->setDescription($e->getMessage());
                     }
 
-                    return DacDomain::create()
-                        ->setDomain(Utils::getDomain($params->sld, $tld))
-                        ->setTld($tld)
-                        ->setCanRegister(false)
-                        ->setCanTransfer(false)
-                        ->setIsPremium(false)
-                        ->setDescription('TLD not supported');
+                    throw $e;
                 });
         }, $params->tlds);
 
