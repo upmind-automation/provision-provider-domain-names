@@ -272,7 +272,7 @@ class OpenSrsApi
                 $string .= '>';
                 if (is_array($v) || is_object($v)) {
                     $string .= self::convertData($v, $indent + 1);
-                    $string .= self::XML_INDENT . $spacer . '</item>' . self::CRLF;
+                    $string .= self::CRLF . self::XML_INDENT . $spacer . '</item>' . self::CRLF;
                 } else {
                     $string .= self::quoteXmlChars($v) . '</item>' . self::CRLF;
                 }
