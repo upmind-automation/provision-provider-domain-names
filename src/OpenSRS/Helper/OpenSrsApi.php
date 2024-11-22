@@ -180,7 +180,7 @@ class OpenSrsApi
      * Send request and return the response.
      *
      * @param  array  $params
-     * @return PromiseInterface<array>
+     * @return PromiseInterface
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError

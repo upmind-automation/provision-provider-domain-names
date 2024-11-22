@@ -115,7 +115,7 @@ class GoDaddyApi
     }
 
     /**
-     * @param ContactParams[] $contacts
+     * @param array<string,ContactParams|null> $contacts
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException

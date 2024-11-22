@@ -9,8 +9,10 @@ use AfriCC\EPP\FrameInterface;
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
+use Illuminate\Support\Stringable as IlluminateStringable;
 use Psr\Log\LoggerInterface;
 use stdClass;
+use Stringable;
 use Throwable;
 use Upmind\ProvisionBase\Exception\ProvisionFunctionError;
 
@@ -95,7 +97,7 @@ class Client extends EPPClient
     }
 
     /**
-     * @param string $message
+     * @param string|Stringable|IlluminateStringable $message
      *
      * @return void
      */
@@ -110,7 +112,7 @@ class Client extends EPPClient
                 }
 
                 // and another try in-case the binary header appared to be valid utf8 or ascii or !== 4 bytes
-                if (is_string($message) && preg_match('/(.{0,16})<\\?xml version/', $message, $matches)) {
+                if (preg_match('/(.{0,16})<\\?xml version/', $message, $matches)) {
                     $message = Str::replaceFirst($matches[1], '', $message);
                 }
             }

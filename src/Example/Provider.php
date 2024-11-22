@@ -58,8 +58,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function poll(PollParams $params): PollResult
     {
@@ -68,8 +66,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function domainAvailabilityCheck(DacParams $params): DacResult
     {
@@ -78,8 +74,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function register(RegisterDomainParams $params): DomainResult
     {
@@ -88,8 +82,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function transfer(TransferParams $params): DomainResult
     {
@@ -98,8 +90,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function renew(RenewParams $params): DomainResult
     {
@@ -108,8 +98,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function getInfo(DomainInfoParams $params): DomainResult
     {
@@ -143,8 +131,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function updateRegistrantContact(UpdateDomainContactParams $params): ContactResult
     {
@@ -153,8 +139,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function updateNameservers(UpdateNameserversParams $params): NameserversResult
     {
@@ -163,8 +147,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function setLock(LockParams $params): DomainResult
     {
@@ -173,8 +155,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function setAutoRenew(AutoRenewParams $params): DomainResult
     {
@@ -183,8 +163,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function getEppCode(EppParams $params): EppCodeResult
     {
@@ -193,8 +171,6 @@ class Provider extends DomainNames implements ProviderInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws \Propaganistas\LaravelPhone\Exceptions\NumberParseException
      */
     public function updateIpsTag(IpsTagParams $params): ResultData
     {
