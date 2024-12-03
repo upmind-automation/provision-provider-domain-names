@@ -331,10 +331,10 @@ class Provider extends DomainNames implements ProviderInterface
         $infoFrame->setDomain($domainName);
 
         if ($params->lock) {
-            $infoFrame->addStatus('clientDeleteProhibited', 'Locked');
+            $infoFrame->addStatus('clientUpdateProhibited', 'Locked');
             $infoFrame->addStatus('clientTransferProhibited', 'Transfer Locked');
         } else {
-            $infoFrame->removeStatus('clientDeleteProhibited');
+            $infoFrame->removeStatus('clientUpdateProhibited');
             $infoFrame->removeStatus('clientTransferProhibited');
         }
 
@@ -572,7 +572,7 @@ class Provider extends DomainNames implements ProviderInterface
         $lockStatus = false;
         // $renewStatus = false;
 
-        $arrSearch = array_search("clientDeleteProhibited", $currentStatuses);
+        $arrSearch = array_search("clientUpdateProhibited", $currentStatuses);
         if ($arrSearch !== false) {
             if (array_key_exists($arrSearch, $currentStatuses) == 1 || array_key_exists(array_search("clientTransferProhibited", $currentStatuses), $currentStatuses) == 1) {
                 $lockStatus = true;
