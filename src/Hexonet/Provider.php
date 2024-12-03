@@ -544,7 +544,6 @@ class Provider extends DomainNames implements ProviderInterface
         $lockedStatuses = [
             'clientTransferProhibited',
             'clientUpdateProhibited',
-            'clientDeleteProhibited',
         ];
         $domainInfo['locked'] = boolval(array_intersect($lockedStatuses, $domainInfo['statuses']));
 
@@ -696,7 +695,12 @@ class Provider extends DomainNames implements ProviderInterface
     /**
      * Unlocks/Locks a domain for update, delete + transfer.
      *
-     * Toggles ClientProhibitedTransfer, clientUpdateProhibited + clientDeleteProhibited statuses of a domain.
+     * Toggles ClientProhibitedTransfer + clientUpdateProhibited statuses of a domain.
+     *
+     * @throws \Exception
+     * @throws \Metaregistrar\EPP\eppException
+     * @throws \RuntimeException
+     * @throws \Upmind\ProvisionBase\Exception\ProvisionFunctionError
      */
     public function setLock(LockParams $params): DomainResult
     {
@@ -710,7 +714,6 @@ class Provider extends DomainNames implements ProviderInterface
             $lockedStatuses = [
                 'clientTransferProhibited',
                 'clientUpdateProhibited',
-                'clientDeleteProhibited',
             ];
 
             $params = [
