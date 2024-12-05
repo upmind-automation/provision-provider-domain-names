@@ -373,7 +373,53 @@ class Provider extends DomainNames implements ProviderInterface
      */
     public function setLock(LockParams $params): DomainResult
     {
-        $this->errorResult('Operation not supported');
+        $domainName = Utils::getDomain(
+            Utils::normalizeSld($params->sld),
+            Utils::normalizeTld($params->tld)
+        );
+
+        $lock = !!$params->lock;
+
+        try {
+            $currentLockStatuses = $this->api()->getRegistrarLockStatuses($domainName);
+            $lockedStatuses = $this->api()->getLockedStatuses();
+
+            $addStatuses = [];
+            $removeStatuses = [];
+
+            if ($lock) {
+                if (!$addStatuses = array_diff($lockedStatuses, $currentLockStatuses)) {
+                    return $this->_getInfo($domainName, sprintf('Domain %s already locked', $domainName));
+                }
+            } else {
+                if (!$removeStatuses = array_intersect($lockedStatuses, $currentLockStatuses)) {
+                    return $this->_getInfo($domainName, sprintf('Domain %s already unlocked', $domainName));
+                }
+            }
+
+            if (count($addStatuses)) {
+                $add = new eppDomain($domainName);
+                foreach ($addStatuses as $status) {
+                    $add->addStatus($status);
+                }
+            }
+    
+            if (count($removeStatuses)) {
+                $del = new eppDomain($domainName);
+                foreach ($removeStatuses as $status) {
+                    $del->addStatus($status);
+                }
+            }
+    
+            $domain = new eppDomain($domainName);
+            $update = new eppUpdateDomainRequest($domain, $add ?? null, $del ?? null);
+    
+            $this->connection->request($update);
+
+            return $this->_getInfo($domainName, sprintf("Lock %s!", $lock ? 'enabled' : 'disabled'));
+        } catch (eppException $e) {
+            $this->_eppExceptionHandler($e, $params->toArray());
+        }
     }
 
     /**
