@@ -525,7 +525,7 @@ class Provider extends DomainNames implements ProviderInterface
                 return $status === '' ? 'n/a' : (string)$status;
             }, $statusRaw['attributes']),
             'registrant' => OpenSrsApi::parseContact($domainRaw['attributes']['contact_set'], OpenSrsApi::CONTACT_TYPE_REGISTRANT),
-            'ns' => OpenSrsApi::parseNameServers($domainRaw['attributes']['nameserver_list']),
+            'ns' => OpenSrsApi::parseNameServers($domainRaw['attributes']['nameserver_list'] ?? []),
             'created_at' => $domainRaw['attributes']['registry_createdate'],
             'updated_at' => $domainRaw['attributes']['registry_updatedate'] ?? $domainRaw['attributes']['registry_createdate'],
             'expires_at' => $domainRaw['attributes']['expiredate'],
