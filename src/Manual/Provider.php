@@ -40,11 +40,6 @@ class Provider extends DomainNames implements ProviderInterface
 {
     protected Configuration $configuration;
 
-    /**
-     * @var DomainFaker[]|array<string,DomainFaker>
-     */
-    protected array $fakers = [];
-
     public function __construct(Configuration $configuration)
     {
         $this->configuration = $configuration;
